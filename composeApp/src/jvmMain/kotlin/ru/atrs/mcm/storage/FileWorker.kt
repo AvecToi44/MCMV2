@@ -14,7 +14,7 @@ import ru.atrs.mcm.utils.Dir4MainConfig_Txt
 import ru.atrs.mcm.utils.Dir5Operators
 import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.OPERATOR_ID
-import ru.atrs.mcm.utils.SAVELOG
+import ru.atrs.mcm.utils.LOG_LEVEL
 import ru.atrs.mcm.utils.SOUND_ENABLED
 import ru.atrs.mcm.utils.arr1Measure
 import ru.atrs.mcm.utils.arr2Measure
@@ -35,6 +35,7 @@ import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.storage.models.ParameterCommon
+import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import java.io.*
 
 fun checkNeededFolders(): Boolean {
@@ -106,9 +107,8 @@ fun readParameters(file: File) : List<ParameterCommon> {
                         "delay_before_chart" -> {
                             listParams.add(ParameterCommon(name = "delay_before_chart", value = items[1]))
                         }
-                        "save_log" -> {
-                            listParams.add(ParameterCommon(name = "save_log", value = items[1]))
-                        }
+                        "save_log" -> { listParams.add(ParameterCommon(name = "save_log", value = items[1])) }
+                        "isFullscreenEnabled" -> { listParams.add(ParameterCommon(name = "isFullscreenEnabled", value = items[1])) }
                     }
                 }
             }
@@ -142,7 +142,8 @@ fun refreshParameters() {
         ParameterCommon("sound_enabled","${SOUND_ENABLED}"),
         ParameterCommon("last_scenario","${LAST_SCENARIO}"),
         ParameterCommon("delay_before_chart","${DELAY_BEFORE_CHART}"),
-        ParameterCommon("save_log","${SAVELOG}"),
+        ParameterCommon("save_log","${LOG_LEVEL}"),
+        ParameterCommon("isFullscreenEnabled","${SHOW_FULLSCREEN}"),
     )
 
     //IF first launch

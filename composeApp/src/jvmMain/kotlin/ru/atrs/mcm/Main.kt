@@ -11,8 +11,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
 import kotlinx.coroutines.*
 import ru.atrs.mcm.ui.App
@@ -21,12 +24,14 @@ import ru.atrs.mcm.serial_port.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.pauseSerialComm
 import ru.atrs.mcm.storage.readParameters
 import ru.atrs.mcm.ui.charts.ChartWindowNew
+import ru.atrs.mcm.ui.charts.chartWindowV2
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.Dir1Configs
 import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir3Scenarios
 import ru.atrs.mcm.utils.Dir4MainConfig_Txt
 import ru.atrs.mcm.utils.EXPLORER_MODE
+import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.generateTimestampLastUpdate
@@ -41,9 +46,16 @@ import kotlin.concurrent.fixedRateTimer
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
+    initialize(readParameters(Dir4MainConfig_Txt))
+
+    val windowStateFullscreen = rememberWindowState(
+        placement = if (SHOW_FULLSCREEN) WindowPlacement.Maximized else WindowPlacement.Floating
+    )
+    val windowFloating = rememberWindowState(width = 1000.dp, height = 800.dp)
+    println("window: ${SHOW_FULLSCREEN}")
     Window(
         title = "MCM [${generateTimestampLastUpdate()}]",
-        state = WindowState(size = DpSize(1000.dp, 800.dp)),
+        state = if (SHOW_FULLSCREEN) windowStateFullscreen else windowFloating,
 //        icon = painterResource("drawable/ava.png"),
         onKeyEvent = {
              if ( it.key == Key.DirectionRight && it.type == KeyEventType.KeyUp) {
@@ -105,13 +117,11 @@ fun main() = application {
             val doOpenNewWindowInternal = remember { doOpen_First_ChartWindow }
             val doOpenNewWindowInternal2 = remember { doOpen_Second_ChartWindow }
 
-            Dir1Configs.mkdirs()
-            Dir2Reports.mkdirs()
-            Dir3Scenarios.mkdirs()
+
 
             println("Dir1 ${Dir1Configs.absolutePath}")
 
-            initialize(readParameters(Dir4MainConfig_Txt))
+
 
             var isHaveConn = false
             getComPorts_Array()?.forEach {
@@ -122,7 +132,7 @@ fun main() = application {
             if (!isHaveConn) {
                 showMeSnackBar("NO Connect to ${COM_PORT} !!", Color.Red)
             }
-
+//            chartWindowV2()
             App()
 
             if (EXPLORER_MODE.value == ExplorerMode.AUTO) {

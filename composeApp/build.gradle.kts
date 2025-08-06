@@ -31,6 +31,8 @@ kotlin {
             implementation("org.jfree:jcommon:1.0.24")
             implementation("org.jfree:jfreechart:1.5.3")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+            implementation("io.github.thechance101:chart:1.1.0")
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -50,7 +52,13 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "ru.atrs.mcm"
-            packageVersion = "1.0.0"
+            packageVersion = "1.2.8"
+        }
+        buildTypes.release {
+            proguard {
+                //isEnabled.set(false)
+                configurationFiles.from("compose-desktop.pro")
+            }
         }
     }
 }

@@ -63,6 +63,7 @@ import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
+import ru.atrs.mcm.utils.solenoids
 import ru.atrs.mcm.utils.test_time
 import ru.atrs.mcm.utils.txtOfScenario
 
@@ -113,7 +114,8 @@ fun CenterPiece(
             dataChunkGauges.collect {
                 isShowPlay.value = true
                 //delay(DELAY_FOR_GET_DATA)
-                //logGarbage("Exp>  ${STATE_CHART.value.name}||${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
+                logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
+
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
                 //longForChart.add(if (pressure1X > 1000) { 1000 } else pressure1X)
@@ -503,17 +505,9 @@ fun CenterPiece(
         }
         if(!isHideCurrents.value) {
             Row(Modifier.fillMaxSize().weight(2f)) {
-                solenoidsPanel(sizeRow, duration)
+                solenoidsPanel(sizeRow = sizeRow, duration = duration)
             }
         }
 
     }
-//    Row(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color.DarkGray)
-//    ) {
-//
-//
-//    }
 }

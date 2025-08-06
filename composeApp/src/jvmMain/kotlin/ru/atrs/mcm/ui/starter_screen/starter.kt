@@ -29,7 +29,9 @@ import ru.atrs.mcm.ui.styles.fontRoboGirls
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.OPERATOR_ID
-import ru.atrs.mcm.utils.SAVELOG
+import ru.atrs.mcm.utils.LOG_LEVEL
+import ru.atrs.mcm.utils.LogLevel
+import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.getComPorts_Array
@@ -44,6 +46,7 @@ fun StarterScreen() {
     var expandedCom by remember { mutableStateOf(false) }
     var expandedBaud by remember { mutableStateOf(false) }
     var expandedSound by remember { mutableStateOf(false) }
+    var expandedLogs by remember { mutableStateOf(false) }
     var visibilitySettings = remember { mutableStateOf(false)}
     var choosenCOM = remember { mutableStateOf(0) }
     var choosenBaud = remember { mutableStateOf(BAUD_RATE) }
@@ -296,8 +299,41 @@ fun StarterScreen() {
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
+                            Box {
+                                Text("${LOG_LEVEL.name}",
+                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                        expandedLogs = !expandedLogs
+                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
 
-                            val checkedState = remember { mutableStateOf(SAVELOG) }
+                                DropdownMenu(
+                                    modifier = Modifier.background(Color.White),
+                                    expanded = expandedLogs,
+                                    onDismissRequest = { expandedLogs = false },
+                                ) {
+                                    Text("ERRORS",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        LOG_LEVEL = LogLevel.ERRORS
+                                        refreshParameters()
+                                        expandedLogs = false
+                                    })  .fillMaxSize().padding(10.dp))
+                                    Text("DEBUG",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        LOG_LEVEL = LogLevel.DEBUG
+                                        refreshParameters()
+                                        expandedLogs = false
+                                    })  .fillMaxSize().padding(10.dp))
+
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Row {
+                            Text("Enable Fullscreen",
+                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+
+
+                            val checkedState = remember { mutableStateOf(SHOW_FULLSCREEN) }
                             Checkbox(
                                 checked = checkedState.value,
                                 colors = CheckboxDefaults.colors(
@@ -306,13 +342,14 @@ fun StarterScreen() {
                                 ),
                                 onCheckedChange = {
                                     checkedState.value = it
-                                    SAVELOG = it
+                                    SHOW_FULLSCREEN = it
                                     refreshParameters()
                                 }
                             )
                         }
 
                     }
+                }
                 }
 
                 Column(Modifier.width(600.dp).verticalScroll(rememberScrollState())) {
@@ -338,5 +375,4 @@ fun StarterScreen() {
 
             }
         }
-    }
 }

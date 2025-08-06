@@ -48,7 +48,9 @@ var OPERATOR_ID = "no name"
 var SOUND_ENABLED = 1
 var LAST_SCENARIO = Dir9Scenario
 var DELAY_BEFORE_CHART = 2000
-var SAVELOG = false
+var LOG_LEVEL : LogLevel= LogLevel.DEBUG // from 0 NO logs, and 2 is super detailed logs
+enum class LogLevel { ERRORS, DEBUG }
+var SHOW_FULLSCREEN = false
 
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()
