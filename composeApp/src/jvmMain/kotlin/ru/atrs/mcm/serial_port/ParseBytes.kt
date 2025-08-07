@@ -120,7 +120,7 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
 
 
-            //logGarbage(">>> ${dch.toString()}")
+            logGarbage(">>> ${dch.toString()}")
             //println("PRES ${dch.toString()}")
 
             dataChunkGauges.emit(dch)

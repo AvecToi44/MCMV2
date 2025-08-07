@@ -66,6 +66,7 @@ import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
 import ru.atrs.mcm.utils.test_time
+import ru.atrs.mcm.utils.toTwoDecimals
 import ru.atrs.mcm.utils.txtOfScenario
 
 
@@ -115,7 +116,8 @@ fun CenterPiece(
             dataChunkGauges.collect {
                 isShowPlay.value = true
                 //delay(DELAY_FOR_GET_DATA)
-                logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
+                logGarbage(">>>> ${it.toString()}")
+                //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
@@ -194,151 +196,151 @@ fun CenterPiece(
                 sizeRow = coordinates.size.toSize()
             }
     ) {
-        Row(Modifier.weight(0.5f)) {
-//                Box(Modifier.size(40.dp)) {
-//                    Image(painterResource("/trs.jpg"),"")
+//        Row(Modifier.weight(0.5f)) {
+////                Box(Modifier.size(40.dp)) {
+////                    Image(painterResource("/trs.jpg"),"")
+////                }
+//            if (isExperimentStarts.value) {
+//                Text(
+//                    "Rec...",
+//                    modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
+//                    },
+//                    fontFamily = FontFamily.Default,
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.Red
+//                )
+//            }
+//            Text(
+//                "${txt.value}",
+//                modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
+//                    //screenNav.value = Screens.STARTER
+//                },
+//                fontFamily = FontFamily.Default,
+//                fontSize = 20.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = Color.Blue
+//            )
+//            Box(Modifier.clickable {
+//                expandedCom.value = !expandedCom.value
+//            }) {
+//                Text(
+//                    "Mode: ${explMode.value.name}",
+//                    modifier = Modifier.padding(top = (10).dp, start = 20.dp),
+//                    fontFamily = FontFamily.Default, fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold, color = Color.White
+//                )
+//
+//                DropdownMenu(
+//                    modifier = Modifier.background(Color.White),
+//                    expanded = expandedCom.value,
+//                    onDismissRequest = { expandedCom.value = false },
+//                ) {
+//                    Text(
+//                        "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+//                            .clickable(onClick = {
+//                                EXPLORER_MODE.value = ExplorerMode.AUTO
+//                            }), color = Color.Black
+//                    )
+//                    Text(
+//                        "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+//                            .clickable(onClick = {
+//                                EXPLORER_MODE.value = ExplorerMode.MANUAL
+//                            }), color = Color.Black
+//                    )
 //                }
-            if (isExperimentStarts.value) {
-                Text(
-                    "Rec...",
-                    modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
-                    },
-                    fontFamily = FontFamily.Default,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Red
-                )
-            }
-            Text(
-                "${txt.value}",
-                modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
-                    //screenNav.value = Screens.STARTER
-                },
-                fontFamily = FontFamily.Default,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Blue
-            )
-            Box(Modifier.clickable {
-                expandedCom.value = !expandedCom.value
-            }) {
-                Text(
-                    "Mode: ${explMode.value.name}",
-                    modifier = Modifier.padding(top = (10).dp, start = 20.dp),
-                    fontFamily = FontFamily.Default, fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold, color = Color.White
-                )
-
-                DropdownMenu(
-                    modifier = Modifier.background(Color.White),
-                    expanded = expandedCom.value,
-                    onDismissRequest = { expandedCom.value = false },
-                ) {
-                    Text(
-                        "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-                            .clickable(onClick = {
-                                EXPLORER_MODE.value = ExplorerMode.AUTO
-                            }), color = Color.Black
-                    )
-                    Text(
-                        "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-                            .clickable(onClick = {
-                                EXPLORER_MODE.value = ExplorerMode.MANUAL
-                            }), color = Color.Black
-                    )
-                }
-            }
-            AnimatedVisibility(isShowPlay.value) {
-                Box(Modifier.clickable {
-                    test_time = 0
-                    // launch
-                    if (explMode.value == ExplorerMode.AUTO) {
-                        launchPlay()
-                    } else if (explMode.value == ExplorerMode.MANUAL) {
-                        indexOfScenario.value--
-                        ctxScope.launch {
-
-                            comparatorToSolenoid(indexOfScenario.value)
-                        }
-                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-                        //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
-                        //txtOfScenario.value = scenario[indexOfScenario.value].text
-                    }
-
-
-                }) {
-                    Text(
-                        if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                        fontFamily = FontFamily.Default,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            Box(Modifier.clickable {
-                //stop scenario
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (explMode.value == ExplorerMode.AUTO) {
-                        reInitSolenoids()
-                        GLOBAL_STATE.value = StateParseBytes.WAIT
-//                            initSerialCommunication()
-//                            startReceiveFullData()
-                    } else if (explMode.value == ExplorerMode.MANUAL) {
-                        indexOfScenario.value++
-                        comparatorToSolenoid(indexOfScenario.value)
-
-                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
-                    }
-                }
-            }) {
-                Text(
-                    if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                    fontFamily = FontFamily.Default,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
-                , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
-            )
-            Box(Modifier.clickable {
-                isHideCurrents.value = !isHideCurrents.value
-            }) {
-                Text(
-                    "Hide Currents⚡️",
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                    fontFamily = FontFamily.Default,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            Box(Modifier.clickable {
-                CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                    delay(10)
-                    pauseSerialComm()
-                    scenario.clear()
-                }
-                screenNav.value = Screens.STARTER
-            }) {
-                Text(
-                    "Home↩️",
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                    fontFamily = FontFamily.Default,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
+//            }
+//            AnimatedVisibility(isShowPlay.value) {
+//                Box(Modifier.clickable {
+//                    test_time = 0
+//                    // launch
+//                    if (explMode.value == ExplorerMode.AUTO) {
+//                        launchPlay()
+//                    } else if (explMode.value == ExplorerMode.MANUAL) {
+//                        indexOfScenario.value--
+//                        ctxScope.launch {
+//
+//                            comparatorToSolenoid(indexOfScenario.value)
+//                        }
+//                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+//                        //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
+//                        //txtOfScenario.value = scenario[indexOfScenario.value].text
+//                    }
+//
+//
+//                }) {
+//                    Text(
+//                        if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
+//                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+//                        fontFamily = FontFamily.Default,
+//                        fontSize = 20.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color.White
+//                    )
+//                }
+//            }
+//
+//            Box(Modifier.clickable {
+//                //stop scenario
+//
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    if (explMode.value == ExplorerMode.AUTO) {
+//                        reInitSolenoids()
+//                        GLOBAL_STATE.value = StateParseBytes.WAIT
+////                            initSerialCommunication()
+////                            startReceiveFullData()
+//                    } else if (explMode.value == ExplorerMode.MANUAL) {
+//                        indexOfScenario.value++
+//                        comparatorToSolenoid(indexOfScenario.value)
+//
+//                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
+//                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+//                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+//                    }
+//                }
+//            }) {
+//                Text(
+//                    if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
+//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+//                    fontFamily = FontFamily.Default,
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.White
+//                )
+//            }
+//            Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
+//                , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
+//            )
+//            Box(Modifier.clickable {
+//                isHideCurrents.value = !isHideCurrents.value
+//            }) {
+//                Text(
+//                    "Hide Currents⚡️",
+//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+//                    fontFamily = FontFamily.Default,
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.White
+//                )
+//            }
+//            Box(Modifier.clickable {
+//                CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+//                    delay(10)
+//                    pauseSerialComm()
+//                    scenario.clear()
+//                }
+//                screenNav.value = Screens.STARTER
+//            }) {
+//                Text(
+//                    "Home↩️",
+//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+//                    fontFamily = FontFamily.Default,
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.White
+//                )
+//            }
+//        }
         //Spacer(Modifier.fillMaxWidth().height(10.dp))
 
         Row(Modifier.weight(5f)) {
@@ -500,8 +502,265 @@ fun CenterPiece(
 
         }
         if(!isHideCurrents.value) {
-            Row(Modifier.fillMaxSize().weight(2f)) {
+            Row(Modifier.fillMaxSize().weight(2f), horizontalArrangement = Arrangement.SpaceAround) {
+
+                Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
+                    if (isExperimentStarts.value) {
+                        Text(
+                            "Rec...",
+                            modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
+                            },
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red
+                        )
+                    }
+
+                    AnimatedVisibility(isShowPlay.value) {
+                        Box(Modifier.clickable {
+                            test_time = 0
+                            // launch
+                            if (explMode.value == ExplorerMode.AUTO) {
+                                launchPlay()
+                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                indexOfScenario.value--
+                                ctxScope.launch {
+
+                                    comparatorToSolenoid(indexOfScenario.value)
+                                }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                                //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
+                                //txtOfScenario.value = scenario[indexOfScenario.value].text
+                            }
+
+
+                        }) {
+                            Text(
+                                if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
+                                modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                                fontFamily = FontFamily.Default,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Box(Modifier.clickable {
+                        //stop scenario
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if (explMode.value == ExplorerMode.AUTO) {
+                                reInitSolenoids()
+                                GLOBAL_STATE.value = StateParseBytes.WAIT
+//                            initSerialCommunication()
+//                            startReceiveFullData()
+                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                indexOfScenario.value++
+                                comparatorToSolenoid(indexOfScenario.value)
+
+                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                            }
+                        }
+                    }) {
+                        Text(
+                            if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Box(Modifier.clickable {
+                        CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                            delay(10)
+                            pauseSerialComm()
+                            scenario.clear()
+                        }
+                        screenNav.value = Screens.STARTER
+                    }) {
+                        Text(
+                            "Home↩️",
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
+                    Box(Modifier.clickable {
+                        expandedCom.value = !expandedCom.value
+                    }) {
+                        Text(
+                            "Mode: ${explMode.value.name}",
+                            modifier = Modifier.padding(top = (10).dp, start = 20.dp),
+                            fontFamily = FontFamily.Default, fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold, color = Color.White
+                        )
+
+                        DropdownMenu(
+                            modifier = Modifier.background(Color.White),
+                            expanded = expandedCom.value,
+                            onDismissRequest = { expandedCom.value = false },
+                        ) {
+                            Text(
+                                "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+                                    .clickable(onClick = {
+                                        EXPLORER_MODE.value = ExplorerMode.AUTO
+                                    }), color = Color.Black
+                            )
+                            Text(
+                                "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+                                    .clickable(onClick = {
+                                        EXPLORER_MODE.value = ExplorerMode.MANUAL
+                                    }), color = Color.Black
+                            )
+                        }
+                    }
+
+                    Text(
+                        "${txt.value}",
+                        modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
+                            //screenNav.value = Screens.STARTER
+                        },
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Blue
+                    )
+
+                    Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
+                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
+                    )
+
+                    Box(Modifier.clickable {
+                        isHideCurrents.value = !isHideCurrents.value
+                    }) {
+                        Text(
+                            "Hide Currents⚡️",
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                }
+
                 solenoidsPanel(sizeRow = sizeRow, duration = duration)
+            }
+        } else {
+            Row(Modifier.fillMaxSize().background(Color.DarkGray).weight(0.2f), horizontalArrangement = Arrangement.SpaceAround) {
+                if (isExperimentStarts.value) {
+                    Text(
+                        "Rec...",
+                        modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
+                        },
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Red
+                    )
+                }
+
+                AnimatedVisibility(isShowPlay.value) {
+                    Box(Modifier.clickable {
+                        test_time = 0
+                        // launch
+                        if (explMode.value == ExplorerMode.AUTO) {
+                            launchPlay()
+                        } else if (explMode.value == ExplorerMode.MANUAL) {
+                            indexOfScenario.value--
+                            ctxScope.launch {
+
+                                comparatorToSolenoid(indexOfScenario.value)
+                            }
+                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                            //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
+                            //txtOfScenario.value = scenario[indexOfScenario.value].text
+                        }
+
+
+                    }) {
+                        Text(
+                            if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Box(Modifier.clickable {
+                    //stop scenario
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (explMode.value == ExplorerMode.AUTO) {
+                            reInitSolenoids()
+                            GLOBAL_STATE.value = StateParseBytes.WAIT
+//                            initSerialCommunication()
+//                            startReceiveFullData()
+                        } else if (explMode.value == ExplorerMode.MANUAL) {
+                            indexOfScenario.value++
+                            comparatorToSolenoid(indexOfScenario.value)
+
+                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
+                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                        }
+                    }
+                }) {
+                    Text(
+                        if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Box(Modifier.clickable {
+                    CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                        delay(10)
+                        pauseSerialComm()
+                        scenario.clear()
+                    }
+                    screenNav.value = Screens.STARTER
+                }) {
+                    Text(
+                        "Home↩️",
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Box(Modifier.clickable {
+                    isHideCurrents.value = !isHideCurrents.value
+                }) {
+                    Text(
+                        "Open Currents⚡️",
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
         }
 

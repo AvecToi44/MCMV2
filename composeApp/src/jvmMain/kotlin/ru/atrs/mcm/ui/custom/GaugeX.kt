@@ -31,6 +31,7 @@ import ru.atrs.mcm.ui.styles.colorTrans60
 import ru.atrs.mcm.ui.styles.fontDigital
 import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.mapFloat
+import ru.atrs.mcm.utils.toTwoDecimals
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -212,7 +213,7 @@ fun GaugeX(inputSize: DpSize, progress : Float, minType : Float, maxType: Float,
 
             Column(modifier = Modifier.height(inputSize.height*0.3f).align(Alignment.BottomStart).padding(start = 10.dp, bottom = 10.dp, top = 5.dp), verticalArrangement = Arrangement.SpaceBetween) {
 
-                Text("${signValue}",
+                Text("${signValue.toTwoDecimals()}",
                     modifier = Modifier.padding(0.dp),
                     fontFamily = fontDigital,
                     fontSize = (inputSize.height.value*0.200f).sp, fontWeight = FontWeight.Bold, color = Color.White

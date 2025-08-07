@@ -1,11 +1,13 @@
 package ru.atrs.mcm.ui.main_screen.center.support_elements
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -67,132 +69,127 @@ fun SolenoidControl(
             else -> pwm1SeekBar
         }
     }
-
-
-    Column(modifier = Modifier.border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "${displayName}",
-            style = MaterialTheme.typography.displaySmall,
-            fontSize = 18.sp // Set your desired font size
-        )
-
-        Row(modifier = Modifier.width(150.dp),) {
-            Column(
-                modifier = Modifier.fillMaxSize().weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                /**
-                 * DISPLAYS
-                 *
-                 *
-                 *
-                 *
-                 * */
-
-                Text(
-                    text = "$current",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontSize = 18.sp // Set your desired font size
+    Column(modifier = Modifier.width(100.dp).background(Color.Gray).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(Modifier.fillMaxSize().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.Text("${displayName}")
+        }
+        Row(Modifier.fillMaxSize().weight(1f).background(Color.DarkGray)) {
+            Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    "$current",
+                    fontSize = 16.sp
                 )
-                Text(
-                    text = "${map(PWMremember.value, 0, 255, 0, 100)}%",
-                    style = MaterialTheme.typography.bodyMedium
+            }
+            Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    "${map(PWMremember.value, 0, 255, 0, 100)}%",
+                    fontSize = 16.sp
+                )
+            }
+        }
+        Row(Modifier.fillMaxSize().weight(1f)) {
+            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+                // PLUS +1
+                PWMremember.value = PWMremember.value + step
+                if (PWMremember.value > maxPWM) {
+                    PWMremember.value = maxPWM
+                }
+                if (PWMremember.value > 255) {
+                    PWMremember.value = 255
+                }
+                println("WELL ${(PWMremember.value.toFloat())}")
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    selectorForChannels(index, PWMremember.value.toByte())
+                    if (isChangedFirstFourth) {
+                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+
+                    }else {
+                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+
+                    }
+                    delay(100)
+                }
+                //pos.value += 0.1f
+            }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    text = "\u002B", // +
+                    fontSize = 15.sp
                 )
             }
 
-            Column(
-                modifier = Modifier.fillMaxSize().weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                /**
-                 *  CONTROLLERS
-                 */
-                Row(modifier = Modifier.fillMaxSize().weight(1f).clickable {
-                    // TO BIGGEST 255!!!
-                    PWMremember.value = 255
-                    if (PWMremember.value > maxPWM) {
-                        PWMremember.value = maxPWM
+            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+                // TO BIGGEST 255!!!
+                PWMremember.value = 255
+                if (PWMremember.value > maxPWM) {
+                    PWMremember.value = maxPWM
+                }
+                //pos.value = 1.0f
+                CoroutineScope(Dispatchers.IO).launch {
+                    selectorForChannels(index, PWMremember.value.toByte())
+                    if (isChangedFirstFourth) {
+                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+
+                    }else {
+                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+
                     }
-                    //pos.value = 1.0f
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+                    delay(100)
+                }
+            }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    text = "\u2191", // UP
+                    fontSize = 30.sp
+                )
+            }
 
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
-                    }
-                }, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) { Text("\u2191") }
-
-                Row(modifier = Modifier.fillMaxSize().weight(1f).clickable {
-                    // PLUS +1
-                    PWMremember.value = PWMremember.value + step
-                    if (PWMremember.value > maxPWM) {
-                        PWMremember.value = maxPWM
-                    }
-                    if (PWMremember.value > 255) {
-                        PWMremember.value = 255
-                    }
-                    println("WELL ${(PWMremember.value.toFloat())}")
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
-                    }
-                    //pos.value += 0.1f
-                }, horizontalArrangement = Arrangement.Center) { Text("+") }
-
-                Row(modifier = Modifier.fillMaxSize().weight(1f).clickable {
-                    // MINUS
-                    PWMremember.value = PWMremember.value - step
-                    if (PWMremember.value < 0) {
-                        PWMremember.value = 0
-                    }
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-                        }
-                    }
-                    //pos.value-= 0.1f
-                }, horizontalArrangement = Arrangement.Center) { Text("-") }
-
-                Row(modifier = Modifier.fillMaxSize().weight(1f).clickable {
-                    // Back to 0
+        }
+        Row(Modifier.fillMaxSize().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+                // MINUS
+                PWMremember.value = PWMremember.value - step
+                if (PWMremember.value < 0) {
                     PWMremember.value = 0
-                    //pos.value = 1.0f
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+                }
 
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
+                CoroutineScope(Dispatchers.IO).launch {
+                    selectorForChannels(index, PWMremember.value.toByte())
+                    //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
+                    if (isChangedFirstFourth) {
+                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+                    }else {
+                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
                     }
-                }, horizontalArrangement = Arrangement.Center) { Text("\u2193") }
+                }
+                //pos.value-= 0.1f
+            }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    text = "\u2212", // minus
+                    fontSize = 15.sp
+                )
+            }
+            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+                // Back to 0
+                PWMremember.value = 0
+                //pos.value = 1.0f
+                CoroutineScope(Dispatchers.IO).launch {
+                    selectorForChannels(index, PWMremember.value.toByte())
+                    //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
+                    if (isChangedFirstFourth) {
+                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+
+                    }else {
+                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+
+                    }
+                    delay(100)
+                }
+            }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                androidx.compose.material3.Text(
+                    text = "\u2193", // DOWN
+                    fontSize = 30.sp
+                )
             }
         }
     }
-
-
 }
