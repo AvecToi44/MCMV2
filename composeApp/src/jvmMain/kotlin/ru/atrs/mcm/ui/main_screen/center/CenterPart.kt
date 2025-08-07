@@ -61,6 +61,7 @@ import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.map
+import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
@@ -72,14 +73,14 @@ import ru.atrs.mcm.utils.txtOfScenario
 fun CenterPiece(
 ) {
     var sizeRow    by remember {mutableStateOf(Size.Zero)}
-    var pressure1X by remember { mutableStateOf(0) }
-    var pressure2X by remember { mutableStateOf(0) }
-    var pressure3X by remember { mutableStateOf(0) }
-    var pressure4X by remember { mutableStateOf(0) }
-    var pressure5X by remember { mutableStateOf(0) }
-    var pressure6X by remember { mutableStateOf(0) }
-    var pressure7X by remember { mutableStateOf(0) }
-    var pressure8X by remember { mutableStateOf(0) }
+    var pressure1X by remember { mutableStateOf(0f) }
+    var pressure2X by remember { mutableStateOf(0f) }
+    var pressure3X by remember { mutableStateOf(0f) }
+    var pressure4X by remember { mutableStateOf(0f) }
+    var pressure5X by remember { mutableStateOf(0f) }
+    var pressure6X by remember { mutableStateOf(0f) }
+    var pressure7X by remember { mutableStateOf(0f) }
+    var pressure8X by remember { mutableStateOf(0f) }
     val duration = MutableStateFlow(100L)
 
     val stateChart = remember { STATE_EXPERIMENT }
@@ -121,14 +122,14 @@ fun CenterPiece(
                 //longForChart.add(if (pressure1X > 1000) { 1000 } else pressure1X)
                 //longForChart.add(pressure1X)
 
-                pressure1X = map(it.firstGaugeData, 0, 4095, (pressures[0].minValue), (pressures[0].maxValue),)
-                pressure2X = map(it.secondGaugeData, 0, 4095, (pressures[1].minValue), (pressures[1].maxValue),)
-                pressure3X = map(it.thirdGaugeData, 0, 4095, (pressures[2].minValue), (pressures[2].maxValue),)
-                pressure4X = map(it.fourthGaugeData, 0, 4095, (pressures[3].minValue), (pressures[3].maxValue),)
-                pressure5X = map(it.fifthGaugeData, 0, 4095, (pressures[4].minValue), (pressures[4].maxValue),)
-                pressure6X = map(it.sixthGaugeData, 0, 4095, (pressures[5].minValue), (pressures[5].maxValue),)
-                pressure7X = map(it.seventhGaugeData, 0, 4095, (pressures[6].minValue), (pressures[6].maxValue),)
-                pressure8X = map(it.eighthGaugeData, 0, 4095, (pressures[7].minValue), (pressures[7].maxValue),)
+                pressure1X = mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),)
+                pressure2X = mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue),)
+                pressure3X = mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue),)
+                pressure4X = mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue),)
+                pressure5X = mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue),)
+                pressure6X = mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue),)
+                pressure7X = mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue),)
+                pressure8X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue),)
 
                 when (EXPLORER_MODE.value) {
                     ExplorerMode.AUTO -> {
@@ -139,14 +140,14 @@ fun CenterPiece(
                         ) {
                             count++
 
-                            arr1Measure.add(Pointer(x = incrementTime, y = pressure1X)) //it.firstGaugeData, ))
-                            arr2Measure.add(Pointer(x = incrementTime, y = pressure2X)) //it.secondGaugeData,))
-                            arr3Measure.add(Pointer(x = incrementTime, y = pressure3X)) //it.thirdGaugeData, ))
-                            arr4Measure.add(Pointer(x = incrementTime, y = pressure4X)) //it.fourthGaugeData,))
-                            arr5Measure.add(Pointer(x = incrementTime, y = pressure5X)) //it.fifthGaugeData, ))
-                            arr6Measure.add(Pointer(x = incrementTime, y = pressure6X)) //it.sixthGaugeData, ))
-                            arr7Measure.add(Pointer(x = incrementTime, y = pressure7X)) //it.seventhGaugeData))
-                            arr8Measure.add(Pointer(x = incrementTime, y = pressure8X)) //it.eighthGaugeData, ))
+                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //it.firstGaugeData, ))
+                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //it.secondGaugeData,))
+                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //it.thirdGaugeData, ))
+                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //it.fourthGaugeData,))
+                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //it.fifthGaugeData, ))
+                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //it.sixthGaugeData, ))
+                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //it.seventhGaugeData))
+                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //it.eighthGaugeData, ))
 
 //                            num = scenario[indexScenario].time
 //
@@ -180,11 +181,6 @@ fun CenterPiece(
                     }
                 }
             }
-
-//            dataChunkGauges.collect {
-//
-//
-//            }
         }
     }
     /**
@@ -377,7 +373,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure1X,
                                     (pressures[0].minValue),
-                                    (pressures[0].maxValue.toInt()),
+                                    (pressures[0].maxValue),
                                     type = "Бар",
                                     displayName = pressures[0].displayName,
                                     comment = pressures[0].commentString
@@ -392,7 +388,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure2X,
                                     (pressures[1].minValue),
-                                    (pressures[1].maxValue.toInt()),
+                                    (pressures[1].maxValue),
                                     type = "Бар",
                                     displayName = pressures[1].displayName,
                                     comment = pressures[1].commentString
@@ -409,7 +405,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure3X,
                                     (pressures[2].minValue),
-                                    (pressures[2].maxValue.toInt()),
+                                    (pressures[2].maxValue),
                                     type = "Бар",
                                     displayName = pressures[2].displayName,
                                     comment = pressures[2].commentString
@@ -425,7 +421,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure4X,
                                     (pressures[3].minValue),
-                                    (pressures[3].maxValue.toInt()),
+                                    (pressures[3].maxValue),
                                     type = "Бар",
                                     displayName = pressures[3].displayName,
                                     comment = pressures[3].commentString
@@ -441,7 +437,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure5X,
                                     (pressures[4].minValue),
-                                    (pressures[4].maxValue.toInt()),
+                                    (pressures[4].maxValue),
                                     type = "Бар",
                                     displayName = pressures[4].displayName,
                                     comment = pressures[4].commentString
@@ -457,7 +453,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure6X,
                                     (pressures[5].minValue),
-                                    (pressures[5].maxValue.toInt()),
+                                    (pressures[5].maxValue),
                                     type = "Бар",
                                     displayName = pressures[5].displayName,
                                     comment = pressures[5].commentString
@@ -473,7 +469,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure7X,
                                     (pressures[6].minValue),
-                                    (pressures[6].maxValue.toInt()),
+                                    (pressures[6].maxValue),
                                     type = "Бар",
                                     displayName = pressures[6].displayName,
                                     comment = pressures[6].commentString
@@ -489,7 +485,7 @@ fun CenterPiece(
                                     DpSize(columnHeightDp, columnHeightDp),
                                     pressure8X,
                                     (pressures[7].minValue),
-                                    (pressures[7].maxValue.toInt()),
+                                    (pressures[7].maxValue),
                                     type = "Бар",
                                     displayName = pressures[7].displayName,
                                     comment = pressures[7].commentString

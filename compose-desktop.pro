@@ -1,0 +1,4 @@
+-dontwarn java.awt.**,javax.activation.**,java.beans.**
+-dontwarn org.apache.poi.poifs.nio.**
+-dontwarn org.slf4j.**
+-ignorewarnings

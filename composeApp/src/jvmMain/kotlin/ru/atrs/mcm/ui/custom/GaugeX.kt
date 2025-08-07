@@ -30,6 +30,7 @@ import org.jetbrains.skia.Typeface
 import ru.atrs.mcm.ui.styles.colorTrans60
 import ru.atrs.mcm.ui.styles.fontDigital
 import ru.atrs.mcm.utils.map
+import ru.atrs.mcm.utils.mapFloat
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -47,11 +48,11 @@ private fun createBasePaint() {
 // progress from 0 to 100
 // raw progress 0 to 240 degree
 @Composable
-fun GaugeX(inputSize: DpSize, progress : Int, minType : Int, maxType: Int, type: String = "",displayName: String = "", comment: String = "",withoutSingMap: Boolean = true) {
+fun GaugeX(inputSize: DpSize, progress : Float, minType : Float, maxType: Float, type: String = "",displayName: String = "", comment: String = "",withoutSingMap: Boolean = true) {
     //println("well $progress ${minType} $maxType $type ~> ${checkInterval(map(progress, minType, maxType,0,240))}")
 
-    val signValue = if (withoutSingMap) progress else map(checkSignInterval(progress,0,4095) , 0,4095, minType, maxType)
-    val angle = map(signValue, minType, maxType,0,240)//checkInterval()
+    val signValue = if (withoutSingMap) progress else mapFloat(checkSignInterval(progress,0f,4095f) , 0f,4095f, minType, maxType)
+    val angle = mapFloat(signValue, minType, maxType,0f,240f)//checkInterval()
 
     val scope = rememberCoroutineScope()
     val animatedPercentage = remember { Animatable(angle.toFloat(), Float.VectorConverter) }
@@ -262,7 +263,7 @@ fun checkInterval(inputProgress: Int): Int {
     }
 }
 
-fun checkSignInterval(inp : Int, min: Int, max: Int): Int {
+fun checkSignInterval(inp : Float, min: Float, max: Float): Float {
 
     if (inp > max) {
         return max

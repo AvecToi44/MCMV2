@@ -19,6 +19,21 @@ fun getComPorts_JustString() : String{
 
 fun getComPorts_Array(): Array<out SerialPort>? = SerialPort.getCommPorts()
 
+fun onesAndTensFloat(onesRAW : UInt, tensRAW : UInt) : Float {
+    val ones = onesRAW//.toInt()
+    val tens = tensRAW//.toInt()
+
+    //println("${ones.toInt()} ${tens}")
+
+    return if (tens == 0u) {
+        //println("ones.toInt()")
+        ones.toFloat()
+    } else {
+        //println("( ones + tens * 256u ).toInt()")
+        ( ones + tens * 256u ).toFloat()
+    }
+}
+
 fun onesAndTens(onesRAW : UInt, tensRAW : UInt) : Int {
     val ones = onesRAW//.toInt()
     val tens = tensRAW//.toInt()
@@ -33,6 +48,7 @@ fun onesAndTens(onesRAW : UInt, tensRAW : UInt) : Int {
         ( ones + tens * 256u ).toInt()
     }
 }
+
 
 fun main() {
 

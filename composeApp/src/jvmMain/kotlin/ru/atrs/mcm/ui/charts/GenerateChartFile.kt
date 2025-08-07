@@ -8,7 +8,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 
-data class Pointer(val x: Int, val y: Int)
+data class Pointer(val x: Float, val y: Float)
 
 data class SaverChart(var arr: ArrayList<Pointer>, var isStandard: Boolean = false)
 
@@ -33,34 +33,34 @@ fun generateToChartFile(
 
 }
 
-fun getChartFromFile(file: File): ArrayList<Pointer> {
-    if (!file.exists() || !file.isFile) {
-        return arrayListOf()
-    }
-
-    var parsedArray = arrayListOf<Pointer>()
-    try {
-        // read lines in txt by Bufferreader
-
-        val br = BufferedReader(FileReader(file))
-        var line: String?
-
-        while (br.readLine().also { line = it } != null) {
-            if (line != "" || line != " ") {
-                val items = line?.split(";")?.toTypedArray()
-
-                if (items != null) {
-
-                    parsedArray.add(Pointer(x = items[0].toInt(),y = items[1].toInt()))
-
-                }
-            }
-        }
-
-        br.close()
-    } catch (e: Exception) {
-        showMeSnackBar("Error! ${e.message}")
-    }
-    return parsedArray
-}
-
+//fun getChartFromFile(file: File): ArrayList<Pointer> {
+//    if (!file.exists() || !file.isFile) {
+//        return arrayListOf()
+//    }
+//
+//    var parsedArray = arrayListOf<Pointer>()
+//    try {
+//        // read lines in txt by Bufferreader
+//
+//        val br = BufferedReader(FileReader(file))
+//        var line: String?
+//
+//        while (br.readLine().also { line = it } != null) {
+//            if (line != "" || line != " ") {
+//                val items = line?.split(";")?.toTypedArray()
+//
+//                if (items != null) {
+//
+//                    parsedArray.add(Pointer(x = items[0].toInt(),y = items[1].toInt()))
+//
+//                }
+//            }
+//        }
+//
+//        br.close()
+//    } catch (e: Exception) {
+//        showMeSnackBar("Error! ${e.message}")
+//    }
+//    return parsedArray
+//}
+//

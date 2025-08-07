@@ -107,14 +107,14 @@ var incrementTime = 0
 
 data class DataChunkG(
     var isExperiment: Boolean = false,
-    var firstGaugeData:   Int,
-    var secondGaugeData:  Int,
-    var thirdGaugeData:   Int,
-    var fourthGaugeData:  Int,
-    var fifthGaugeData:   Int,
-    var sixthGaugeData:   Int,
-    var seventhGaugeData: Int,
-    var eighthGaugeData:  Int
+    var firstGaugeData:   Float,
+    var secondGaugeData:  Float,
+    var thirdGaugeData:   Float,
+    var fourthGaugeData:  Float,
+    var fifthGaugeData:   Float,
+    var sixthGaugeData:   Float,
+    var seventhGaugeData: Float,
+    var eighthGaugeData:  Float
     )
 
 data class DataChunkCurrent(

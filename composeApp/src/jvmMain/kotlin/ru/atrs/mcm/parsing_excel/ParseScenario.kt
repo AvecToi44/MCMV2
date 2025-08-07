@@ -99,8 +99,8 @@ suspend fun targetParseScenario(inputScenario: File?) : Boolean {
             PressuresHolder(
                 displayName =  wholeSheet[2][it+1],
                 index =        wholeSheet[3][it+1].toFloat().toInt(),
-                minValue =     wholeSheet[4][it+1].toFloat().toInt(),
-                maxValue =     wholeSheet[5][it+1].toFloat().toInt(),
+                minValue =     wholeSheet[4][it+1].toFloat(),
+                maxValue =     wholeSheet[5][it+1].toFloat(),
                 tolerance =    wholeSheet[6][it+1].toFloat().toInt(),
                 unit =         wholeSheet[7][it+1],
                 commentString =wholeSheet[8][it+1],

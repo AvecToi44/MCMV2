@@ -16,6 +16,7 @@ import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.onesAndTens
+import ru.atrs.mcm.utils.onesAndTensFloat
 import ru.atrs.mcm.utils.toHexString
 
 
@@ -46,7 +47,7 @@ private var arrCurrRaw  = arrayListOf<ByteArray>()
 private var arrPressRaw = arrayListOf<ByteArray>()
 
 private var arrCurr =  arrayListOf<ArrayList<Int>>()
-private var arrPress = arrayListOf<ArrayList<Int>>()
+private var arrPress = arrayListOf<ArrayList<Float>>()
 private var start_time = 0L
 private var incr = 0
 var incrX = 0
@@ -105,15 +106,15 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
             }
             dch = DataChunkG(
                 isExperiment = (isExperimentStarts.value),
-                onesAndTens(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt()),
-                onesAndTens(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt()),
-                onesAndTens(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt()),
-                onesAndTens(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt()),
 
-                onesAndTens(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt()),
-                onesAndTens(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt()),
-                onesAndTens(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt()),
-                onesAndTens(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt())
+                onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt()),
+                onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt())
             )
 
 
@@ -152,15 +153,15 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
                 incrX++
             }
             dchCurr = DataChunkCurrent(
-                onesAndTens(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt() - 16u),
+                onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt() - 16u).toInt(),
 
-                onesAndTens(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt() - 16u),
-                onesAndTens(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt() - 16u)
+                onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt() - 16u).toInt()
             )
             //println("CURR  ${updData.joinToString()}||${dchCurr.toString()}")
             dataChunkCurrents.emit(dchCurr)

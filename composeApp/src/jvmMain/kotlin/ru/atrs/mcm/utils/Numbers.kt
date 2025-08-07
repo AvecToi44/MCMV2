@@ -15,6 +15,21 @@ fun rndTo2deci(num : Float) : Float{
 fun Int.to2ByteArray() : ByteArray = byteArrayOf(toByte(), shr(8).toByte())
 
 
+fun mapFloat(x: Float, in_min: Float, in_max: Float, out_min: Float, out_max: Float): Float {
+    //println("fun map ($x - $in_min) * ($out_max - $out_min) / ($in_max - $in_min) + $out_min")
+    var stable_X = x
+
+    if (x < in_min) {
+        stable_X = in_min
+    }
+    if (x > in_max) {
+        stable_X = in_max
+    }
+
+    return (stable_X - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+}
+
 fun map(x: Int, in_min: Int, in_max: Int, out_min: Int, out_max: Int): Int {
     //println("fun map ($x - $in_min) * ($out_max - $out_min) / ($in_max - $in_min) + $out_min")
     var stable_X = x
