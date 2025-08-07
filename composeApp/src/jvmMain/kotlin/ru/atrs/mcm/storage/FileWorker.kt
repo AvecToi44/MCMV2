@@ -2,6 +2,7 @@ package ru.atrs.mcm.storage
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.BAUD_RATE
@@ -35,6 +36,9 @@ import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.storage.models.ParameterCommon
+import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
+import ru.atrs.mcm.utils.Dir_10_ScenarioForChart
+import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import java.io.*
 
@@ -194,7 +198,7 @@ fun createMeasureExperiment() {
     if (arr1Measure.isEmpty())
         return
 
-    val fl = File(Dir2Reports, generateTimestampLastUpdate() +"_${OPERATOR_ID}"+"_chart.txt")
+    val fl = File(Dir11ForTargetingSaveNewExperiment,"${NAME_OF_NEW_EXPERIMENT}_${generateTimestampLastUpdate()}"+"_chart.txt")
     CoroutineScope(Dispatchers.Default).launch {
         //logInfo("createMeasureExperiment ${arr8Measure.joinToString()}")
 
@@ -203,7 +207,7 @@ fun createMeasureExperiment() {
         val bw = fl.bufferedWriter()
         try {
             // read lines in txt by Bufferreader
-            bw.write("#standard#${chartFileStandard.value.name}\n")
+            bw.write("#standard#${chartFileStandard.value?.name}\n")
             bw.write(
                 "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}"+
                     "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}\n"
@@ -236,9 +240,10 @@ fun createMeasureExperiment() {
         }catch (e: Exception){
             showMeSnackBar("Error! ${e.message}")
         }
+        delay(1200)
+        chartFileAfterExperiment.value = fl
+        doOpen_First_ChartWindow.value = true
     }
-    chartFileAfterExperiment.value = fl
-    doOpen_First_ChartWindow.value = true
 }
 
 fun readMeasuredExperiment(file: File) {

@@ -69,7 +69,7 @@ fun launchPlay() {
         indexScenario = 0
         num = scenario[indexScenario].time
         isAlreadyReceivedBytesForChart.value = false
-        logGarbage("ONON ${test_time} A")
+        logGarbage("Start Play ${test_time} A")
 
     } else {
         sound_Error()

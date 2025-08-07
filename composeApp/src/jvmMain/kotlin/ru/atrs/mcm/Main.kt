@@ -7,13 +7,9 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
@@ -23,12 +19,10 @@ import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.serial_port.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.pauseSerialComm
 import ru.atrs.mcm.storage.readParameters
-import ru.atrs.mcm.ui.charts.ChartWindowNew
-import ru.atrs.mcm.ui.charts.chartWindowV2
+import ru.atrs.mcm.ui.charts.ChartWindowDeprecated
+import ru.atrs.mcm.ui.chartsv3.AppChartV3
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.Dir1Configs
-import ru.atrs.mcm.utils.Dir2Reports
-import ru.atrs.mcm.utils.Dir3Scenarios
 import ru.atrs.mcm.utils.Dir4MainConfig_Txt
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
@@ -132,17 +126,20 @@ fun main() = application {
             if (!isHaveConn) {
                 showMeSnackBar("NO Connect to ${COM_PORT} !!", Color.Red)
             }
-//            chartWindowV2()
+//            AppChartV3().WindowChartsV3()
             App()
 
             if (EXPLORER_MODE.value == ExplorerMode.AUTO) {
                 if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
-                    ChartWindowNew(withStandard = true).chartWindow()
+                    AppChartV3().WindowChartsV3()
                 }
+//                if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
+//                    ChartWindowDeprecated(withStandard = true).chartWindow()
+//                }
             }
 
             if (doOpenNewWindowInternal2.value) {
-                ChartWindowNew(withStandard = true, isViewerOnly = true).chartWindow()
+                ChartWindowDeprecated(withStandard = true, isViewerOnly = true).chartWindow()
             }
         }
     }

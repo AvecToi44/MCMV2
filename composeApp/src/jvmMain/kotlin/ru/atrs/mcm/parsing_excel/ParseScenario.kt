@@ -7,7 +7,10 @@ import org.apache.poi.ss.usermodel.Row
 import ru.atrs.mcm.parsing_excel.models.PressuresHolder
 import ru.atrs.mcm.parsing_excel.models.ScenarioStep
 import ru.atrs.mcm.parsing_excel.models.SolenoidHolder
+import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir7ReportsStandard
+import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
+import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logInfo
@@ -18,13 +21,13 @@ import java.io.File
 import java.io.FileInputStream
 
 var wholeSheet = mutableListOf<MutableList<String>>()
-suspend fun targetParseScenario(inputScenario: File?) : Boolean {
+suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
 
-    if (inputScenario == null)
+    if (inputScenarioFile == null)
         return false
     var needReWriteStandard = false
 
-    val file = FileInputStream(inputScenario)
+    val file = FileInputStream(inputScenarioFile)
     //creating workbook instance that refers to .xls file
     val wb = HSSFWorkbook(file)
     //creating a Sheet object to retrieve the object
@@ -73,13 +76,7 @@ suspend fun targetParseScenario(inputScenario: File?) : Boolean {
     pressures.clear()
     scenario.clear()
 
-    // Fill file address to Standard chart, Эталон . txt
-    val standard = File(Dir7ReportsStandard, wholeSheet[0][0])
-    if ( !standard.name.endsWith("txt") ) {
-        needReWriteStandard = true
-    } else {
-        chartFileStandard.value = File(Dir7ReportsStandard, standard.name)
-    }
+
 
 
     repeat(8) {
@@ -194,14 +191,26 @@ suspend fun targetParseScenario(inputScenario: File?) : Boolean {
         )
     }
 
+    // Create folder with name of EXCEL, coz name of EXCEL == name of experiment
+    File(Dir2Reports,inputScenarioFile.nameWithoutExtension).mkdirs()
 
+    NAME_OF_NEW_EXPERIMENT = inputScenarioFile.nameWithoutExtension
+    Dir11ForTargetingSaveNewExperiment = File(Dir2Reports,NAME_OF_NEW_EXPERIMENT)
+
+    // Fill file address to Standard chart, Эталон . txt
+    val standard = File(Dir7ReportsStandard, wholeSheet[0][0])
+    if ( !standard.name.endsWith("txt") ) {
+        needReWriteStandard = true
+    } else {
+        chartFileStandard.value = File(Dir11ForTargetingSaveNewExperiment, standard.name)
+    }
 
     println("scenario steps: ${scenario.joinToString()}")
 
     file.close()
     wholeSheet.clear()
-    if (needReWriteStandard) {
-        writeToExcel(0, 0, chartFileStandard.value.name)
-    }
+//    if (needReWriteStandard) {
+//        writeToExcel(0, 0, chartFileStandard.value.name)
+//    }
     return true
 }

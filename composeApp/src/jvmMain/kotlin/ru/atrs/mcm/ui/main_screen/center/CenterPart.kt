@@ -177,10 +177,7 @@ fun CenterPiece(
 
                         }
                     }
-
-                    ExplorerMode.MANUAL -> {
-                        // without recording
-                    }
+                    ExplorerMode.MANUAL -> { /** without recording */ }
                 }
             }
         }
@@ -362,7 +359,6 @@ fun CenterPiece(
                         item {
                             Box(Modifier
                                 .aspectRatio(1f)
-                                .background(Color.Red)
                                 .onGloballyPositioned { coordinates ->
                                     // Set column height using the LayoutCoordinates
                                     if (coordinates.size.width != 0) {

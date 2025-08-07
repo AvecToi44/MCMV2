@@ -64,7 +64,7 @@ import javax.swing.JPanel
 
 data class SeriesChart( var xySeries: XYSeries, var isVisible: Boolean )
 
-class ChartWindowNew(var withStandard: Boolean = false, val isViewerOnly: Boolean = false) {
+class ChartWindowDeprecated(var withStandard: Boolean = false, val isViewerOnly: Boolean = false) {
     val dataset = XYSeriesCollection()
 
     private val series1 = XYSeries("Давление 1")
@@ -170,7 +170,7 @@ class ChartWindowNew(var withStandard: Boolean = false, val isViewerOnly: Boolea
                     }
                     delay(100)
 
-                    writeToExcel(0,0, chartFileStandard.value.name)
+                    writeToExcel(0,0, chartFileStandard.value!!.name)
 
                 }
         },
@@ -194,7 +194,7 @@ class ChartWindowNew(var withStandard: Boolean = false, val isViewerOnly: Boolea
 
     private suspend fun fillUp() {
         STATE_EXPERIMENT.value = StateExperiments.PREPARE_CHART
-        logAct("fillUp chart ${chartFileAfterExperiment.value.name}  ${chartFileStandard.value.name}")
+        logAct("fillUp chart ${chartFileAfterExperiment.value.name}  ${chartFileStandard.value!!.name}")
 
         logGarbage(">>>1")
 
@@ -350,7 +350,7 @@ class ChartWindowNew(var withStandard: Boolean = false, val isViewerOnly: Boolea
                             if(it != null) {
                                 chartFileStandard.value = it
                                 CoroutineScope(Dispatchers.Default).launch {
-                                    writeToExcel(0,0, chartFileStandard.value.name)
+                                    writeToExcel(0,0, chartFileStandard.value!!.name)
                                 }
 
                             }
@@ -361,7 +361,7 @@ class ChartWindowNew(var withStandard: Boolean = false, val isViewerOnly: Boolea
                         }
 
                     }){
-                        Text("Эталон(${sizeStandard}): ${standardFile.value.name}", modifier = Modifier.padding(0.dp).align(Alignment.Center),
+                        Text("Эталон(${sizeStandard}): ${standardFile.value!!.name}", modifier = Modifier.padding(0.dp).align(Alignment.Center),
                             fontFamily = FontFamily.Default, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color.Black
                         )
                     }
