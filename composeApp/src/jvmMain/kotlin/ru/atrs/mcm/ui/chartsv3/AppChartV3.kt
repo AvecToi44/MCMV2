@@ -303,7 +303,7 @@ fun ToggleSeriesButtons(
                     .clickable { onChange(visibility.toMutableList().apply { this[idx] = !this[idx] }) }
                     .padding(8.dp)
             ) {
-                Text("Ch$idx", fontSize = 14.sp, color = Color.White)
+                Text("Ch${idx+1}", fontSize = 14.sp, color = Color.White)
             }
         }
     }
