@@ -18,7 +18,9 @@ import ru.atrs.mcm.ui.App
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.serial_port.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.pauseSerialComm
+import ru.atrs.mcm.storage.initialize
 import ru.atrs.mcm.storage.readParameters
+import ru.atrs.mcm.storage.readParametersJson
 import ru.atrs.mcm.ui.charts.ChartWindowDeprecated
 import ru.atrs.mcm.ui.chartsv3.AppChartV3
 import ru.atrs.mcm.utils.COM_PORT
@@ -31,7 +33,6 @@ import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.generateTimestampLastUpdate
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.indexOfScenario
-import ru.atrs.mcm.utils.initialize
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.txtOfScenario
@@ -40,7 +41,7 @@ import kotlin.concurrent.fixedRateTimer
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    initialize(readParameters(Dir4MainConfig_Txt))
+    initialize(readParametersJson())
 
     val windowStateFullscreen = rememberWindowState(
         placement = if (SHOW_FULLSCREEN) WindowPlacement.Maximized else WindowPlacement.Floating

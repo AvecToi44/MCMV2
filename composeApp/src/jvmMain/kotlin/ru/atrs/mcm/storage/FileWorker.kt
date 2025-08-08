@@ -75,7 +75,7 @@ fun createDemoConfigFile() : File {
 fun readParameters(file: File) : List<ParameterCommon> {
     logAct("readParameters")
     if (!file.exists()) {
-        refreshParameters()
+        refreshJsonParameters()
     }
 
     //val PCListSerializer: KSerializer<List<ParameterCommonJson>> = ListSerializer(ParameterCommonJson.serializer())
@@ -112,6 +112,7 @@ fun readParameters(file: File) : List<ParameterCommon> {
                             listParams.add(ParameterCommon(name = "delay_before_chart", value = items[1]))
                         }
                         "save_log" -> { listParams.add(ParameterCommon(name = "save_log", value = items[1])) }
+
                         "isFullscreenEnabled" -> { listParams.add(ParameterCommon(name = "isFullscreenEnabled", value = items[1])) }
                     }
                 }
@@ -127,7 +128,7 @@ fun readParameters(file: File) : List<ParameterCommon> {
     return listParams
 }
 
-fun refreshParameters() {
+fun refreshParametersDeprecated() {
     logAct("createParameters")
     //"comport" -> COM_P
     //"baudrate" -> BAUD

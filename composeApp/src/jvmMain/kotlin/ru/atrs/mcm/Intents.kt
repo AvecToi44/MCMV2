@@ -12,7 +12,7 @@ import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.storage.PickTarget
 import ru.atrs.mcm.storage.openPicker
-import ru.atrs.mcm.storage.refreshParameters
+import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.ui.navigation.Screens
 import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir3Scenarios
@@ -102,7 +102,7 @@ fun openNewScenario(isRefreshForChart: Boolean = false) {
         } else {
             // open new scenario
             isAlreadyReceivedBytesForChart.value = false
-            refreshParameters()
+            refreshJsonParameters()
             if (!targetParseScenario(openPicker(Dir3Scenarios))) {
                 showMeSnackBar("Ошибка при парсинге xls", Color.Red)
             }else {

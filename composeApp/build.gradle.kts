@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("plugin.serialization") version "2.2.0"
 }
 
 kotlin {
@@ -32,6 +32,7 @@ kotlin {
             implementation("org.jfree:jfreechart:1.5.3")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
             implementation("io.github.thechance101:chart:1.1.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
         }
         commonTest.dependencies {

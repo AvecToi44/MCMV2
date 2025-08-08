@@ -39,7 +39,6 @@ class PacketListener : SerialPortPacketListener {
             //println("${newData.toHexString()}")
             coreParse(newData)
         }
-
     }
 }
 
@@ -117,9 +116,9 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
                 onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt())
 
                 //onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt()),
-                //                onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()),
-                //                onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())
-                //                onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())
+                //onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()),
+                //onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())
+                //onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())
             )
 
 

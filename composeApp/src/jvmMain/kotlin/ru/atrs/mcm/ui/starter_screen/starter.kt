@@ -22,8 +22,8 @@ import kotlinx.coroutines.delay
 import ru.atrs.mcm.openChartViewer
 import ru.atrs.mcm.openLastScenario
 import ru.atrs.mcm.openNewScenario
+import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.ui.screenNav
-import ru.atrs.mcm.storage.refreshParameters
 import ru.atrs.mcm.ui.navigation.Screens
 import ru.atrs.mcm.ui.styles.fontRoboGirls
 import ru.atrs.mcm.utils.BAUD_RATE
@@ -90,7 +90,7 @@ fun StarterScreen() {
                     onValueChange = {
                         textState.value = it
                         OPERATOR_ID = it
-                        refreshParameters()
+                        refreshJsonParameters()
                     },
                     textStyle = TextStyle.Default.copy(fontSize = 35.sp)
                 )
@@ -207,7 +207,7 @@ fun StarterScreen() {
                                                 choosenCOM.value = it
                                                 COM_PORT = arrayOfComPorts[it].systemPortName
                                                 logAct("DropdownMenu click ${COM_PORT}")
-                                                refreshParameters()
+                                                refreshJsonParameters()
                                             }))
 
                                     }
@@ -312,12 +312,12 @@ fun StarterScreen() {
                                 ) {
                                     Text("ERRORS",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         LOG_LEVEL = LogLevel.ERRORS
-                                        refreshParameters()
+                                        refreshJsonParameters()
                                         expandedLogs = false
                                     })  .fillMaxSize().padding(10.dp))
                                     Text("DEBUG",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         LOG_LEVEL = LogLevel.DEBUG
-                                        refreshParameters()
+                                        refreshJsonParameters()
                                         expandedLogs = false
                                     })  .fillMaxSize().padding(10.dp))
 
@@ -343,7 +343,7 @@ fun StarterScreen() {
                                 onCheckedChange = {
                                     checkedState.value = it
                                     SHOW_FULLSCREEN = it
-                                    refreshParameters()
+                                    refreshJsonParameters()
                                 }
                             )
                         }
