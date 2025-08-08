@@ -30,7 +30,7 @@ class PacketListener : SerialPortPacketListener {
     }
 
     override fun getPacketSize(): Int {
-        return 16
+        return 16 // 24?
     }
 
     override fun serialEvent(event: SerialPortEvent) {
@@ -115,6 +115,11 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
                 onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt()),
                 onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt()),
                 onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt())
+
+                //onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt()),
+                //                onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()),
+                //                onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())
+                //                onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())
             )
 
 
