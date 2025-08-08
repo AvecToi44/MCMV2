@@ -168,7 +168,7 @@ fun App() {
         // File selectors
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
                 FileButton("File 1", path1, listOf(path1, path2, path3)) { path1 = it }

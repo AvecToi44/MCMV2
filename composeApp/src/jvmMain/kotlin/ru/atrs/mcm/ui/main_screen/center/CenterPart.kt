@@ -498,7 +498,7 @@ fun CenterPiece(
 
         }
         if(!isHideCurrents.value) {
-            Row(Modifier.fillMaxSize().weight(2f), horizontalArrangement = Arrangement.SpaceAround) {
+            Row(Modifier.fillMaxSize().weight(1.5f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                     if (isExperimentStarts.value) {

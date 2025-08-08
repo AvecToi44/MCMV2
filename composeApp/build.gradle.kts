@@ -51,8 +51,9 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ru.atrs.mcm"
             packageVersion = "1.2.11"
+            packageName = "MCM (${packageVersion})"
+
         }
         buildTypes.release {
             proguard {
