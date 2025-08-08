@@ -52,52 +52,6 @@ fun main() = application {
         title = "MCM [${generateTimestampLastUpdate()}]",
         state = if (SHOW_FULLSCREEN) windowStateFullscreen else windowFloating,
 //        icon = painterResource("drawable/ava.png"),
-        onKeyEvent = {
-             if ( it.key == Key.DirectionRight && it.type == KeyEventType.KeyUp) {
-
-                //shiftIsPressed = true
-
-                 CoroutineScope(Dispatchers.IO).launch {
-                     indexOfScenario.value++
-
-                     comparatorToSolenoid(indexOfScenario.value)
-
-                     //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                     scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-                 }
-                 true
-            } else if (it.key == Key.DirectionLeft &&  it.type == KeyEventType.KeyUp) {
-                //shiftIsPressed = false
-                 indexOfScenario.value--
-                 CoroutineScope(Dispatchers.IO).launch {
-
-                     comparatorToSolenoid(indexOfScenario.value)
-                 }
-                 scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-                true
-            }else if (it.key == Key.CtrlLeft && it.key == Key.Spacebar &&  it.type == KeyEventType.KeyDown) {
-                 //shiftIsPressed = false
-                 launchPlay()
-                 true
-            }else if (it.key == Key.N &&  it.type == KeyEventType.KeyDown && it.key == Key.CtrlLeft) {
-                 //shiftIsPressed = false
-                 openNewScenario()
-                 true
-            }else if (it.key == Key.L &&  it.type == KeyEventType.KeyDown && it.key == Key.CtrlLeft) {
-                 //shiftIsPressed = false
-                 openLastScenario()
-                 true
-            }else if (it.key == Key.V &&  it.type == KeyEventType.KeyDown && it.key == Key.CtrlLeft) {
-                 //shiftIsPressed = false
-                 openChartViewer()
-                 true
-            }
-
-             else {
-                // let other handlers receive this event
-                false
-            }
-        },
         onCloseRequest = {
             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                 pauseSerialComm()
