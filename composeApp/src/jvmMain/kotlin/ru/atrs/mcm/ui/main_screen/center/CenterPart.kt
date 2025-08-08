@@ -44,6 +44,7 @@ import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GLOBAL_STATE
+import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.arr1Measure
 import ru.atrs.mcm.utils.arr2Measure
@@ -60,13 +61,10 @@ import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logGarbage
-import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
-import ru.atrs.mcm.utils.solenoids
 import ru.atrs.mcm.utils.test_time
-import ru.atrs.mcm.utils.toTwoDecimals
 import ru.atrs.mcm.utils.txtOfScenario
 
 
@@ -87,7 +85,7 @@ fun CenterPiece(
     val stateChart = remember { STATE_EXPERIMENT }
     val explMode = remember { EXPLORER_MODE }
     val expandedCom = remember { mutableStateOf(false) }
-    val isHideCurrents = remember { mutableStateOf(false) }
+    val showBottomPanel = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
 
     val txt = remember { txtOfScenario }
 
@@ -497,7 +495,7 @@ fun CenterPiece(
             )
 
         }
-        if(!isHideCurrents.value) {
+        if(showBottomPanel.value) {
             Row(Modifier.fillMaxSize().weight(1.5f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
@@ -638,7 +636,8 @@ fun CenterPiece(
                     )
 
                     Box(Modifier.clickable {
-                        isHideCurrents.value = !isHideCurrents.value
+                        showBottomPanel.value = !showBottomPanel.value
+                        SHOW_BOTTOM_PANEL = showBottomPanel.value
                     }) {
                         Text(
                             "Hide Currents⚡️",
@@ -746,7 +745,8 @@ fun CenterPiece(
                 }
 
                 Box(Modifier.clickable {
-                    isHideCurrents.value = !isHideCurrents.value
+                    showBottomPanel.value = !showBottomPanel.value
+                    SHOW_BOTTOM_PANEL = showBottomPanel.value
                 }) {
                     Text(
                         "Open Currents⚡️",
