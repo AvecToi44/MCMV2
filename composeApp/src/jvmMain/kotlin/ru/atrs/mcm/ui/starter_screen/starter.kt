@@ -31,9 +31,11 @@ import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.OPERATOR_ID
 import ru.atrs.mcm.utils.LOG_LEVEL
 import ru.atrs.mcm.utils.LogLevel
+import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
 import ru.atrs.mcm.utils.arrayOfComPorts
+import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.logAct
 
@@ -133,8 +135,8 @@ fun StarterScreen() {
 
             Box(Modifier.width(200.dp).border(BorderStroke(2.dp, Color.Blue))
                 .clickable {
-                   openChartViewer()
-
+//                   openChartViewer()
+                    doOpen_Second_ChartWindow.value = true
                 }) {
                 Text("Open Chart",
                     modifier = Modifier.padding(4.dp), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
@@ -331,8 +333,6 @@ fun StarterScreen() {
                             Text("Enable Fullscreen",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
-
-
                             val checkedState = remember { mutableStateOf(SHOW_FULLSCREEN) }
                             Checkbox(
                                 checked = checkedState.value,
@@ -349,28 +349,49 @@ fun StarterScreen() {
                         }
 
                     }
+                    item {
+                        Row {
+                            Text("Show bottom panel",
+                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                            val checkedState = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
+                            Checkbox(
+                                checked = checkedState.value,
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = Color.Blue,
+                                    uncheckedColor = Color.Gray
+                                ),
+                                onCheckedChange = {
+                                    checkedState.value = it
+                                    SHOW_BOTTOM_PANEL = it
+                                    refreshJsonParameters()
+                                }
+                            )
+                        }
+
+                    }
                 }
                 }
 
-                Column(Modifier.width(600.dp).verticalScroll(rememberScrollState())) {
-                    Row(Modifier.width(600.dp)) {
-                        Text("⌨️\uD83D\uDD25Hot Keys:" +
-                                "\n [ctrl + N] - new experiment" +
-                                "\n [ctrl + L] - later experiment" +
-                                "\n [ctrl + V] - open viewer" +
-                                "\n [ctrl + Space] - start experiment" +
-                                "\n [<-] - previous scenario" +
-                                "\n [->] - next scenario" +
-                                "",
-                            modifier = Modifier.fillMaxSize().clickable {
-                            },
-                            fontSize = 24.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
+//                Column(Modifier.width(600.dp).verticalScroll(rememberScrollState())) {
+//                    Row(Modifier.width(600.dp)) {
+//                        Text("⌨️\uD83D\uDD25Hot Keys:" +
+//                                "\n [ctrl + N] - new experiment" +
+//                                "\n [ctrl + L] - later experiment" +
+//                                "\n [ctrl + V] - open viewer" +
+//                                "\n [ctrl + Space] - start experiment" +
+//                                "\n [<-] - previous scenario" +
+//                                "\n [->] - next scenario" +
+//                                "",
+//                            modifier = Modifier.fillMaxSize().clickable {
+//                            },
+//                            fontSize = 24.sp,
+//                            fontFamily = FontFamily.Monospace,
+//                            color = Color.White,
+//                            textAlign = TextAlign.Center
+//                        )
+//                    }
+//                }
 
 
             }

@@ -17,6 +17,7 @@ import ru.atrs.mcm.utils.logAct
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import kotlinx.serialization.Serializable
+import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import java.io.File
 
 @Serializable
@@ -56,6 +57,7 @@ fun initialize(params: List<ParameterCommon>) {
             "delay_before_chart" -> DELAY_BEFORE_CHART = param.value.toIntOrNull() ?: 0
 //            "save_log" -> LOG_LEVEL = param.value.toIntOrNull() ?: 0
             "isFullscreenEnabled" -> SHOW_FULLSCREEN = param.value.toBoolean()
+            "isBottomPanelShow" -> SHOW_BOTTOM_PANEL = param.value.toBoolean()
         }
     }
 }
@@ -72,7 +74,8 @@ fun refreshJsonParameters() {
         ParameterCommon("last_scenario", LAST_SCENARIO.absolutePath),
         ParameterCommon("delay_before_chart", DELAY_BEFORE_CHART.toString()),
         ParameterCommon("save_log", LOG_LEVEL.toString()),
-        ParameterCommon("isFullscreenEnabled", SHOW_FULLSCREEN.toString())
+        ParameterCommon("isFullscreenEnabled", SHOW_FULLSCREEN.toString()),
+        ParameterCommon("isBottomPanelShow", SHOW_BOTTOM_PANEL.toString())
     )
     try {
         val jsonText = Json.encodeToString(ListSerializer(ParameterCommon.serializer()), params)

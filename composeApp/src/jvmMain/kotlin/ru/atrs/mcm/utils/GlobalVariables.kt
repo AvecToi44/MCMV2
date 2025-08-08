@@ -53,6 +53,7 @@ var DELAY_BEFORE_CHART = 2000
 var LOG_LEVEL : LogLevel= LogLevel.DEBUG // from 0 NO logs, and 2 is super detailed logs
 enum class LogLevel { ERRORS, DEBUG }
 var SHOW_FULLSCREEN = false
+var SHOW_BOTTOM_PANEL = true
 
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()
