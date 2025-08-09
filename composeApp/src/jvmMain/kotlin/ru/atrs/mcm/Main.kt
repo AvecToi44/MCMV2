@@ -89,7 +89,7 @@ fun main() = application {
 
             if (EXPLORER_MODE.value == ExplorerMode.AUTO) {
                 if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
-                    AppChartV3().WindowChartsV3()
+                    AppChartV3().WindowChartsV3(analysisAfterExperiment = true)
                 }
 //                if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
 //                    ChartWindowDeprecated(withStandard = true).chartWindow()
@@ -97,7 +97,7 @@ fun main() = application {
             }
 
             if (doOpenNewWindowInternal2.value) {
-                AppChartV3().WindowChartsV3()
+                AppChartV3().WindowChartsV3(analysisAfterExperiment = false)
             }
 //            if (doOpenSettingsWindowInternal2.value) {
 //                Window(

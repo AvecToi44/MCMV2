@@ -40,6 +40,7 @@ import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.Dir_10_ScenarioForChart
 import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
+import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arr10Measure
 import ru.atrs.mcm.utils.arr11Measure
 import ru.atrs.mcm.utils.arr12Measure
@@ -60,11 +61,17 @@ fun createMeasureExperiment() {
         fl.createNewFile()
         val bw = fl.bufferedWriter()
         try {
-            // read lines in txt by Bufferreader
+            // write lines in txt by Bufferreader
+            // standard file
             bw.write("#standard#${chartFileStandard.value?.name}\n")
+            // visibility
+            val twelveChannels = if (TWELVE_CHANNELS_MODE) {
+                "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
+            } else ""
+
             bw.write(
                 "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}"+
-                    "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}\n"
+                    "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}${twelveChannels}\n"
             )
             bw.write("#\n")
             repeat(arr1Measure.size-1) {
@@ -78,11 +85,16 @@ fun createMeasureExperiment() {
                     "${arr7Measure[it].x};${arr7Measure[it].y}|"+
                     "${arr8Measure[it].x};${arr8Measure[it].y}|"
 
-                val newStrokeFor12 =
-                    "${arr9Measure[it].x};${arr9Measure[it].y}|"+
-                    "${arr10Measure[it].x};${arr10Measure[it].y}|"+
-                    "${arr11Measure[it].x};${arr11Measure[it].y}|"+
-                    "${arr12Measure[it].x};${arr12Measure[it].y}"
+
+                var newStrokeFor12 = ""
+
+                if (TWELVE_CHANNELS_MODE) {
+                    newStrokeFor12 =
+                        "${arr9Measure[it].x};${arr9Measure[it].y}|" +
+                        "${arr10Measure[it].x};${arr10Measure[it].y}|" +
+                        "${arr11Measure[it].x};${arr11Measure[it].y}|" +
+                        "${arr12Measure[it].x};${arr12Measure[it].y}|"
+                }
 
                 logInfo("newStroke= ${newStroke}")
                 bw.write("${newStroke}${newStrokeFor12}\n")

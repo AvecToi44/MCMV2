@@ -69,6 +69,8 @@ var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBuf
 
 val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255
+
+var TWELVE_CHANNELS_MODE = false
 ////////////////////////////////////////////////////
 var arr1Measure = arrayListOf<Pointer>()
 var arr2Measure = arrayListOf<Pointer>()

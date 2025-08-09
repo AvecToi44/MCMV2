@@ -47,6 +47,7 @@ import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GLOBAL_STATE
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
+import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arr10Measure
 import ru.atrs.mcm.utils.arr11Measure
 import ru.atrs.mcm.utils.arr12Measure
@@ -129,29 +130,26 @@ fun CenterPiece(
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-                mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),).let { pressure1X = it }
+                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { pressure1X = it }.takeIf { pressures.size >= 1 }
+                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { pressure2X = it }.takeIf { pressures.size >= 2 }
+                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { pressure3X = it }.takeIf { pressures.size >= 3 }
+                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { pressure4X = it }.takeIf { pressures.size >= 4 }
+                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { pressure5X = it }.takeIf { pressures.size >= 5 }
+                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { pressure6X = it }.takeIf { pressures.size >= 6 }
+                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { pressure7X = it }.takeIf { pressures.size >= 7 }
+                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { pressure8X = it }.takeIf { pressures.size >= 8 }
 
-//                pressure1X = mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),)
-                pressure2X = mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue))
-                pressure3X = mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue))
-                pressure4X = mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue))
-                pressure5X = mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue))
-                pressure6X = mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue))
-                pressure7X = mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue))
-                pressure8X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue))
+                if (TWELVE_CHANNELS_MODE) {
+                    if (pressures.getOrNull(8)  != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[8].minValue),    (pressures[8].maxValue)).let { pressure9X = it })}
+                    if (pressures.getOrNull(9)  != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[9].minValue),   (pressures[9].maxValue)).let { pressure10X = it })}
+                    if (pressures.getOrNull(10) != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue)).let { pressure11X = it })}
+                    if (pressures.getOrNull(11) != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
+                }
 
-                if (pressures.getOrNull(8) != null) {
-                    pressure9X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[8].minValue), (pressures[8].maxValue))
-                }
-                if (pressures.getOrNull(9) != null) {
-                    pressure10X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[9].minValue), (pressures[9].maxValue))
-                }
-                if (pressures.getOrNull(10) != null) {
-                    pressure11X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue))
-                }
-                if (pressures.getOrNull(11) != null) {
-                    pressure12X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue))
-                }
+
+
+
+
                 when (EXPLORER_MODE.value) {
                     ExplorerMode.AUTO -> {
                         //logGarbage("konec ${}")

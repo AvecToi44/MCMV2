@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -23,9 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.atrs.mcm.utils.chartFileAfterExperiment
@@ -67,18 +65,17 @@ import kotlin.takeIf
 import kotlin.text.endsWith
 import kotlin.text.split
 import kotlin.text.startsWith
-import kotlin.text.toDoubleOrNull
 import kotlin.text.toIntOrNull
 
 class AppChartV3 {
     @Composable
-    fun WindowChartsV3() {
+    fun WindowChartsV3(analysisAfterExperiment : Boolean = false) {
         Window(
             title = "ChartViewer V3",
             state = WindowState(size = DpSize(1200.dp, 800.dp)),
             onCloseRequest = { doOpen_First_ChartWindow.value = false }
         ) {
-            App()
+            App(analysisAfterExperiment = analysisAfterExperiment)
         }
     }
 }
@@ -90,62 +87,91 @@ data class ChartData(
     val series: List<List<Point<Float, Float>>>,
     val visibility: List<Boolean>
 )
-
+private var COUNT_OF_CHANNELS_CHART_1 = 12
+private var COUNT_OF_CHANNELS_CHART_2 = 12
+private var COUNT_OF_CHANNELS_CHART_3 = 12
 // --- Suspend parser runs on IO dispatcher ---
-suspend fun parseChartFile(path: String): ChartData? = withContext(Dispatchers.IO) {
+suspend fun parseChartFile(path: String, countOfChannels: Int): ChartData? = withContext(Dispatchers.IO) {
     try {
         val lines = File(path).bufferedReader().useLines { it.toList() }
         if (lines.size < 2) return@withContext null
-
+//        println(">>>>>>>> parseChartFile")
+//        COUNT_OF_CHANNELS = countPairs(lines[5])
+//        delay(700)
+        println(">>>>>>>> parseChartFile  2")
         val visibility = lines[1]
             .split("#")
             .drop(2)
             .mapNotNull { it.toIntOrNull() }
             .map { it == 1 }
-            .take(8)
-
+            .take(countOfChannels)
+        println(">>>>>>>> parseChartFile   3 ${visibility.joinToString()}")
         val dataLines = lines.dropWhile { it.startsWith("#") }
-        val floatSeries = List(8) { mutableListOf<Point<Float, Float>>() }
+        val floatSeries = List(countOfChannels) { mutableListOf<Point<Float, Float>>() }
         dataLines.forEach { line ->
             line.split("|").mapNotNull { seg ->
                 seg.split(";").takeIf { it.size == 2 }?.let { (xs, ys) ->
-                    xs.toDoubleOrNull()?.toFloat()?.let { x ->
-                        ys.toDoubleOrNull()?.toFloat()?.let { y ->
+                    xs.toFloatOrNull()?.let { x ->
+                        ys.toFloatOrNull()?.let { y ->
                             Point(x, y)
                         }
                     }
                 }
             }.forEachIndexed { i, p -> if (i < floatSeries.size) floatSeries[i].add(p) }
         }
+        println(">>>>>>>> parseChartFile   4")
         ChartData(floatSeries, visibility)
     } catch (e: Exception) {
         e.printStackTrace(); null
     }
 }
+fun countPairs(input: String): Int = input.split("|").count { it.isNotEmpty() && it.contains(";") }
 
 @Composable
 @Preview
-fun App() {
+fun App(analysisAfterExperiment : Boolean = false) {
     // file paths
-    var path1 by remember { mutableStateOf<String?>(chartFileAfterExperiment.value.absolutePath) }
-    var path2 by remember { mutableStateOf<String?>(chartFileStandard.value?.absolutePath ?: null) }
+    var path1 by remember { mutableStateOf<String?>(if (analysisAfterExperiment) chartFileAfterExperiment.value.absolutePath else null) }
+    var path2 by remember { mutableStateOf<String?>(if (analysisAfterExperiment) chartFileStandard.value?.absolutePath       else null) }
     var path3 by remember { mutableStateOf<String?>(null) }
 
     // load data asynchronously
     val data1 by produceState<ChartData?>(initialValue = null, path1) {
-        value = path1?.let { parseChartFile(it) }
+        value = path1?.let {
+            val lines = File(it).bufferedReader().useLines { it.toList() }
+            if (lines.size < 2) return@produceState
+            println(">>>>>>>> parseChartFile")
+            COUNT_OF_CHANNELS_CHART_1 = countPairs(lines[5])
+            delay(1000)
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_1)
+        }
     }
     val data2 by produceState<ChartData?>(initialValue = null, path2) {
-        value = path2?.let { parseChartFile(it) }
+        value = path2?.let {
+            val lines = File(it).bufferedReader().useLines { it.toList() }
+            if (lines.size < 2) return@produceState
+            println(">>>>>>>> parseChartFile")
+            COUNT_OF_CHANNELS_CHART_2 = countPairs(lines[5])
+            delay(1000)
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_2)
+        }
     }
     val data3 by produceState<ChartData?>(initialValue = null, path3) {
-        value = path3?.let { parseChartFile(it) }
+        value = path3?.let {
+            val lines = File(it).bufferedReader().useLines { it.toList() }
+            if (lines.size < 2) return@produceState
+            println(">>>>>>>> parseChartFile")
+            COUNT_OF_CHANNELS_CHART_2 = countPairs(lines[5])
+            delay(1000)
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_3)
+        }
     }
 
     // individual series visibility
-    var vis1 by remember { mutableStateOf(List(8) { true }) }
-    var vis2 by remember { mutableStateOf(List(8) { true }) }
-    var vis3 by remember { mutableStateOf(List(8) { true }) }
+    var vis1 by remember { mutableStateOf(List(COUNT_OF_CHANNELS_CHART_1) { true }) }
+    var vis2 by remember { mutableStateOf(List(COUNT_OF_CHANNELS_CHART_2) { true }) }
+    var vis3 by remember { mutableStateOf(List(COUNT_OF_CHANNELS_CHART_3) { true }) }
+
     // file-level visibility
     val fileVisible1 = vis1.any { it }
     val fileVisible2 = vis2.any { it }
@@ -158,7 +184,11 @@ fun App() {
 
     val seriesColors = listOf(
         Color.Blue, Color.Red, Color.Green, Color.Magenta,
-        Color.Cyan, Color.Yellow, Color.Gray, Color.Black
+        Color.Cyan, Color.Yellow, Color.Gray, Color.Black,
+        Color(0xFF800080), // Purple
+        Color(0xFFFFA500), // Orange
+        Color(0xFF00FF00), // Lime
+        Color(0xFF00FFFF)  // Aqua
     )
 
     Column(
@@ -188,9 +218,7 @@ fun App() {
                         onToggle = { vis1 = vis1.map { !fileVisible1 } },
                         onClear = { path1 = null }
                     )
-                    Row {
-                        ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it }
-                    }
+                    Row { ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it } }
 
                 }
                 Row(
@@ -300,6 +328,7 @@ fun ToggleSeriesButtons(
 ) {
     seriesList?.forEachIndexed { idx, series ->
         if (series.isNotEmpty()) {
+            println("${visibility.joinToString()}")
             val bg = if (visibility[idx]) colors[idx] else colors[idx].copy(alpha = 0.3f)
             Box(
                 modifier = Modifier
