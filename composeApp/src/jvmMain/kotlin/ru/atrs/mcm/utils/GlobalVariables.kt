@@ -69,7 +69,7 @@ var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBuf
 
 val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255
-
+////////////////////////////////////////////////////
 var arr1Measure = arrayListOf<Pointer>()
 var arr2Measure = arrayListOf<Pointer>()
 var arr3Measure = arrayListOf<Pointer>()
@@ -79,6 +79,11 @@ var arr6Measure = arrayListOf<Pointer>()
 var arr7Measure = arrayListOf<Pointer>()
 var arr8Measure = arrayListOf<Pointer>()
 
+var arr9Measure = arrayListOf<Pointer>()
+var arr10Measure = arrayListOf<Pointer>()
+var arr11Measure = arrayListOf<Pointer>()
+var arr12Measure = arrayListOf<Pointer>()
+////////////////////////////////////////////////////
 var pwm1SeekBar = mutableStateOf<Int>(-1)
 var pwm2SeekBar = mutableStateOf<Int>(-1)
 var pwm3SeekBar = mutableStateOf<Int>(-1)
@@ -88,6 +93,11 @@ var pwm6SeekBar = mutableStateOf<Int>(-1)
 var pwm7SeekBar = mutableStateOf<Int>(-1)
 var pwm8SeekBar = mutableStateOf<Int>(-1)
 
+var pwm9SeekBar = mutableStateOf<Int>(-1)
+var pwm10SeekBar = mutableStateOf<Int>(-1)
+var pwm11SeekBar = mutableStateOf<Int>(-1)
+var pwm12SeekBar = mutableStateOf<Int>(-1)
+//////////////////////////////////////////////////
 var limitTime = -1
 var indexOfScenario = mutableStateOf(0)
 var txtOfScenario = mutableStateOf("")
@@ -119,8 +129,13 @@ data class DataChunkG(
     var fifthGaugeData:   Float,
     var sixthGaugeData:   Float,
     var seventhGaugeData: Float,
-    var eighthGaugeData:  Float
-    )
+    var eighthGaugeData:  Float,
+
+    var ninthGaugeData:    Float? = null,
+    var tenthGaugeData:    Float? = null,
+    var eleventhGaugeData: Float? = null,
+    var twelfthGaugeData:  Float? = null,
+)
 
 data class DataChunkCurrent(
     var firstCurrentData: Int,
@@ -130,5 +145,10 @@ data class DataChunkCurrent(
     var fifthCurrentData: Int,
     var sixthCurrentData: Int,
     var seventhCurrentData: Int,
-    var eighthCurrentData: Int
+    var eighthCurrentData: Int,
+
+    var ninthCurrentData:    Float? = null,
+    var tenthCurrentData:    Float? = null,
+    var eleventhCurrentData: Float? = null,
+    var twelfthCurrentData:  Float? = null,
 )

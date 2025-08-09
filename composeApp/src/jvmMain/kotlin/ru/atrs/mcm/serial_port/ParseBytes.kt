@@ -54,6 +54,7 @@ private var lastGauge : DataChunkG? = null
 
 
 suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
+
     var dch: DataChunkG? = null
     var dchCurr: DataChunkCurrent? = null
 
@@ -65,7 +66,7 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
     if (delta >= 1000) {
         // measure number of packets:
-        println("${System.currentTimeMillis()/1000L}> ${updData[0]} ${updData[15]} [size:${updData.size}] ${incr} ]-[ ${delta} ms ** ${limitTime} >= ${incrementTime} .state${STATE_EXPERIMENT.value.name}")
+        println("coreParse8Channels: ${System.currentTimeMillis()/1000L}> ${updData[0]} ${updData[15]} [size:${updData.size}] ${incr} ]-[ ${delta} ms ** ${limitTime} >= ${incrementTime} .state${STATE_EXPERIMENT.value.name}")
         incr = 0
     }
 
@@ -75,21 +76,14 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
     }
 
     when {
-        updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
-        updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
-        updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
-
-        updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
-        updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
-        updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
-        updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte()  -> {
+        isStartExperiment(updData)  -> {
             STATE_EXPERIMENT.value = StateExperiments.START
 
             isExperimentStarts.value = true
             logGarbage("Start Experiment! ${isExperimentStarts.value}")
 
         }
-        updData.all { it == 0xFF.toByte() } -> {
+        isEndOfExperiment(updData) -> {
             isExperimentStarts.value = false
             STATE_EXPERIMENT.value = StateExperiments.PREP_DATA
             logGarbage("End Experiment! all it == 0xFF ${isExperimentStarts.value} contOfPacks: ${incrX}")
@@ -98,7 +92,7 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
         //pressure
         //STATE_EXPERIMENT.value != StateExperiments.PREP_DATA &&
-        updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16 -> {
+        isPressureType(updData) -> { // 24???
             //println("> ${updData.toHexString()} [size:${updData.size}]")
             if (isExperimentStarts.value) {
                 incrX++
@@ -148,16 +142,13 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
         //currency
         //STATE_EXPERIMENT.value != StateExperiments.PREP_DATA &&
-        //!isExperimentStarts.value &&
-        updData[1] in 16..31 &&
-        updData[3] in 16..31 &&
-        updData[5] in 16..31 &&
-        updData[7] in 16..31 -> {
+        //!isExperimentStarts.value &&  // 24????????????????????????
+        isCurrencyType(updData) -> {
             if (isExperimentStarts.value) {
                 incrX++
             }
             dchCurr = DataChunkCurrent(
-                onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt() - 16u).toInt(),
+                onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt() - 16u).toInt(), // 24??
                 onesAndTensFloat(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt() - 16u).toInt(),
                 onesAndTensFloat(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt() - 16u).toInt(),
                 onesAndTensFloat(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt() - 16u).toInt(),
@@ -239,3 +230,22 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
         arrPressRaw.clear()
     }
 }
+
+fun isEndOfExperiment(updData: ByteArray): Boolean = updData.all { it == 0xFF.toByte() }
+
+fun isStartExperiment(updData: ByteArray): Boolean {
+    return updData.size >= 14 &&
+            updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
+            updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
+            updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
+            updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
+            updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
+            updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
+            updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte()
+}
+
+fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
+
+fun isCurrencyType(updData: ByteArray): Boolean  =
+    updData[1] in 16..31 && updData[3] in 16..31 &&
+            updData[5] in 16..31 && updData[7] in 16..31

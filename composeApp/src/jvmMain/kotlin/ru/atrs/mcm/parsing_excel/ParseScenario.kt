@@ -78,8 +78,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
 
 
 
-
-    repeat(8) {
+    val NUMBER_OF_GAUGES = 8
+    repeat(NUMBER_OF_GAUGES) {
 //        var asd = arrayListOf<String>(
 //            wholeSheet[2][it+1],
 //            wholeSheet[3][it+1],
@@ -111,7 +111,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
 
     var maxPWMs = arrayListOf<Int>()
 
-    repeat(8) {
+    repeat(NUMBER_OF_GAUGES) {
 //        var asd = arrayListOf<String>(
 //            wholeSheet[14][it+1],
 //            wholeSheet[15][it+1],

@@ -40,6 +40,10 @@ import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.Dir_10_ScenarioForChart
 import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
+import ru.atrs.mcm.utils.arr10Measure
+import ru.atrs.mcm.utils.arr11Measure
+import ru.atrs.mcm.utils.arr12Measure
+import ru.atrs.mcm.utils.arr9Measure
 import java.io.*
 
 
@@ -72,9 +76,16 @@ fun createMeasureExperiment() {
                     "${arr5Measure[it].x};${arr5Measure[it].y}|"+
                     "${arr6Measure[it].x};${arr6Measure[it].y}|"+
                     "${arr7Measure[it].x};${arr7Measure[it].y}|"+
-                    "${arr8Measure[it].x};${arr8Measure[it].y}"
+                    "${arr8Measure[it].x};${arr8Measure[it].y}|"
+
+                val newStrokeFor12 =
+                    "${arr9Measure[it].x};${arr9Measure[it].y}|"+
+                    "${arr10Measure[it].x};${arr10Measure[it].y}|"+
+                    "${arr11Measure[it].x};${arr11Measure[it].y}|"+
+                    "${arr12Measure[it].x};${arr12Measure[it].y}"
+
                 logInfo("newStroke= ${newStroke}")
-                bw.write("${newStroke}\n")
+                bw.write("${newStroke}${newStrokeFor12}\n")
             }
             bw.close()
 
@@ -86,6 +97,10 @@ fun createMeasureExperiment() {
             arr6Measure.clear()
             arr7Measure.clear()
             arr8Measure.clear()
+            arr9Measure.clear()
+            arr10Measure.clear()
+            arr11Measure.clear()
+            arr12Measure.clear()
 
         }catch (e: Exception){
             showMeSnackBar("Error! ${e.message}")

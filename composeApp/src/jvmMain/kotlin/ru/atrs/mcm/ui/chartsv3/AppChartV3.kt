@@ -75,7 +75,7 @@ class AppChartV3 {
     fun WindowChartsV3() {
         Window(
             title = "ChartViewer V3",
-            state = WindowState(size = DpSize(1000.dp, 800.dp)),
+            state = WindowState(size = DpSize(1200.dp, 800.dp)),
             onCloseRequest = { doOpen_First_ChartWindow.value = false }
         ) {
             App()
@@ -179,7 +179,7 @@ fun App() {
                 // Per-series toggles
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (path1 != null) FileControl(
                         name = File(path1!!).name,
@@ -188,11 +188,14 @@ fun App() {
                         onToggle = { vis1 = vis1.map { !fileVisible1 } },
                         onClear = { path1 = null }
                     )
-                    ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it }
+                    Row {
+                        ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it }
+                    }
+
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (path2 != null) FileControl(
                         name = File(path2!!).name,
@@ -201,11 +204,11 @@ fun App() {
                         onToggle = { vis2 = vis2.map { !fileVisible2 } },
                         onClear = { path2 = null }
                     )
-                    ToggleSeriesButtons(vis2, data2?.series, seriesColors) { vis2 = it }
+                    Row { ToggleSeriesButtons(vis2, data2?.series, seriesColors) { vis2 = it } }
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (path3 != null) FileControl(
                         name = File(path3!!).name,
@@ -214,7 +217,8 @@ fun App() {
                         onToggle = { vis3 = vis3.map { !fileVisible3 } },
                         onClear = { path3 = null }
                     )
-                    ToggleSeriesButtons(vis3, data3?.series, seriesColors) { vis3 = it }
+                    Row { ToggleSeriesButtons(vis3, data3?.series, seriesColors) { vis3 = it } }
+
                 }
             }
         }

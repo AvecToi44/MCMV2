@@ -27,6 +27,7 @@ import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.swing.Swing
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.incrX
@@ -46,6 +47,9 @@ import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GLOBAL_STATE
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
+import ru.atrs.mcm.utils.arr10Measure
+import ru.atrs.mcm.utils.arr11Measure
+import ru.atrs.mcm.utils.arr12Measure
 import ru.atrs.mcm.utils.arr1Measure
 import ru.atrs.mcm.utils.arr2Measure
 import ru.atrs.mcm.utils.arr3Measure
@@ -54,6 +58,7 @@ import ru.atrs.mcm.utils.arr5Measure
 import ru.atrs.mcm.utils.arr6Measure
 import ru.atrs.mcm.utils.arr7Measure
 import ru.atrs.mcm.utils.arr8Measure
+import ru.atrs.mcm.utils.arr9Measure
 import ru.atrs.mcm.utils.dataChunkGauges
 import ru.atrs.mcm.utils.incrementTime
 import ru.atrs.mcm.utils.indexOfScenario
@@ -72,14 +77,19 @@ import ru.atrs.mcm.utils.txtOfScenario
 fun CenterPiece(
 ) {
     var sizeRow    by remember {mutableStateOf(Size.Zero)}
-    var pressure1X by remember { mutableStateOf(0f) }
-    var pressure2X by remember { mutableStateOf(0f) }
-    var pressure3X by remember { mutableStateOf(0f) }
-    var pressure4X by remember { mutableStateOf(0f) }
-    var pressure5X by remember { mutableStateOf(0f) }
-    var pressure6X by remember { mutableStateOf(0f) }
-    var pressure7X by remember { mutableStateOf(0f) }
-    var pressure8X by remember { mutableStateOf(0f) }
+    var pressure1X by remember { mutableStateOf(-1f) }
+    var pressure2X by remember { mutableStateOf(-1f) }
+    var pressure3X by remember { mutableStateOf(-1f) }
+    var pressure4X by remember { mutableStateOf(-1f) }
+    var pressure5X by remember { mutableStateOf(-1f) }
+    var pressure6X by remember { mutableStateOf(-1f) }
+    var pressure7X by remember { mutableStateOf(-1f) }
+    var pressure8X by remember { mutableStateOf(-1f) }
+
+    var pressure9X by remember  { mutableStateOf(-1f) }
+    var pressure10X by remember { mutableStateOf(-1f) }
+    var pressure11X by remember { mutableStateOf(-1f) }
+    var pressure12X by remember { mutableStateOf(-1f) }
     val duration = MutableStateFlow(100L)
 
     val stateChart = remember { STATE_EXPERIMENT }
@@ -90,7 +100,7 @@ fun CenterPiece(
     val txt = remember { txtOfScenario }
 
     val ctxScope =
-        CoroutineScope(Dispatchers.IO) + rememberCoroutineScope().coroutineContext + CoroutineName("MainScreen-CenterPart")
+        CoroutineScope(Dispatchers.Swing) + rememberCoroutineScope().coroutineContext + CoroutineName("MainScreen-CenterPart")
 
     // Get local density from composable
     val localDensity = LocalDensity.current
@@ -119,18 +129,29 @@ fun CenterPiece(
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-                //longForChart.add(if (pressure1X > 1000) { 1000 } else pressure1X)
-                //longForChart.add(pressure1X)
+                mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),).let { pressure1X = it }
 
-                pressure1X = mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),)
-                pressure2X = mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue),)
-                pressure3X = mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue),)
-                pressure4X = mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue),)
-                pressure5X = mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue),)
-                pressure6X = mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue),)
-                pressure7X = mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue),)
-                pressure8X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue),)
+//                pressure1X = mapFloat(it.firstGaugeData, 0f, 4095f, (pressures[0].minValue), (pressures[0].maxValue),)
+                pressure2X = mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue))
+                pressure3X = mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue))
+                pressure4X = mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue))
+                pressure5X = mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue))
+                pressure6X = mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue))
+                pressure7X = mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue))
+                pressure8X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue))
 
+                if (pressures.getOrNull(8) != null) {
+                    pressure9X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[8].minValue), (pressures[8].maxValue))
+                }
+                if (pressures.getOrNull(9) != null) {
+                    pressure10X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[9].minValue), (pressures[9].maxValue))
+                }
+                if (pressures.getOrNull(10) != null) {
+                    pressure11X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue))
+                }
+                if (pressures.getOrNull(11) != null) {
+                    pressure12X = mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue))
+                }
                 when (EXPLORER_MODE.value) {
                     ExplorerMode.AUTO -> {
                         //logGarbage("konec ${}")
@@ -140,14 +161,20 @@ fun CenterPiece(
                         ) {
                             count++
 
-                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //it.firstGaugeData, ))
-                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //it.secondGaugeData,))
-                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //it.thirdGaugeData, ))
-                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //it.fourthGaugeData,))
-                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //it.fifthGaugeData, ))
-                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //it.sixthGaugeData, ))
-                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //it.seventhGaugeData))
-                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //it.eighthGaugeData, ))
+                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)).takeIf { pressure1X > 0f } //it.firstGaugeData, ))
+                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)).takeIf { pressure2X > 0f } //it.secondGaugeData,))
+                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)).takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
+                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)).takeIf { pressure4X > 0f } //it.fourthGaugeData,))
+                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)).takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
+                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)).takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
+                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)).takeIf { pressure7X > 0f } //it.seventhGaugeData))
+                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)).takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
+
+                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),   y = pressure9X)).takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
+                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)).takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
+                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)).takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
+                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)).takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
+
 
 //                            num = scenario[indexScenario].time
 //
@@ -191,153 +218,6 @@ fun CenterPiece(
                 sizeRow = coordinates.size.toSize()
             }
     ) {
-//        Row(Modifier.weight(0.5f)) {
-////                Box(Modifier.size(40.dp)) {
-////                    Image(painterResource("/trs.jpg"),"")
-////                }
-//            if (isExperimentStarts.value) {
-//                Text(
-//                    "Rec...",
-//                    modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
-//                    },
-//                    fontFamily = FontFamily.Default,
-//                    fontSize = 20.sp,
-//                    fontWeight = FontWeight.Bold,
-//                    color = Color.Red
-//                )
-//            }
-//            Text(
-//                "${txt.value}",
-//                modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
-//                    //screenNav.value = Screens.STARTER
-//                },
-//                fontFamily = FontFamily.Default,
-//                fontSize = 20.sp,
-//                fontWeight = FontWeight.Bold,
-//                color = Color.Blue
-//            )
-//            Box(Modifier.clickable {
-//                expandedCom.value = !expandedCom.value
-//            }) {
-//                Text(
-//                    "Mode: ${explMode.value.name}",
-//                    modifier = Modifier.padding(top = (10).dp, start = 20.dp),
-//                    fontFamily = FontFamily.Default, fontSize = 20.sp,
-//                    fontWeight = FontWeight.Bold, color = Color.White
-//                )
-//
-//                DropdownMenu(
-//                    modifier = Modifier.background(Color.White),
-//                    expanded = expandedCom.value,
-//                    onDismissRequest = { expandedCom.value = false },
-//                ) {
-//                    Text(
-//                        "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-//                            .clickable(onClick = {
-//                                EXPLORER_MODE.value = ExplorerMode.AUTO
-//                            }), color = Color.Black
-//                    )
-//                    Text(
-//                        "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-//                            .clickable(onClick = {
-//                                EXPLORER_MODE.value = ExplorerMode.MANUAL
-//                            }), color = Color.Black
-//                    )
-//                }
-//            }
-//            AnimatedVisibility(isShowPlay.value) {
-//                Box(Modifier.clickable {
-//                    test_time = 0
-//                    // launch
-//                    if (explMode.value == ExplorerMode.AUTO) {
-//                        launchPlay()
-//                    } else if (explMode.value == ExplorerMode.MANUAL) {
-//                        indexOfScenario.value--
-//                        ctxScope.launch {
-//
-//                            comparatorToSolenoid(indexOfScenario.value)
-//                        }
-//                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-//                        //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
-//                        //txtOfScenario.value = scenario[indexOfScenario.value].text
-//                    }
-//
-//
-//                }) {
-//                    Text(
-//                        if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
-//                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-//                        fontFamily = FontFamily.Default,
-//                        fontSize = 20.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        color = Color.White
-//                    )
-//                }
-//            }
-//
-//            Box(Modifier.clickable {
-//                //stop scenario
-//
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    if (explMode.value == ExplorerMode.AUTO) {
-//                        reInitSolenoids()
-//                        GLOBAL_STATE.value = StateParseBytes.WAIT
-////                            initSerialCommunication()
-////                            startReceiveFullData()
-//                    } else if (explMode.value == ExplorerMode.MANUAL) {
-//                        indexOfScenario.value++
-//                        comparatorToSolenoid(indexOfScenario.value)
-//
-//                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-//                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
-//                        //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
-//                    }
-//                }
-//            }) {
-//                Text(
-//                    if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
-//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-//                    fontFamily = FontFamily.Default,
-//                    fontSize = 20.sp,
-//                    fontWeight = FontWeight.Bold,
-//                    color = Color.White
-//                )
-//            }
-//            Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
-//                , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
-//            )
-//            Box(Modifier.clickable {
-//                isHideCurrents.value = !isHideCurrents.value
-//            }) {
-//                Text(
-//                    "Hide Currents⚡️",
-//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-//                    fontFamily = FontFamily.Default,
-//                    fontSize = 20.sp,
-//                    fontWeight = FontWeight.Bold,
-//                    color = Color.White
-//                )
-//            }
-//            Box(Modifier.clickable {
-//                CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-//                    delay(10)
-//                    pauseSerialComm()
-//                    scenario.clear()
-//                }
-//                screenNav.value = Screens.STARTER
-//            }) {
-//                Text(
-//                    "Home↩️",
-//                    modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-//                    fontFamily = FontFamily.Default,
-//                    fontSize = 20.sp,
-//                    fontWeight = FontWeight.Bold,
-//                    color = Color.White
-//                )
-//            }
-//        }
-        //Spacer(Modifier.fillMaxWidth().height(10.dp))
-
         Row(Modifier.weight(5f)) {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxWidth(),
