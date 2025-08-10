@@ -78,19 +78,19 @@ import ru.atrs.mcm.utils.txtOfScenario
 fun CenterPiece(
 ) {
     var sizeRow    by remember {mutableStateOf(Size.Zero)}
-    var pressure1X by remember { mutableStateOf(-1f) }
-    var pressure2X by remember { mutableStateOf(-1f) }
-    var pressure3X by remember { mutableStateOf(-1f) }
-    var pressure4X by remember { mutableStateOf(-1f) }
-    var pressure5X by remember { mutableStateOf(-1f) }
-    var pressure6X by remember { mutableStateOf(-1f) }
-    var pressure7X by remember { mutableStateOf(-1f) }
-    var pressure8X by remember { mutableStateOf(-1f) }
+    var pressure1X by remember { mutableStateOf(0f) }
+    var pressure2X by remember { mutableStateOf(0f) }
+    var pressure3X by remember { mutableStateOf(0f) }
+    var pressure4X by remember { mutableStateOf(0f) }
+    var pressure5X by remember { mutableStateOf(0f) }
+    var pressure6X by remember { mutableStateOf(0f) }
+    var pressure7X by remember { mutableStateOf(0f) }
+    var pressure8X by remember { mutableStateOf(0f) }
 
-    var pressure9X by remember  { mutableStateOf(-1f) }
-    var pressure10X by remember { mutableStateOf(-1f) }
-    var pressure11X by remember { mutableStateOf(-1f) }
-    var pressure12X by remember { mutableStateOf(-1f) }
+    var pressure9X by remember  { mutableStateOf(0f) }
+    var pressure10X by remember { mutableStateOf(0f) }
+    var pressure11X by remember { mutableStateOf(0f) }
+    var pressure12X by remember { mutableStateOf(0f) }
     val duration = MutableStateFlow(100L)
 
     val stateChart = remember { STATE_EXPERIMENT }
@@ -159,19 +159,19 @@ fun CenterPiece(
                         ) {
                             count++
 
-                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)).takeIf { pressure1X > 0f } //it.firstGaugeData, ))
-                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)).takeIf { pressure2X > 0f } //it.secondGaugeData,))
-                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)).takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
-                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)).takeIf { pressure4X > 0f } //it.fourthGaugeData,))
-                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)).takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
-                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)).takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
-                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)).takeIf { pressure7X > 0f } //it.seventhGaugeData))
-                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)).takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
+                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //.takeIf { pressure1X > 0f } //it.firstGaugeData, ))
+                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //.takeIf { pressure2X > 0f } //it.secondGaugeData,))
+                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //.takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
+                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //.takeIf { pressure4X > 0f } //it.fourthGaugeData,))
+                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //.takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
+                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //.takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
+                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //.takeIf { pressure7X > 0f } //it.seventhGaugeData))
+                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //.takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
 
-                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),   y = pressure9X)).takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
-                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)).takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
-                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)).takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
-                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)).takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
+                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),   y = pressure9X)) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
+                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)) //.takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
+                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
+                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
 
 
 //                            num = scenario[indexScenario].time
@@ -368,6 +368,22 @@ fun CenterPiece(
                         }
                     }
 
+//                        if (pressureHolder.isVisible) {
+//                            item {
+//                                Box(Modifier.aspectRatio(1f)) {
+//                                    GaugeX(
+//                                        DpSize(columnHeightDp, columnHeightDp),
+//                                        pressure8X,
+//                                        (pressures[index].minValue),
+//                                        (pressures[index].maxValue),
+//                                        type = "Бар",
+//                                        displayName = pressures[index].displayName,
+//                                        comment = pressures[7].commentString
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
 
                 }
             )
@@ -401,7 +417,7 @@ fun CenterPiece(
 
                                     comparatorToSolenoid(indexOfScenario.value)
                                 }
-                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                                 //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
                                 //txtOfScenario.value = scenario[indexOfScenario.value].text
                             }
@@ -433,7 +449,7 @@ fun CenterPiece(
                                 comparatorToSolenoid(indexOfScenario.value)
 
                                 //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                                 //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
                             }
                         }
@@ -557,7 +573,7 @@ fun CenterPiece(
 
                                 comparatorToSolenoid(indexOfScenario.value)
                             }
-                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                             //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
                             //txtOfScenario.value = scenario[indexOfScenario.value].text
                         }
@@ -589,7 +605,7 @@ fun CenterPiece(
                             comparatorToSolenoid(indexOfScenario.value)
 
                             //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.text }
+                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                             //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
                         }
                     }

@@ -143,11 +143,11 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
 
 
     limitTime = 0
-
+    // SOLENOIDS SCENARIO
     for ( i in (27) until wholeSheet.size) {
         var valueSteps = arrayListOf<Int>()
 
-        repeat(8) {
+        repeat(NUMBER_OF_GAUGES) {
             var newPWM = wholeSheet[i][it+1].toDouble().toInt()
 
             // check limits maxPWM, for not burn out
@@ -184,9 +184,9 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
         scenario.add(
             ScenarioStep(
                 time = newTime,
-                chs = valueSteps,
-                text = wholeSheet[i][9],
-                comment = if (wholeSheet[i].size != 11) "" else wholeSheet[i][10]
+                channels = valueSteps,
+                transitionTime = if ((wholeSheet[i][13]).toIntOrNull() != null) { wholeSheet[i][14].toInt() } else { 0 },
+                comment = wholeSheet[i][14]
             )
         )
     }

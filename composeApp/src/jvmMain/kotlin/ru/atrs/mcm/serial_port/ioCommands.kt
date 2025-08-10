@@ -123,14 +123,14 @@ suspend fun comparatorToSolenoid(newIndex: Int) {
     logGarbage("comparatorToSolenoid ${idx} ~~~ ]${scenario.size}[")
 
 
-    pwm1SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[0].takeIf { it <= solenoids[0].maxPWM } }) ?: solenoids[0].maxPWM
-    pwm2SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[1].takeIf { it <= solenoids[1].maxPWM } }) ?: solenoids[1].maxPWM
-    pwm3SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[2].takeIf { it <= solenoids[2].maxPWM } }) ?: solenoids[2].maxPWM
-    pwm4SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[3].takeIf { it <= solenoids[3].maxPWM } }) ?: solenoids[3].maxPWM
-    pwm5SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[4].takeIf { it <= solenoids[4].maxPWM } }) ?: solenoids[4].maxPWM
-    pwm6SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[5].takeIf { it <= solenoids[5].maxPWM } }) ?: solenoids[5].maxPWM
-    pwm7SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[6].takeIf { it <= solenoids[6].maxPWM } }) ?: solenoids[6].maxPWM
-    pwm8SeekBar.value = (scenario.getOrNull(idx)?.let { it.chs[7].takeIf { it <= solenoids[7].maxPWM } }) ?: solenoids[7].maxPWM
+    pwm1SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[0].takeIf { it <= solenoids[0].maxPWM } }) ?: solenoids[0].maxPWM
+    pwm2SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[1].takeIf { it <= solenoids[1].maxPWM } }) ?: solenoids[1].maxPWM
+    pwm3SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[2].takeIf { it <= solenoids[2].maxPWM } }) ?: solenoids[2].maxPWM
+    pwm4SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[3].takeIf { it <= solenoids[3].maxPWM } }) ?: solenoids[3].maxPWM
+    pwm5SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[4].takeIf { it <= solenoids[4].maxPWM } }) ?: solenoids[4].maxPWM
+    pwm6SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[5].takeIf { it <= solenoids[5].maxPWM } }) ?: solenoids[5].maxPWM
+    pwm7SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[6].takeIf { it <= solenoids[6].maxPWM } }) ?: solenoids[6].maxPWM
+    pwm8SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[7].takeIf { it <= solenoids[7].maxPWM } }) ?: solenoids[7].maxPWM
 
 //    pwm1SeekBar.value = (scenario.getOrNull(idx){})              .values[0].takeIf { it <= solenoids[0].maxPWM } ?: solenoids[0].maxPWM // [from 0 to 255]
 //    pwm2SeekBar.value = (scenario.getOrElse(idx){ scenario[0] }) .values[1].takeIf { it <= solenoids[1].maxPWM } ?: solenoids[1].maxPWM
@@ -175,7 +175,7 @@ suspend fun comparatorToSolenoid(newIndex: Int) {
     txtOfScenario.value = scenario.getOrElse(idx){
         indexOfScenario.value = 0
         scenario[0]
-    }.text
+    }.comment
 
     //commentOfScenario.value = scenario[idx].comment
 }
@@ -203,15 +203,15 @@ suspend fun sendScenarioToController() {
         val send = byteArrayOf(
             0x73,index.toByte(),0x00,
 
-            s.chs[0].toByte(),
-            s.chs[1].toByte(),
-            s.chs[2].toByte(),
-            s.chs[3].toByte(),
+            s.channels[0].toByte(),
+            s.channels[1].toByte(),
+            s.channels[2].toByte(),
+            s.channels[3].toByte(),
 
-            s.chs[4].toByte(),
-            s.chs[5].toByte(),
-            s.chs[6].toByte(),
-            s.chs[7].toByte(),
+            s.channels[4].toByte(),
+            s.channels[5].toByte(),
+            s.channels[6].toByte(),
+            s.channels[7].toByte(),
 
             //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
             time.getOrNull(1) ?: 0x00,
