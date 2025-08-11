@@ -1,0 +1,13 @@
+<Configuration>
+	<SerialPortConfig>
+		<SerialPort NAME="COM7" BAUDRATE="512000" INDEX="0"/>
+    		//<SerialPort NAME="COM16" BAUDRATE="512000" INDEX="1"/>
+		
+	</SerialPortConfig>
+	<APC COUNT="8"/>
+	<APCPWM COUNT="20"/>
+	<RMSPWM COUNT="15"/>
+	<CCM COUNT="4"/>
+	<LIVEFRAMES COUNT="25"/>
+	<DEBUG DEBUGMESSAGE="FALSE" SPAMBUTTONS="TRUE"/>
+</Configuration>
