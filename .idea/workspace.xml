@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="59379a9e-9376-49dd-b55f-82e9315fc487" name="Changes" comment="work well">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/compose-desktop.pro" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/composeResources/drawable/ava.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/composeResources/drawable/compose-multiplatform.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/composeResources/drawable/trs.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/Intents.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/Main.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/VariablesUSB.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/enums/ExplorerMode.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/enums/StateExperiments.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/enums/StateParseBytes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/featureToggles/FeatureToggles.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/ChartLayout.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/ModifierExtensions.desktop.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/Symbol.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/animation/PanFlingBehavior.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/animation/StartAnimationUseCase.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/bar/BulletBuilderScope.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/bar/BulletGraph.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/bar/GroupedVerticalBarPlot.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/bar/StackedVerticalBarPlot.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/bar/VerticalBarPlot.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/GestureConfig.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/Gestures.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/TransformGesturesHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/TransformGesturesHandlerImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/pan/PanFlingHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/pan/PanFlingHandlerImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/pan/PanHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/pan/PanHandlerImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/zoom/LockedRatioZoomHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/zoom/StickyAxisZoomHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/gestures/zoom/ZoomHandler.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/legend/ColumnLegend.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/legend/FlowLegend.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/legend/Legend.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/line/LinePlot.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/pie/CircularLabelPositionProvider.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/pie/LabelPositionProvider.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/pie/PieChart.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/pie/PieMeasurePolicy.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/AngularAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/FloatRadialAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/Grid.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/PolarGraph.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/PolarPlotSeries.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/polar/PolarPoint.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/style/AreaStyle.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/style/KoalaPlotTheme.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/style/LineStyle.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/Annotation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/Color.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/Geometry.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/HoverableElementArea.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/ResponsiveText.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/Util.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/Vector.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/util/ZoomFactor.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/AnchorPoint.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/AxisDelegate.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/AxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/CategoryAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/DoubleLinearAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/FloatLinearAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/IntLinearAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/LinearAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/LogAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/LongLinearAxisModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/Point.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/RotatedPlaceableDelegate.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/XYAnnotation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/koala/xygraph/XYGraph.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/measurments/Recording.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/parsing_excel/ParseScenario.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/parsing_excel/WriteToExcel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/parsing_excel/models/PressuresHolder.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/parsing_excel/models/ScenarioStep.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/parsing_excel/models/SolenoidHolder.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/serial_port/ParseBytes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/serial_port/bussinessRequests.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/serial_port/ioCommands.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/storage/FilePicker.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/storage/FileWorker.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/storage/JsonWorker.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/storage/models/ParameterCommonJson.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/test/launch1.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/CustomElements.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/MainScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/charts/ChartWindow.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/charts/ChartWindowV2.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/charts/GenerateChartFile.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/charts/models/ScenarioIntervalChart.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/chartsv3/AppChartV3.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/custom/DefaultTrack.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/custom/GaugeX.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/custom/SimpleProgressIndicatorWithAnim.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/main_screen/center/CenterPart.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/main_screen/center/support_elements/BottomSlidersCurr.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/main_screen/center/support_elements/SolenoidControl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/navigation/Screens.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/settings/SettingsScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/starter_screen/starter.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/styles/Colors.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/styles/Fonts.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/windows/WindowTypes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Authors.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Boolean.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Bytes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Dependency.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Float.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/GenerateFileNames.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/GlobalVariables.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Logs.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Numbers.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Scenarios.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Sounds.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Tools.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/utils/Windows.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/view_results/ChartCustom.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/composeApp/src/jvmTest/kotlin/ru/atrs/mcm/ComposeAppDesktopTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/libs.versions.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$/composeApp">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+                <item name="composeApp" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+                <item name="composeApp" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+                <item name="composeApp" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="compose desktop" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MCMV2" type="f1a62948:ProjectNode" />
+                <item name="composeApp" type="2d1252cf:ModuleNode" />
+                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="$USER_HOME$/.gradle/wrapper/dists/gradle-8.9-bin/90cnw93cvbtalezasaz0blq0a/gradle-8.9" javaHome="$USER_HOME$/.jdks/jbr-17.0.14" gradleVersion="8.9" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="30qyE9KsEQxbsjTKhZvwLFtYTKP" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Build MCMV2.executor": "Run",
+    "Gradle.MCMV2:composeApp [:composeApp:ru.atrs.mcm.MainKt.main()].executor": "Run",
+    "Gradle.MCMV2:composeApp [packageMsi].executor": "Run",
+    "Gradle.MCMV2:composeApp [packageReleaseMsi].executor": "Run",
+    "Gradle.composeApp [jvm] (1).executor": "Run",
+    "Gradle.composeApp [jvm].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "1__quarter__2023__6aug",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/ARSEN_programs/MCMV2/composeApp/src/jvmMain/kotlin/ru/atrs/mcm/ui/chartsv3",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\ARSEN_programs\MCMV2\composeApp\src\jvmMain\kotlin\ru\atrs\mcm\ui\chartsv3" />
+      <recent name="D:\ARSEN_programs\MCMV2\composeApp\src\jvmMain\kotlin\ru\atrs\mcm" />
+      <recent name="D:\ARSEN_programs\projects\MCMV2" />
+      <recent name="D:\ARSEN_programs\projects\MCMV2\composeApp\src\jvmMain\composeResources\drawable" />
+      <recent name="D:\ARSEN_programs\projects\MCMV2\composeApp\src\jvmMain\kotlin\ru\trs\mcm" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.composeApp [jvm]">
+    <configuration name="MCMV2:composeApp [packageMsi]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/composeApp" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="packageMsi" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="composeApp [jvm]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/composeApp" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="-DmainClass=ru.atrs.mcm.MainKt --quiet" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jvmRun" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="MCMV2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="MCMV2" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.composeApp [jvm]" />
+        <item itemvalue="Gradle.MCMV2:composeApp [packageMsi]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="59379a9e-9376-49dd-b55f-82e9315fc487" name="Changes" comment="" />
+      <created>1754369282531</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754369282531</updated>
+    </task>
+    <task id="LOCAL-00001" summary="done with charts Mar 9 2023">
+      <option name="closed" value="true" />
+      <created>1754377586378</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1754377586378</updated>
+    </task>
+    <task id="LOCAL-00002" summary="work well">
+      <option name="closed" value="true" />
+      <created>1754475905699</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1754475905699</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="done with charts Mar 9 2023" />
+    <MESSAGE value="work well" />
+    <option name="LAST_COMMIT_MESSAGE" value="work well" />
+  </component>
+</project>
