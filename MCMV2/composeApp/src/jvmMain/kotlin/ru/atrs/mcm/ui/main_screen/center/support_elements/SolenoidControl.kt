@@ -28,11 +28,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.serial_port.writeToSerialPort
+import ru.atrs.mcm.ui.styles.colorDecrease
+import ru.atrs.mcm.ui.styles.colorIncrease
 import ru.atrs.mcm.utils.arr1Measure
 import ru.atrs.mcm.utils.dataChunkGauges
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.pressures
+import ru.atrs.mcm.utils.pwm10SeekBar
+import ru.atrs.mcm.utils.pwm11SeekBar
+import ru.atrs.mcm.utils.pwm12SeekBar
 import ru.atrs.mcm.utils.pwm1SeekBar
 import ru.atrs.mcm.utils.pwm2SeekBar
 import ru.atrs.mcm.utils.pwm3SeekBar
@@ -41,6 +46,7 @@ import ru.atrs.mcm.utils.pwm5SeekBar
 import ru.atrs.mcm.utils.pwm6SeekBar
 import ru.atrs.mcm.utils.pwm7SeekBar
 import ru.atrs.mcm.utils.pwm8SeekBar
+import ru.atrs.mcm.utils.pwm9SeekBar
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
 
@@ -66,10 +72,15 @@ fun SolenoidControl(
             6 -> pwm6SeekBar
             7 -> pwm7SeekBar
             8 -> pwm8SeekBar
+
+            9 -> pwm9SeekBar
+            10 -> pwm10SeekBar
+            11 -> pwm11SeekBar
+            12 -> pwm12SeekBar
             else -> pwm1SeekBar
         }
     }
-    Column(modifier = Modifier.width(100.dp).background(Color.Gray).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.width(80.dp).background(Color.Gray).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(Modifier.fillMaxSize().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text("${displayName}")
         }
@@ -82,13 +93,13 @@ fun SolenoidControl(
             }
             Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
-                    "${map(PWMremember.value, 0, 255, 0, 100)}%",
+                    "${map(PWMremember.value, 0, 255, 0, 100)}\n%",
                     fontSize = 16.sp
                 )
             }
         }
         Row(Modifier.fillMaxSize().weight(1f)) {
-            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+            Column(Modifier.fillMaxSize().weight(1f).background(colorIncrease).border(width = 2.dp, color = Color.Black).clickable {
                 // PLUS +1
                 PWMremember.value = PWMremember.value + step
                 if (PWMremember.value > maxPWM) {
@@ -113,7 +124,7 @@ fun SolenoidControl(
                 //pos.value += 0.1f
             }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
-                    text = "\u002B", // +
+                    text = "+", // +
                     fontSize = 15.sp
                 )
             }
@@ -145,7 +156,7 @@ fun SolenoidControl(
 
         }
         Row(Modifier.fillMaxSize().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.fillMaxSize().weight(1f).border(width = 2.dp, color = Color.Black).clickable {
+            Column(Modifier.fillMaxSize().background(colorDecrease).weight(1f).border(width = 2.dp, color = Color.Black).clickable {
                 // MINUS
                 PWMremember.value = PWMremember.value - step
                 if (PWMremember.value < 0) {
@@ -164,7 +175,7 @@ fun SolenoidControl(
                 //pos.value-= 0.1f
             }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
-                    text = "\u2212", // minus
+                    text = "-", // minus
                     fontSize = 15.sp
                 )
             }

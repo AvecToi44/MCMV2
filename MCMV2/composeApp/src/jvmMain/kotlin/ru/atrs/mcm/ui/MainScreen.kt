@@ -68,8 +68,6 @@ fun App() {
 
                 when(screenNavi.value) {
                     Screens.STARTER -> {
-
-                        //Box(Modifier.fillMaxSize().background(Color.Red))
                         StarterScreen()
                     }
                     Screens.MAIN -> {

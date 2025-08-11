@@ -55,6 +55,11 @@ fun solenoidsPanel(
     var current7 by remember { mutableStateOf(-1) }
     var current8 by remember { mutableStateOf(-1) }
 
+    var current9 by  remember { mutableStateOf(-1) }
+    var current10 by remember { mutableStateOf(-1) }
+    var current11 by remember { mutableStateOf(-1) }
+    var current12 by remember { mutableStateOf(-1) }
+
     //var internalIndexOfScenario = remember { indexOfScenario }
 //    var pwm1 by remember { pwm1SeekBar }
 //    var pwm2 by remember { pwm2SeekBar }
@@ -85,15 +90,20 @@ fun solenoidsPanel(
                 current6 = it.sixthCurrentData
                 current7 = it.seventhCurrentData
                 current8 = it.eighthCurrentData
+
+                it.fifthCurrentData?.let { current9 = it  }
+                it.sixthCurrentData?.let { current10 = it  }
+                it.seventhCurrentData?.let { current11 = it  }
+                it.eighthCurrentData?.let { current12 = it  }
             }
         }
     }
-    val aspc = 1f
+
     Row(modifier = Modifier.fillMaxSize().background(Color.DarkGray), horizontalArrangement = Arrangement.End) {
         if (solenoids[0].isVisible) {
             SolenoidControl(
                 index = 1,
-                solenoids[1].displayName,
+                solenoids[0].displayName,
                 current = map(
                     x = current1,
                     in_min = 0,
@@ -220,6 +230,71 @@ fun solenoidsPanel(
                 duration = duration
             )
         }
+        if (solenoids[8].isVisible) {
+            SolenoidControl(
+                index = 9,
+                solenoids[8].displayName,
+                current = map(
+                    x = current9,
+                    in_min = 0,
+                    in_max = 4095,
+                    out_min = 0,
+                    out_max = solenoids[0].currentMaxValue
+                ),
+                maxPWM = solenoids[8].maxPWM,
+                step = solenoids[8].step,
+                duration = duration
+            )
+        }
+        if (solenoids[9].isVisible) {
+            SolenoidControl(
+                index = 10,
+                solenoids[9].displayName,
+                current = map(
+                    x = current10,
+                    in_min = 0,
+                    in_max = 4095,
+                    out_min = 0,
+                    out_max = solenoids[0].currentMaxValue
+                ),
+                maxPWM = solenoids[9].maxPWM,
+                step = solenoids[9].step,
+                duration = duration
+            )
+        }
+        if (solenoids[10].isVisible) {
+            SolenoidControl(
+                index = 11,
+                solenoids[10].displayName,
+                current = map(
+                    x = current11,
+                    in_min = 0,
+                    in_max = 4095,
+                    out_min = 0,
+                    out_max = solenoids[0].currentMaxValue
+                ),
+                maxPWM = solenoids[10].maxPWM,
+                step =   solenoids[10].step,
+                duration = duration
+            )
+        }
+        if (solenoids[11].isVisible) {
+            SolenoidControl(
+                index = 12,
+                solenoids[11].displayName,
+                current = map(
+                    x = current11,
+                    in_min = 0,
+                    in_max = 4095,
+                    out_min = 0,
+                    out_max = solenoids[0].currentMaxValue
+                ),
+                maxPWM = solenoids[11].maxPWM,
+                step =   solenoids[11].step,
+                duration = duration
+            )
+        }
+
     }
 //        Row(
 //            modifier = Modifier.fillMaxSize().weight(1f) //.padding(10.dp)
@@ -255,6 +330,11 @@ var ch5 = 0x00.toByte()
 var ch6 = 0x00.toByte()
 var ch7 = 0x00.toByte()
 var ch8 = 0x00.toByte()
+
+var ch9  = 0x00.toByte()
+var ch10 = 0x00.toByte()
+var ch11 = 0x00.toByte()
+var ch12 = 0x00.toByte()
 
 @Composable
 fun justBar(

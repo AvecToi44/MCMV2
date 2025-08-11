@@ -130,26 +130,26 @@ fun CenterPiece(
             dataChunkGauges.collect {
                 isShowPlay.value = true
                 //delay(DELAY_FOR_GET_DATA)
-                logGarbage(">>>> ${it.toString()}")
+                //logGarbage(">>>> ${it.toString()}")
 
                 //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }.takeIf { pressures.size >= 1 }
-                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }.takeIf { pressures.size >= 2 }
-                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }.takeIf { pressures.size >= 3 }
-                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { it1 -> pressure4X = it1 }.takeIf { pressures.size >= 4 }
-                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { it1 -> pressure5X = it1 }.takeIf { pressures.size >= 5 }
-                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { it1 -> pressure6X = it1 }.takeIf { pressures.size >= 6 }
-                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { it1 -> pressure7X = it1 }.takeIf { pressures.size >= 7 }
-                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { it1 -> pressure8X = it1 }.takeIf { pressures.size >= 8 }
+                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }//.takeIf { pressures.size >= 1 }
+                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }//.takeIf { pressures.size >= 2 }
+                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }//.takeIf { pressures.size >= 3 }
+                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { it1 -> pressure4X = it1 }//.takeIf { pressures.size >= 4 }
+                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { it1 -> pressure5X = it1 }//.takeIf { pressures.size >= 5 }
+                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { it1 -> pressure6X = it1 }//.takeIf { pressures.size >= 6 }
+                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { it1 -> pressure7X = it1 }//.takeIf { pressures.size >= 7 }
+                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { it1 -> pressure8X = it1 }//.takeIf { pressures.size >= 8 }
 
                 if (TWELVE_CHANNELS_MODE) {
-                    if (pressures.getOrNull(8)  != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[8].minValue),    (pressures[8].maxValue)).let { pressure9X = it })}
-                    if (pressures.getOrNull(9)  != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[9].minValue),   (pressures[9].maxValue)).let { pressure10X = it })}
-                    if (pressures.getOrNull(10) != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue)).let { pressure11X = it })}
-                    if (pressures.getOrNull(11) != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
+                    if (pressures.getOrNull(8)  != null && it.ninthGaugeData   != null) {(mapFloat(it.ninthGaugeData   !!   , 0f, 4095f, (pressures[8].minValue),    (pressures[8].maxValue)).let { pressure9X = it })}
+                    if (pressures.getOrNull(9)  != null && it.tenthGaugeData   != null) {(mapFloat(it.tenthGaugeData   !!   , 0f, 4095f, (pressures[9].minValue),   (pressures[9].maxValue)).let { pressure10X = it })}
+                    if (pressures.getOrNull(10) != null && it.eleventhGaugeData!= null) {(mapFloat(it.eleventhGaugeData!!, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue)).let { pressure11X = it })}
+                    if (pressures.getOrNull(11) != null && it.twelfthGaugeData != null) {(mapFloat(it.twelfthGaugeData !! , 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
                 }
 
 
@@ -434,14 +434,11 @@ fun CenterPiece(
                             }
                         }
                     }
-
-
                 }
             )
-
         }
         if(showBottomPanel.value) {
-            Row(Modifier.fillMaxSize().weight(1.5f), horizontalArrangement = Arrangement.SpaceAround) {
+            Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                     if (isExperimentStarts.value) {
@@ -704,6 +701,5 @@ fun CenterPiece(
                 }
             }
         }
-
     }
 }

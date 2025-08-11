@@ -282,12 +282,15 @@ fun StarterScreen() {
                                 ) {
                                     Text("0",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         SOUND_ENABLED = 0
+                                        refreshJsonParameters()
                                     })  .fillMaxSize().padding(10.dp))
                                     Text("1",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         SOUND_ENABLED = 1
+                                        refreshJsonParameters()
                                     })  .fillMaxSize().padding(10.dp))
                                     Text("2",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         SOUND_ENABLED = 2
+                                        refreshJsonParameters()
                                     })  .fillMaxSize().padding(10.dp))
 
                                 }

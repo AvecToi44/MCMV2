@@ -94,7 +94,6 @@ var pwm5SeekBar = mutableStateOf<Int>(-1)
 var pwm6SeekBar = mutableStateOf<Int>(-1)
 var pwm7SeekBar = mutableStateOf<Int>(-1)
 var pwm8SeekBar = mutableStateOf<Int>(-1)
-
 var pwm9SeekBar = mutableStateOf<Int>(-1)
 var pwm10SeekBar = mutableStateOf<Int>(-1)
 var pwm11SeekBar = mutableStateOf<Int>(-1)
@@ -149,8 +148,8 @@ data class DataChunkCurrent(
     var seventhCurrentData: Int,
     var eighthCurrentData: Int,
 
-    var ninthCurrentData:    Float? = null,
-    var tenthCurrentData:    Float? = null,
-    var eleventhCurrentData: Float? = null,
-    var twelfthCurrentData:  Float? = null,
+    var ninthCurrentData:    Int? = null,
+    var tenthCurrentData:    Int? = null,
+    var eleventhCurrentData: Int? = null,
+    var twelfthCurrentData:  Int? = null,
 )

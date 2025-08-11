@@ -3,6 +3,9 @@ package ru.atrs.mcm.serial_port
 import com.fazecast.jSerialComm.SerialPort
 import kotlinx.coroutines.*
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch1
+import ru.atrs.mcm.ui.main_screen.center.support_elements.ch10
+import ru.atrs.mcm.ui.main_screen.center.support_elements.ch11
+import ru.atrs.mcm.ui.main_screen.center.support_elements.ch12
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch2
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch3
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch4
@@ -10,6 +13,7 @@ import ru.atrs.mcm.ui.main_screen.center.support_elements.ch5
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch6
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch7
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch8
+import ru.atrs.mcm.ui.main_screen.center.support_elements.ch9
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.arrayOfComPorts
@@ -18,6 +22,9 @@ import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.logAct
 import ru.atrs.mcm.utils.logGarbage
+import ru.atrs.mcm.utils.pwm10SeekBar
+import ru.atrs.mcm.utils.pwm11SeekBar
+import ru.atrs.mcm.utils.pwm12SeekBar
 import ru.atrs.mcm.utils.pwm1SeekBar
 import ru.atrs.mcm.utils.pwm2SeekBar
 import ru.atrs.mcm.utils.pwm3SeekBar
@@ -26,6 +33,7 @@ import ru.atrs.mcm.utils.pwm5SeekBar
 import ru.atrs.mcm.utils.pwm6SeekBar
 import ru.atrs.mcm.utils.pwm7SeekBar
 import ru.atrs.mcm.utils.pwm8SeekBar
+import ru.atrs.mcm.utils.pwm9SeekBar
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
 import ru.atrs.mcm.utils.toHexString
@@ -127,10 +135,16 @@ suspend fun comparatorToSolenoid(newIndex: Int) {
     pwm2SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[1].takeIf { it <= solenoids[1].maxPWM } }) ?: solenoids[1].maxPWM
     pwm3SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[2].takeIf { it <= solenoids[2].maxPWM } }) ?: solenoids[2].maxPWM
     pwm4SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[3].takeIf { it <= solenoids[3].maxPWM } }) ?: solenoids[3].maxPWM
+
     pwm5SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[4].takeIf { it <= solenoids[4].maxPWM } }) ?: solenoids[4].maxPWM
     pwm6SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[5].takeIf { it <= solenoids[5].maxPWM } }) ?: solenoids[5].maxPWM
     pwm7SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[6].takeIf { it <= solenoids[6].maxPWM } }) ?: solenoids[6].maxPWM
     pwm8SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[7].takeIf { it <= solenoids[7].maxPWM } }) ?: solenoids[7].maxPWM
+
+    pwm9SeekBar.value  = (scenario.getOrNull(idx)?.let { it.channels[8].takeIf { it <= solenoids[8].maxPWM } }) ?: solenoids[8].maxPWM
+    pwm10SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[9].takeIf { it <= solenoids[9].maxPWM } }) ?: solenoids[9].maxPWM
+    pwm11SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[10].takeIf { it <= solenoids[10].maxPWM } }) ?: solenoids[10].maxPWM
+    pwm12SeekBar.value = (scenario.getOrNull(idx)?.let { it.channels[11].takeIf { it <= solenoids[11].maxPWM } }) ?: solenoids[11].maxPWM
 
 //    pwm1SeekBar.value = (scenario.getOrNull(idx){})              .values[0].takeIf { it <= solenoids[0].maxPWM } ?: solenoids[0].maxPWM // [from 0 to 255]
 //    pwm2SeekBar.value = (scenario.getOrElse(idx){ scenario[0] }) .values[1].takeIf { it <= solenoids[1].maxPWM } ?: solenoids[1].maxPWM
@@ -151,6 +165,11 @@ suspend fun comparatorToSolenoid(newIndex: Int) {
     ch6 = pwm6SeekBar.value.toByte() //(rawPreByte5).toByte()
     ch7 = pwm7SeekBar.value.toByte() //(rawPreByte6).toByte()
     ch8 = pwm8SeekBar.value.toByte() //(rawPreByte7).toByte()
+
+    ch9 =  pwm9SeekBar.value.toByte() //(rawPreByte7).toByte()
+    ch10 = pwm10SeekBar.value.toByte() //(rawPreByte7).toByte()
+    ch11 = pwm11SeekBar.value.toByte() //(rawPreByte7).toByte()
+    ch12 = pwm12SeekBar.value.toByte() //(rawPreByte7).toByte()
 
     writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 100L)
 
@@ -189,6 +208,10 @@ suspend fun sendZerosToSolenoid() {
     ch6 = 0x00.toByte()
     ch7 = 0x00.toByte()
     ch8 = 0x00.toByte()
+    ch9 = 0x00.toByte()
+    ch10 = 0x00.toByte()
+    ch11 = 0x00.toByte()
+    ch12 = 0x00.toByte()
 
     writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00), delay = 100L)
 
