@@ -161,7 +161,7 @@ fun App(analysisAfterExperiment : Boolean = false) {
             val lines = File(it).bufferedReader().useLines { it.toList() }
             if (lines.size < 2) return@produceState
             println(">>>>>>>> parseChartFile")
-            COUNT_OF_CHANNELS_CHART_2 = countPairs(lines[5])
+            COUNT_OF_CHANNELS_CHART_3 = countPairs(lines[5])
             delay(1000)
             parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_3)
         }
@@ -178,9 +178,30 @@ fun App(analysisAfterExperiment : Boolean = false) {
     val fileVisible3 = vis3.any { it }
 
     // reset per-file visibility when file changes
-    LaunchedEffect(data1) { data1?.let { vis1 = it.visibility } }
-    LaunchedEffect(data2) { data2?.let { vis2 = it.visibility } }
-    LaunchedEffect(data3) { data3?.let { vis3 = it.visibility } }
+    LaunchedEffect(data1) {
+        if (data1 != null) {
+            vis1 = if (data1?.visibility?.size == COUNT_OF_CHANNELS_CHART_1) {
+                data1?.visibility!!
+            } else {
+                vis1.map { true }
+            }
+        }
+    }
+
+
+    LaunchedEffect(data2) {
+        if (data2 != null) {
+            vis2 = if (data2?.visibility?.size == COUNT_OF_CHANNELS_CHART_2) {
+                data2?.visibility!!
+            } else {
+                vis2.map { true }
+            }
+        }
+//        data2?.let { vis2 = it.visibility }
+    }
+    LaunchedEffect(data3) {
+        data3?.let { vis3 = it.visibility }
+    }
 
     val seriesColors = listOf(
         Color.Blue, Color.Red, Color.Green, Color.Magenta,
@@ -326,9 +347,10 @@ fun ToggleSeriesButtons(
     colors: List<Color>,
     onChange: (List<Boolean>) -> Unit
 ) {
+    println("Series list: ${seriesList?.size} ${seriesList?.get(1)?.size} ")
     seriesList?.forEachIndexed { idx, series ->
         if (series.isNotEmpty()) {
-            println("${visibility.joinToString()}")
+            println("${visibility.joinToString()}|| ${colors.size}")
             val bg = if (visibility[idx]) colors[idx] else colors[idx].copy(alpha = 0.3f)
             Box(
                 modifier = Modifier

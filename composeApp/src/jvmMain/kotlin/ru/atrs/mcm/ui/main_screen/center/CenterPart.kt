@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -78,6 +80,9 @@ import ru.atrs.mcm.utils.txtOfScenario
 fun CenterPiece(
 ) {
     var sizeRow    by remember {mutableStateOf(Size.Zero)}
+
+//    var pressuresX by remember { mutableStateOf(FloatArray(8) { 0f }) }
+
     var pressure1X by remember { mutableStateOf(0f) }
     var pressure2X by remember { mutableStateOf(0f) }
     var pressure3X by remember { mutableStateOf(0f) }
@@ -126,18 +131,19 @@ fun CenterPiece(
                 isShowPlay.value = true
                 //delay(DELAY_FOR_GET_DATA)
                 logGarbage(">>>> ${it.toString()}")
+
                 //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { pressure1X = it }.takeIf { pressures.size >= 1 }
-                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { pressure2X = it }.takeIf { pressures.size >= 2 }
-                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { pressure3X = it }.takeIf { pressures.size >= 3 }
-                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { pressure4X = it }.takeIf { pressures.size >= 4 }
-                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { pressure5X = it }.takeIf { pressures.size >= 5 }
-                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { pressure6X = it }.takeIf { pressures.size >= 6 }
-                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { pressure7X = it }.takeIf { pressures.size >= 7 }
-                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { pressure8X = it }.takeIf { pressures.size >= 8 }
+                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }.takeIf { pressures.size >= 1 }
+                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }.takeIf { pressures.size >= 2 }
+                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }.takeIf { pressures.size >= 3 }
+                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { it1 -> pressure4X = it1 }.takeIf { pressures.size >= 4 }
+                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { it1 -> pressure5X = it1 }.takeIf { pressures.size >= 5 }
+                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { it1 -> pressure6X = it1 }.takeIf { pressures.size >= 6 }
+                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { it1 -> pressure7X = it1 }.takeIf { pressures.size >= 7 }
+                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { it1 -> pressure8X = it1 }.takeIf { pressures.size >= 8 }
 
                 if (TWELVE_CHANNELS_MODE) {
                     if (pressures.getOrNull(8)  != null) {(mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[8].minValue),    (pressures[8].maxValue)).let { pressure9X = it })}
@@ -168,7 +174,7 @@ fun CenterPiece(
                             arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //.takeIf { pressure7X > 0f } //it.seventhGaugeData))
                             arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //.takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
 
-                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),   y = pressure9X)) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
+                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),  y = pressure9X )) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
                             arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)) //.takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
                             arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
                             arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
@@ -217,6 +223,7 @@ fun CenterPiece(
             }
     ) {
         Row(Modifier.weight(5f)) {
+
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxWidth(),
                 //columns = GridCells.Adaptive(150.dp),
@@ -367,23 +374,67 @@ fun CenterPiece(
                             }
                         }
                     }
+                    if (pressures[8].isVisible) {
+                        item {
+                            Box(Modifier.aspectRatio(1f)) {
+                                GaugeX(
+                                    DpSize(columnHeightDp, columnHeightDp),
+                                    pressure9X,
+                                    (pressures[8].minValue),
+                                    (pressures[8].maxValue),
+                                    type = "Бар",
+                                    displayName = pressures[8].displayName,
+                                    comment =     pressures[8].commentString
+                                )
+                            }
+                        }
+                    }
+                    if (pressures[9].isVisible) {
+                        item {
+                            Box(Modifier.aspectRatio(1f)) {
+                                GaugeX(
+                                    DpSize(columnHeightDp, columnHeightDp),
+                                    pressure10X,
+                                    (pressures[9].minValue),
+                                    (pressures[9].maxValue),
+                                    type = "Бар",
+                                    displayName = pressures[9].displayName,
+                                    comment =     pressures[9].commentString
+                                )
+                            }
+                        }
+                    }
+                    if (pressures[10].isVisible) {
+                        item {
+                            Box(Modifier.aspectRatio(1f)) {
+                                GaugeX(
+                                    DpSize(columnHeightDp, columnHeightDp),
+                                    pressure11X,
+                                    (pressures[10].minValue),
+                                    (pressures[10].maxValue),
+                                    type = "Бар",
+                                    displayName = pressures[10].displayName,
+                                    comment =     pressures[10].commentString
+                                )
+                            }
+                        }
+                    }
+                    if (pressures[11].isVisible) {
+                        item {
+                            Box(Modifier.aspectRatio(1f)) {
+                                GaugeX(
+                                    DpSize(columnHeightDp, columnHeightDp),
+                                    pressure12X,
+                                    (pressures[11].minValue),
+                                    (pressures[11].maxValue),
+                                    type = "Бар",
+                                    displayName = pressures[11].displayName,
+                                    comment = pressures[11].commentString
+                                )
+                            }
+                        }
+                    }
 
-//                        if (pressureHolder.isVisible) {
-//                            item {
-//                                Box(Modifier.aspectRatio(1f)) {
-//                                    GaugeX(
-//                                        DpSize(columnHeightDp, columnHeightDp),
-//                                        pressure8X,
-//                                        (pressures[index].minValue),
-//                                        (pressures[index].maxValue),
-//                                        type = "Бар",
-//                                        displayName = pressures[index].displayName,
-//                                        comment = pressures[7].commentString
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
 
                 }
             )

@@ -7,12 +7,16 @@ import org.apache.poi.ss.usermodel.Row
 import ru.atrs.mcm.parsing_excel.models.PressuresHolder
 import ru.atrs.mcm.parsing_excel.models.ScenarioStep
 import ru.atrs.mcm.parsing_excel.models.SolenoidHolder
+import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir7ReportsStandard
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
+import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
+import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.limitTime
+import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
@@ -22,9 +26,14 @@ import java.io.FileInputStream
 
 var wholeSheet = mutableListOf<MutableList<String>>()
 suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
+    logGarbage("targetParseScenario ${inputScenarioFile?.absolutePath}")
 
     if (inputScenarioFile == null)
         return false
+
+    LAST_SCENARIO = inputScenarioFile
+    refreshJsonParameters()
+
     var needReWriteStandard = false
 
     val file = FileInputStream(inputScenarioFile)
@@ -38,6 +47,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     //Iterate through each row's one by one
     val rowIterator: Iterator<Row> = sheet.iterator()
     var incr = 0
+
+    var NUMBER_OF_GAUGES = 8
 
     while (rowIterator.hasNext()) {
         // to bottom V
@@ -76,9 +87,9 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     pressures.clear()
     scenario.clear()
 
+    NUMBER_OF_GAUGES = wholeSheet[2].size-1
+    TWELVE_CHANNELS_MODE = (NUMBER_OF_GAUGES>8)
 
-
-    val NUMBER_OF_GAUGES = 8
     repeat(NUMBER_OF_GAUGES) {
 //        var asd = arrayListOf<String>(
 //            wholeSheet[2][it+1],
