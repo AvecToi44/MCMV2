@@ -72,8 +72,9 @@ val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255
 
 var TWELVE_CHANNELS_MODE = false
-var PROTOCOL_TYPE = false
-enum class ProtocolType { OLD_AUG_2025,  }
+var PROTOCOL_TYPE : ProtocolType = ProtocolType.OLD_AUG_2025
+
+enum class ProtocolType { OLD_AUG_2025, NEW }
 ////////////////////////////////////////////////////
 var arr1Measure = arrayListOf<Pointer>()
 var arr2Measure = arrayListOf<Pointer>()

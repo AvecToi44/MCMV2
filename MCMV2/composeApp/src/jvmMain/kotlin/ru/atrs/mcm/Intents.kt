@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
 import ru.atrs.mcm.parsing_excel.targetParseScenario
-import ru.atrs.mcm.serial_port.writeToSerialPort
+import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.storage.PickTarget
@@ -33,7 +33,7 @@ import ru.atrs.mcm.utils.test_time
 fun launchPlay() {
     if (STATE_EXPERIMENT.value != StateExperiments.START) {
         CoroutineScope(Dispatchers.IO).launch {
-            writeToSerialPort(
+            RouterCommunication.writeToSerialPort(
                 byteArrayOf(
                     0x78,
                     0x00,

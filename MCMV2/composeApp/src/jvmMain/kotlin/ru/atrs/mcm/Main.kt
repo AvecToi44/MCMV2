@@ -19,10 +19,9 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
 import kotlinx.coroutines.*
+import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.ui.App
 import ru.atrs.mcm.ui.showMeSnackBar
-import ru.atrs.mcm.serial_port.comparatorToSolenoid
-import ru.atrs.mcm.serial_port.pauseSerialComm
 import ru.atrs.mcm.storage.initialize
 import ru.atrs.mcm.storage.readParametersJson
 import ru.atrs.mcm.ui.charts.ChartWindowDeprecated
@@ -58,7 +57,7 @@ fun main() = application {
 //        icon = painterResource("drawable/ava.png"),
         onCloseRequest = {
             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                pauseSerialComm()
+                RouterCommunication.pauseSerialComm()
                 delay(500)
                 exitApplication()
             }

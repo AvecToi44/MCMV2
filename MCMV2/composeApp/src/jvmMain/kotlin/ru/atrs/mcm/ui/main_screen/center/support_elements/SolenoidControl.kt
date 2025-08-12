@@ -10,13 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,11 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import ru.atrs.mcm.serial_port.writeToSerialPort
+import ru.atrs.mcm.serial_port.RouterCommunication.solenoidControl
+import ru.atrs.mcm.serial_port.RouterCommunication.writeToSerialPort
 import ru.atrs.mcm.ui.styles.colorDecrease
 import ru.atrs.mcm.ui.styles.colorIncrease
-import ru.atrs.mcm.utils.arr1Measure
-import ru.atrs.mcm.utils.dataChunkGauges
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.pressures
@@ -81,7 +75,7 @@ fun SolenoidControl(
         }
     }
     Column(modifier = Modifier.width(80.dp).background(Color.Gray).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(Modifier.fillMaxSize().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxSize().weight(0.5f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text("${displayName}")
         }
         Row(Modifier.fillMaxSize().weight(1f).background(Color.DarkGray)) {
@@ -112,13 +106,7 @@ fun SolenoidControl(
 
                 CoroutineScope(Dispatchers.IO).launch {
                     selectorForChannels(index, PWMremember.value.toByte())
-                    if (isChangedFirstFourth) {
-                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                    }else {
-                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                    }
+                    solenoidControl(isChangedFirstFourth)
                     delay(100)
                 }
                 //pos.value += 0.1f
@@ -138,13 +126,7 @@ fun SolenoidControl(
                 //pos.value = 1.0f
                 CoroutineScope(Dispatchers.IO).launch {
                     selectorForChannels(index, PWMremember.value.toByte())
-                    if (isChangedFirstFourth) {
-                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                    }else {
-                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                    }
+                    solenoidControl(isChangedFirstFourth)
                     delay(100)
                 }
             }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -165,12 +147,7 @@ fun SolenoidControl(
 
                 CoroutineScope(Dispatchers.IO).launch {
                     selectorForChannels(index, PWMremember.value.toByte())
-                    //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                    if (isChangedFirstFourth) {
-                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-                    }else {
-                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-                    }
+                    solenoidControl(isChangedFirstFourth)
                 }
                 //pos.value-= 0.1f
             }.padding(2.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -185,14 +162,7 @@ fun SolenoidControl(
                 //pos.value = 1.0f
                 CoroutineScope(Dispatchers.IO).launch {
                     selectorForChannels(index, PWMremember.value.toByte())
-                    //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                    if (isChangedFirstFourth) {
-                        writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                    }else {
-                        writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                    }
+                    solenoidControl(isChangedFirstFourth)
                     delay(100)
                 }
             }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {

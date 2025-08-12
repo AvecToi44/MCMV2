@@ -48,7 +48,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     val rowIterator: Iterator<Row> = sheet.iterator()
     var incr = 0
 
-    var NUMBER_OF_GAUGES = 8
+    var NUMBER_OF_GAUGES = 12
 
     while (rowIterator.hasNext()) {
         // to bottom V
@@ -87,8 +87,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     pressures.clear()
     scenario.clear()
 
-    NUMBER_OF_GAUGES = wholeSheet[2].size-1
-    TWELVE_CHANNELS_MODE = (NUMBER_OF_GAUGES>8)
+//    NUMBER_OF_GAUGES = wholeSheet[2].size-1
+//    TWELVE_CHANNELS_MODE = (NUMBER_OF_GAUGES>8)
 
     repeat(NUMBER_OF_GAUGES) {
 //        var asd = arrayListOf<String>(
@@ -196,8 +196,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
             ScenarioStep(
                 time = newTime,
                 channels = valueSteps,
-                transitionTime = if ((wholeSheet[i][13]).toIntOrNull() != null) { wholeSheet[i][14].toInt() } else { 0 },
-                comment = wholeSheet[i][14]
+                transitionTime = wholeSheet[i][13].toIntOrNull() ?: 0,
+                comment = wholeSheet[i][14].toString()
             )
         )
     }

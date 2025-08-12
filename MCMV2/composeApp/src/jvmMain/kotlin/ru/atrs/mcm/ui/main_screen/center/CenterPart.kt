@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -31,16 +29,16 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
 import ru.atrs.mcm.launchPlay
-import ru.atrs.mcm.serial_port.comparatorToSolenoid
+import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
+import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
+import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
+import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
+import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
 import ru.atrs.mcm.serial_port.incrX
-import ru.atrs.mcm.serial_port.pauseSerialComm
-import ru.atrs.mcm.serial_port.reInitSolenoids
-import ru.atrs.mcm.serial_port.sendScenarioToController
-import ru.atrs.mcm.serial_port.startReceiveFullData
 import ru.atrs.mcm.storage.createMeasureExperiment
 import ru.atrs.mcm.ui.charts.Pointer
 import ru.atrs.mcm.ui.custom.GaugeX
-import ru.atrs.mcm.ui.main_screen.center.support_elements.solenoidsPanel
+import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
 import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.utils.BAUD_RATE
@@ -117,6 +115,7 @@ fun CenterPiece(
     }
     var isShowPlay = remember { mutableStateOf(false) }
     LaunchedEffect(true) {
+        println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
         ctxScope.launch {
             //EXPLORER_MODE.value = ExplorerMode.MANUAL
             //reInitSolenoids()
@@ -439,7 +438,7 @@ fun CenterPiece(
             )
         }
         if(showBottomPanel.value) {
-            Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
+            Row(Modifier.fillMaxSize().weight(1.1f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                     if (isExperimentStarts.value) {
@@ -593,8 +592,10 @@ fun CenterPiece(
                     }
 
                 }
-
-                solenoidsPanel(sizeRow = sizeRow, duration = duration)
+                /**
+                 * SOLENOIDS PANEL
+                 */
+                SolenoidsPanel(sizeRow = sizeRow, duration = duration)
             }
         } else {
             Row(Modifier.fillMaxSize().background(Color.DarkGray).weight(0.2f), horizontalArrangement = Arrangement.SpaceAround) {

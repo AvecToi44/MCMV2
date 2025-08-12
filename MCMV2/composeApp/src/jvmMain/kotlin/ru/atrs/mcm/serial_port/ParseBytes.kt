@@ -3,6 +3,7 @@ package ru.atrs.mcm.serial_port
 import com.fazecast.jSerialComm.*
 import ru.atrs.mcm.enums.StateExperiments
 import kotlinx.coroutines.*
+import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG

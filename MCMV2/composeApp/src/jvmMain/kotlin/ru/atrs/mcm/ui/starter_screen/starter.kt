@@ -34,6 +34,7 @@ import ru.atrs.mcm.utils.LogLevel
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
+import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
@@ -372,7 +373,26 @@ fun StarterScreen() {
                                 }
                             )
                         }
-
+                    }
+                    item {
+                        Row {
+                            Text("12 CHANNELS MODE",
+                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                            val checkedState = remember { mutableStateOf(TWELVE_CHANNELS_MODE) }
+                            Checkbox(
+                                checked = checkedState.value,
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = Color.Blue,
+                                    uncheckedColor = Color.Gray
+                                ),
+                                onCheckedChange = {
+                                    checkedState.value = it
+                                    TWELVE_CHANNELS_MODE = it
+                                    refreshJsonParameters()
+                                }
+                            )
+                        }
                     }
                 }
                 }
