@@ -122,7 +122,7 @@ fun SolenoidControl(
                     delay(100)
                 }
                 //pos.value += 0.1f
-            }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            }.padding(2.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
                     text = "+", // +
                     fontSize = 15.sp
@@ -173,7 +173,7 @@ fun SolenoidControl(
                     }
                 }
                 //pos.value-= 0.1f
-            }.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            }.padding(2.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
                     text = "-", // minus
                     fontSize = 15.sp

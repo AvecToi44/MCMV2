@@ -336,217 +336,217 @@ var ch10 = 0x00.toByte()
 var ch11 = 0x00.toByte()
 var ch12 = 0x00.toByte()
 
-@Composable
-fun justBar(
-    index: Int,
-    channelName: String,
-    current: Int,
-    maxPWM: Int,
-    step: Int,
-    duration: MutableStateFlow<Long>,
-    //PWM: Int
-    ) {
-
-    // PWM [from 0 to 255]
-    val PWMremember = remember {
-        when(index) {
-            1 -> pwm1SeekBar
-            2 -> pwm2SeekBar
-            3 -> pwm3SeekBar
-            4 -> pwm4SeekBar
-
-            5 -> pwm5SeekBar
-            6 -> pwm6SeekBar
-            7 -> pwm7SeekBar
-            8 -> pwm8SeekBar
-            else -> pwm1SeekBar
-        }
-    }
-
-
-
-
-
-    Column(
-        modifier = Modifier.padding(0.dp, 1.dp).fillMaxSize()
-            //.width(200.dp)
-            //.height(90.dp)
-            .background(Color.Black)
-            .padding(5.dp)
-        //.fillMaxWidth()
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxSize().weight(2f)//.height(60.dp)
-                .background(Color.Black),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.DarkGray).weight(1f).clickable {
-                    PWMremember.value = 0
-                    //pos.value = 1.0f
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
-                    }
-                }
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    text = "<<",
-                    color = Color.White
-                )
-            }
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.Gray).weight(2f).clickable {
-                    PWMremember.value = PWMremember.value - step
-                    if (PWMremember.value < 0) {
-                        PWMremember.value = 0
-                    }
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-                        }
-                    }
-                    //pos.value-= 0.1f
-                }
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    text = "-",
-                    color = Color.White
-                )
-            }
-
-
-            Spacer(modifier = Modifier.width(10.dp).fillMaxHeight())
-            Column(Modifier.fillMaxSize().weight(5f)) {
-                Text(
-                    "${channelName}",
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    textAlign = TextAlign.Center,
-                    fontSize = 8.sp,
-                    color = Color.White
-                )
-                Text(
-                    "${current}",
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    fontFamily = fontDigital,
-                    textAlign = TextAlign.Center,
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-            }
-            Column(Modifier.fillMaxSize().weight(5f)) {
-                Text(
-                    "PWM (%)",
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    fontSize = 8.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.White
-                )
-                Text(
-                    "${map(PWMremember.value, 0, 255, 0, 100)}",
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    fontFamily = fontDigital,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.White
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp).fillMaxHeight())
-
-
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.Gray).weight(2f).clickable {
-                    PWMremember.value = PWMremember.value + step
-                    if (PWMremember.value > maxPWM) {
-                        PWMremember.value = maxPWM
-                    }
-                    if (PWMremember.value > 255) {
-                        PWMremember.value = 255
-                    }
-                    println("WELL ${(PWMremember.value.toFloat())}")
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
-                    }
-                    //pos.value += 0.1f
-                }
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    text = "+",
-                    color = Color.White
-                )
-            }
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.DarkGray).weight(1f).clickable {
-                    PWMremember.value = 255
-                    if (PWMremember.value > maxPWM) {
-                        PWMremember.value = maxPWM
-                    }
-                    //pos.value = 1.0f
-                    CoroutineScope(Dispatchers.IO).launch {
-                        selectorForChannels(index, PWMremember.value.toByte())
-                        if (isChangedFirstFourth) {
-                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
-
-                        }else {
-                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-
-                        }
-                        delay(100)
-                    }
-                }
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    text = ">>",
-                    color = Color.White
-                )
-            }
-
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth().weight(1f)//.height(20.dp)
-        ) {
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp),
-                progress = (map(PWMremember.value, 0, 255, 0, 100) /100f).toFloat() //((PWMremember.value.toFloat() * 100f) / 255f)/100f //rndTo2deci(pos.value)
-            )
-        }
-    }
-
-}
+//@Composable
+//fun justBar(
+//    index: Int,
+//    channelName: String,
+//    current: Int,
+//    maxPWM: Int,
+//    step: Int,
+//    duration: MutableStateFlow<Long>,
+//    //PWM: Int
+//    ) {
+//
+//    // PWM [from 0 to 255]
+//    val PWMremember = remember {
+//        when(index) {
+//            1 -> pwm1SeekBar
+//            2 -> pwm2SeekBar
+//            3 -> pwm3SeekBar
+//            4 -> pwm4SeekBar
+//
+//            5 -> pwm5SeekBar
+//            6 -> pwm6SeekBar
+//            7 -> pwm7SeekBar
+//            8 -> pwm8SeekBar
+//            else -> pwm1SeekBar
+//        }
+//    }
+//
+//
+//
+//
+//
+//    Column(
+//        modifier = Modifier.padding(0.dp, 1.dp).fillMaxSize()
+//            //.width(200.dp)
+//            //.height(90.dp)
+//            .background(Color.Black)
+//            .padding(5.dp)
+//        //.fillMaxWidth()
+//    ) {
+//
+//        Row(
+//            modifier = Modifier.fillMaxSize().weight(2f)//.height(60.dp)
+//                .background(Color.Black),
+//            horizontalArrangement = Arrangement.SpaceEvenly,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Box(
+//                modifier = Modifier.fillMaxSize().background(Color.DarkGray).weight(1f).clickable {
+//                    PWMremember.value = 0
+//                    //pos.value = 1.0f
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        selectorForChannels(index, PWMremember.value.toByte())
+//                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
+//                        if (isChangedFirstFourth) {
+//                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+//
+//                        }else {
+//                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+//
+//                        }
+//                        delay(100)
+//                    }
+//                }
+//            ) {
+//                Text(
+//                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
+//                    textAlign = TextAlign.Center,
+//                    text = "<<",
+//                    color = Color.White
+//                )
+//            }
+//            Box(
+//                modifier = Modifier.fillMaxSize().background(Color.Gray).weight(2f).clickable {
+//                    PWMremember.value = PWMremember.value - step
+//                    if (PWMremember.value < 0) {
+//                        PWMremember.value = 0
+//                    }
+//
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        selectorForChannels(index, PWMremember.value.toByte())
+//                        //selectorForChannels(index, PWMremember.value.to2ByteArray()[0])
+//                        if (isChangedFirstFourth) {
+//                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+//                        }else {
+//                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+//                        }
+//                    }
+//                    //pos.value-= 0.1f
+//                }
+//            ) {
+//                Text(
+//                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
+//                    textAlign = TextAlign.Center,
+//                    text = "-",
+//                    color = Color.White
+//                )
+//            }
+//
+//
+//            Spacer(modifier = Modifier.width(10.dp).fillMaxHeight())
+//            Column(Modifier.fillMaxSize().weight(5f)) {
+//                Text(
+//                    "${channelName}",
+//                    modifier = Modifier.fillMaxSize().weight(1f),
+//                    textAlign = TextAlign.Center,
+//                    fontSize = 8.sp,
+//                    color = Color.White
+//                )
+//                Text(
+//                    "${current}",
+//                    modifier = Modifier.fillMaxSize().weight(1f),
+//                    fontFamily = fontDigital,
+//                    textAlign = TextAlign.Center,
+//                    fontSize = 12.sp,
+//                    color = Color.White
+//                )
+//            }
+//            Column(Modifier.fillMaxSize().weight(5f)) {
+//                Text(
+//                    "PWM (%)",
+//                    modifier = Modifier.fillMaxSize().weight(1f),
+//                    fontSize = 8.sp,
+//                    textAlign = TextAlign.Center,
+//                    color = Color.White
+//                )
+//                Text(
+//                    "${map(PWMremember.value, 0, 255, 0, 100)}",
+//                    modifier = Modifier.fillMaxSize().weight(1f),
+//                    fontFamily = fontDigital,
+//                    fontSize = 12.sp,
+//                    textAlign = TextAlign.Center,
+//                    color = Color.White
+//                )
+//            }
+//            Spacer(modifier = Modifier.width(10.dp).fillMaxHeight())
+//
+//
+//            Box(
+//                modifier = Modifier.fillMaxSize().background(Color.Gray).weight(2f).clickable {
+//                    PWMremember.value = PWMremember.value + step
+//                    if (PWMremember.value > maxPWM) {
+//                        PWMremember.value = maxPWM
+//                    }
+//                    if (PWMremember.value > 255) {
+//                        PWMremember.value = 255
+//                    }
+//                    println("WELL ${(PWMremember.value.toFloat())}")
+//
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        selectorForChannels(index, PWMremember.value.toByte())
+//                        if (isChangedFirstFourth) {
+//                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+//
+//                        }else {
+//                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+//
+//                        }
+//                        delay(100)
+//                    }
+//                    //pos.value += 0.1f
+//                }
+//            ) {
+//                Text(
+//                    modifier = Modifier.fillMaxSize().align(Alignment.Center),
+//                    textAlign = TextAlign.Center,
+//                    text = "+",
+//                    color = Color.White
+//                )
+//            }
+//            Box(
+//                modifier = Modifier.fillMaxSize().background(Color.DarkGray).weight(1f).clickable {
+//                    PWMremember.value = 255
+//                    if (PWMremember.value > maxPWM) {
+//                        PWMremember.value = maxPWM
+//                    }
+//                    //pos.value = 1.0f
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        selectorForChannels(index, PWMremember.value.toByte())
+//                        if (isChangedFirstFourth) {
+//                            writeToSerialPort(byteArrayOf(0x71,ch1, 0x00,ch2, 0x00,ch3, 0x00,ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 100L)
+//
+//                        }else {
+//                            writeToSerialPort(byteArrayOf(0x51,ch5, 0x00,ch6, 0x00,ch7, 0x00,ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
+//
+//                        }
+//                        delay(100)
+//                    }
+//                }
+//            ) {
+//                Text(
+//                    modifier = Modifier.fillMaxSize().padding(vertical = 20.dp).align(Alignment.Center),
+//                    textAlign = TextAlign.Center,
+//                    text = ">>",
+//                    color = Color.White
+//                )
+//            }
+//
+//        }
+//        Row(
+//            modifier = Modifier.fillMaxWidth().weight(1f)//.height(20.dp)
+//        ) {
+//            LinearProgressIndicator(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(20.dp),
+//                progress = (map(PWMremember.value, 0, 255, 0, 100) /100f).toFloat() //((PWMremember.value.toFloat() * 100f) / 255f)/100f //rndTo2deci(pos.value)
+//            )
+//        }
+//    }
+//
+//}
 var isChangedFirstFourth = true
 
 fun selectorForChannels(chIndex: Int, byte: Byte) {
@@ -561,19 +561,12 @@ fun selectorForChannels(chIndex: Int, byte: Byte) {
         6 -> ch6 = byte
         7 -> ch7 = byte
         8 -> ch8 = byte
+        9 -> ch9 = byte
+        10 -> ch10 = byte
+        11 -> ch11 = byte
+        12 -> ch12 = byte
     }
 }
 
-@Composable
-fun SimpleProgressIndicator(
-    modifier: Modifier = Modifier,
-    progress: Float = 0.7f,
-    progressBarColor: Color = Color.Red,
-    cornerRadius: Dp = 0.dp,
-    trackColor: Color = Color(0XFFFBE8E8),
-    thumbRadius: Dp = 0.dp,
-    thumbColor: Color = Color.White,
-    thumbOffset: Dp = thumbRadius
-) {}
 
 

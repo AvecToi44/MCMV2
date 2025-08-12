@@ -54,6 +54,7 @@ var LOG_LEVEL : LogLevel= LogLevel.DEBUG // from 0 NO logs, and 2 is super detai
 enum class LogLevel { ERRORS, DEBUG }
 var SHOW_FULLSCREEN = false
 var SHOW_BOTTOM_PANEL = true
+const val APP_VERSION = "1.2.13"
 
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()

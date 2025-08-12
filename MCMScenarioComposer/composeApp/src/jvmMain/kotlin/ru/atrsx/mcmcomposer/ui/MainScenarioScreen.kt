@@ -1,8 +1,10 @@
 package ru.atrsx.mcmcomposer.ui
 
+import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +17,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -31,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -52,17 +59,32 @@ fun MainScenarioScreen() {
 
     Row(Modifier.fillMaxSize()) {
         // Left: table + canvas area
-        Column(Modifier.weight(1f).fillMaxHeight()) {
-            ScenarioHeader() // header row
+        Column(Modifier.weight(1f).background(Color.White).fillMaxHeight()) {
+            //ScenarioHeader() // header row
 
             // rows
             val vScroll = rememberScrollState()
-            Column(
-                Modifier.fillMaxWidth()
-                    .verticalScroll(vScroll)
+            val horizontalScrollState = rememberScrollState()
+            HorizontalScrollbar(
+                rememberScrollbarAdapter(horizontalScrollState),
+                Modifier.align(Alignment.CenterHorizontally)
+            )
+            LazyColumn(
+                Modifier.fillMaxWidth().horizontalScroll(horizontalScrollState)
+                    //.verticalScroll(vScroll)
                     .border(1.dp, Color(0xFFB0B0B0))
             ) {
-                rows.forEachIndexed { idx, row ->
+                stickyHeader {
+                    // Fixed item at the top
+                    Row(
+                        Modifier.fillMaxWidth().background(Color.LightGray).height(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(modifier = Modifier, text = "Number", fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                itemsIndexed(rows) {  idx, row ->
+
                     ScenarioRowItem(
                         row = row,
                         selected = selected == idx,
@@ -147,26 +169,27 @@ private fun ScenarioRowItem(
     onSelect: () -> Unit
 ) {
     // same widths as header
-    val wNumber = 64.dp
+    val wNumber = 30.dp
     val wName = 140.dp
-    val wPass = 110.dp
-    val wDur = 150.dp
-    val wMsg = 220.dp
+    val wPass = 60.dp
+    val wDur = 100.dp
+    val wMsg = 200.dp
     val wInterp = 370.dp
     val wPress = 360.dp
     val wAnalog = 140.dp
 
-    val cellBorder = Modifier.border(1.dp, Color.Black.copy(alpha = 0.7f))
+    val ModifierCellBorder = Modifier.fillMaxHeight()//.border(1.dp, Color.Black.copy(alpha = 0.7f))
     val rowBg = if (selected) Color(0xFFBFE6FF) else Color.White
 
     Row(
-        Modifier.fillMaxWidth()
+        Modifier.border(1.dp, Color.Black.copy(alpha = 0.7f)).fillMaxWidth().height(50.dp)
             .background(rowBg)
             .clickable { onSelect() },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         // Number (read-only)
-        Box(cellBorder.width(wNumber).height(40.dp).padding(start = 8.dp), contentAlignment = Alignment.CenterStart) {
+        Column(ModifierCellBorder.width(wNumber).height(40.dp).padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
             Text(row.number.toString())
         }
 
@@ -174,14 +197,15 @@ private fun ScenarioRowItem(
         var nm by remember { mutableStateOf(row.name) }
         TextField(
             nm, { nm = it; row.name = it },
-            modifier = cellBorder.width(wName).height(40.dp),
+            modifier = ModifierCellBorder.width(wName),
+            //label = { Text("Name", fontSize = 9.sp) },
+            textStyle = TextStyle(fontSize = 15.sp),
             singleLine = true
         )
 
         // Pass Through
         var pass by remember { mutableStateOf(row.passThrough) }
-        Row(cellBorder.width(wPass).height(40.dp), verticalAlignment = Alignment.CenterVertically) {
-            Spacer(Modifier.width(12.dp))
+        Row(ModifierCellBorder.width(wPass).height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
 
             Checkbox(checked = pass, onCheckedChange = { pass = it; row.passThrough = it })
         }
@@ -190,33 +214,38 @@ private fun ScenarioRowItem(
         var dur by remember { mutableStateOf(row.durationMs) }
         TextField(
             dur, { dur = it; row.durationMs = it },
-            modifier = cellBorder.width(wDur).height(40.dp),
+            modifier = ModifierCellBorder.width(wName),
+            //label = { Text("Name", fontSize = 9.sp) },
+            textStyle = TextStyle(fontSize = 15.sp),
             singleLine = true
         )
-
+        Spacer(modifier = Modifier.width(5.dp))
         // Message
         var msg by remember { mutableStateOf(row.messageText) }
         TextField(
             msg, { msg = it; row.messageText = it },
-            modifier = cellBorder.width(wMsg).height(40.dp),
+            modifier = ModifierCellBorder.width(wName),
+            //label = { Text("Name", fontSize = 9.sp) },
+            textStyle = TextStyle(fontSize = 15.sp),
             singleLine = true
         )
 
+
         // Interpolation Parameters (per-row 1..16 + flags)
-        Column(cellBorder.width(wInterp).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        Column(ModifierCellBorder.width(wInterp).padding(horizontal = 8.dp, vertical = 4.dp)) {
             Text((1..16).joinToString("  "), fontSize = 11.sp)
             FlagsStrip(row.interpolationFlags)
         }
 
         // Pressure highlight settings (per-row 1..16 + flags)
-        Column(cellBorder.width(wPress).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        Column(ModifierCellBorder.width(wPress).padding(horizontal = 8.dp, vertical = 4.dp)) {
             Text((1..16).joinToString("  "), fontSize = 11.sp)
             FlagsStrip(row.pressureHighlightFlags)
         }
 
         // Analog outputs
         Column(
-            cellBorder.width(wAnalog).height(40.dp),
+            ModifierCellBorder.width(wAnalog).height(40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     kotlin("plugin.serialization") version "2.2.0"
+    id("com.github.gmazzo.buildconfig") version "5.6.7"
+}
+
+buildConfig {
+//    buildConfigField("APP_NAME", project.name)
+    buildConfigField("APP_VERSION", provider { "1.2.13" })
 }
 
 kotlin {
@@ -34,6 +40,10 @@ kotlin {
             implementation("io.github.thechance101:chart:1.1.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
+//            // for version control
+//            implementation("com.akuleshov7:ktoml-core:0.7.0")
+//            implementation("com.akuleshov7:ktoml-file:0.7.0")
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -52,7 +62,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageVersion = "1.2.12"
+            packageVersion = "1.2.13"
             packageName = "MCM (${packageVersion})"
 
         }

@@ -38,6 +38,7 @@ import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.logAct
+import ru.atrs.mcm.utils.shimmerEffect
 
 
 @OptIn(ExperimentalTextApi::class)
@@ -116,33 +117,33 @@ fun StarterScreen() {
             }
         }
         Row(modifier = Modifier.fillMaxSize().weight(3f).padding(10.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(200.dp).border(BorderStroke(2.dp, Color.Blue))
+            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
                 .clickable {
                     openNewScenario()
 
                 }) {
                 Text("Open Scenario",
-                    modifier = Modifier.padding(4.dp), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                    modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
 
-            Box(Modifier.width(200.dp).border(BorderStroke(2.dp, Color.Blue))
+            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
                 .clickable {
                     openLastScenario()
                 }) {
                 Text("Open last scenario",
-                    modifier = Modifier.padding(4.dp), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                    modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
 
-            Box(Modifier.width(200.dp).border(BorderStroke(2.dp, Color.Blue))
+            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
                 .clickable {
 //                   openChartViewer()
                     doOpen_Second_ChartWindow.value = true
                 }) {
                 Text("Open Chart",
-                    modifier = Modifier.padding(4.dp), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                    modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
 
-            Box(Modifier.width(200.dp).border(BorderStroke(2.dp, Color.Blue))
+            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {},
@@ -157,7 +158,7 @@ fun StarterScreen() {
                 }
                 ) {
                 Text("Settings",
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(4.dp).align(Alignment.Center)
                     , fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
 

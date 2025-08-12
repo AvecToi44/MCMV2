@@ -1,5 +1,6 @@
 package ru.atrs.mcm// Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
+import MCMV2.composeApp.BuildConfig
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,7 +53,7 @@ fun main() = application {
     val windowFloating = rememberWindowState(width = 1000.dp, height = 800.dp)
     println("window: ${SHOW_FULLSCREEN}")
     Window(
-        title = "MCM [${generateTimestampLastUpdate()}]",
+        title = "MCM [${generateTimestampLastUpdate()}] ${BuildConfig.APP_VERSION}",
         state = if (SHOW_FULLSCREEN) windowStateFullscreen else windowFloating,
 //        icon = painterResource("drawable/ava.png"),
         onCloseRequest = {
