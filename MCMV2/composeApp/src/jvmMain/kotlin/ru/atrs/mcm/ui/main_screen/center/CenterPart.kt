@@ -136,6 +136,7 @@ fun CenterPiece(
 
 
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
+                // in_max 65535 instead of 4095
                 mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }//.takeIf { pressures.size >= 1 }
                 mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }//.takeIf { pressures.size >= 2 }
                 mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }//.takeIf { pressures.size >= 3 }
@@ -227,7 +228,7 @@ fun CenterPiece(
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxWidth(),
                 //columns = GridCells.Adaptive(150.dp),
-                columns = GridCells.Fixed(4),
+                columns = GridCells.Fixed(6),
                 verticalArrangement =   Arrangement.Center,
                 horizontalArrangement = Arrangement.Center,
                 // content padding
