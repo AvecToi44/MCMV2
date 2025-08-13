@@ -467,10 +467,11 @@ fun CenterPiece(
                                 launchPlay()
                             } else if (explMode.value == ExplorerMode.MANUAL) {
                                 indexOfScenario.value--
-                                ctxScope.launch {
 
+                                ctxScope.launch {
                                     comparatorToSolenoid(indexOfScenario.value)
                                 }
+
                                 scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                                 //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
                                 //txtOfScenario.value = scenario[indexOfScenario.value].text

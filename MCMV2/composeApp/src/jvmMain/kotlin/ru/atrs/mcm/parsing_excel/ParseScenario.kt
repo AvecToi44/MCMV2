@@ -200,6 +200,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
                 comment = wholeSheet[i][14].toString()
             )
         )
+        logGarbage("<><>${wholeSheet[i][14]}")
     }
 
     // Create folder with name of EXCEL, coz name of EXCEL == name of experiment
