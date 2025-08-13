@@ -48,29 +48,6 @@ fun CurrentsScreen() {
     }
 
     Row(Modifier.fillMaxSize()) {
-        // Left list
-        Box(
-            Modifier.width(220.dp).fillMaxHeight()
-                .padding(12.dp).border(1.dp, Color.LightGray)
-        ) {
-            val vScroll = rememberScrollState()
-            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
-                Text("CURRENTS TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
-                channels.forEach { ch ->
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Channel PWM ${ch.index}", modifier = Modifier.weight(1f))
-                        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
-                        Box(
-                            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
-                        )
-                    }
-                }
-            }
-        }
-
         // Right config
         Column(
             Modifier.weight(1f).fillMaxHeight().padding(12.dp),
@@ -114,6 +91,28 @@ fun CurrentsScreen() {
 
                     LabeledField("EXPECTED TEST VALUE:", selected.expectedTestValue, width = 160.dp) {
                         selected.expectedTestValue = it
+                    }
+                }
+            }
+        }
+
+        Box(
+            Modifier.width(320.dp).fillMaxHeight()
+                .padding(12.dp).border(1.dp, Color.LightGray)
+        ) {
+            val vScroll = rememberScrollState()
+            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
+                Text("CURRENTS TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
+                channels.forEach { ch ->
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Channel PWM ${ch.index}", modifier = Modifier.weight(1f))
+                        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
+                        Box(
+                            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
+                        )
                     }
                 }
             }

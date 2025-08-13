@@ -33,7 +33,7 @@ data class ScenarioRow(
 data class PressureChannel(
     val index: Int,
     var used: Boolean = true,
-    var checked: Boolean = true,
+    var isVisible: Boolean = true,
     var color: Color,
     var displayName: String = "Channel Data $index",
     var comment: String = "",
@@ -116,12 +116,7 @@ fun MainScenarioScreen0() {
             SideButton("Delete")
             Spacer(Modifier.height(8.dp))
             SideButton("Copy")
-            SideButton("Cut")
             SideButton("Paste")
-            Spacer(Modifier.height(8.dp))
-            SideButton("Set LOOP 1")
-            SideButton("Set LOOP 2")
-            SideButton("Clear LOOPs")
         }
     }
 }

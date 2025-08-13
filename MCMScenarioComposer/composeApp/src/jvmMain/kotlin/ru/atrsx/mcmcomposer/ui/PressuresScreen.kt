@@ -51,21 +51,7 @@ fun PressuresScreen() {
     }
 
     Row(Modifier.fillMaxSize()) {
-        // Left list
-        Box(
-            Modifier.width(220.dp).fillMaxHeight()
-                .padding(12.dp).border(1.dp, Color.LightGray)
-        ) {
-            val vScroll = rememberScrollState()
-            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
-                Text("PRESSURES TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
-                channels.forEach { ch ->
-                    PressureListItem(ch)
-                }
-            }
-        }
-
-        // Right config
+        // Left config
         Column(
             Modifier.weight(1f).fillMaxHeight().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -96,6 +82,20 @@ fun PressuresScreen() {
                 }
             }
         }
+
+        // Right list
+        Box(
+            Modifier.width(320.dp).fillMaxHeight()
+                .padding(12.dp).border(1.dp, Color.LightGray)
+        ) {
+            val vScroll = rememberScrollState()
+            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
+                Text("PRESSURES TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
+                channels.forEach { ch ->
+                    PressureListItem(ch)
+                }
+            }
+        }
     }
 }
 
@@ -106,8 +106,7 @@ private fun PressureListItem(ch: PressureChannel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("Channel Data ${ch.index}", modifier = Modifier.weight(1f))
-        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
-        Checkbox(checked = ch.checked, onCheckedChange = { ch.checked = it })
+        Checkbox(checked = ch.isVisible, onCheckedChange = { ch.isVisible = it })
         Box(
             Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
         )

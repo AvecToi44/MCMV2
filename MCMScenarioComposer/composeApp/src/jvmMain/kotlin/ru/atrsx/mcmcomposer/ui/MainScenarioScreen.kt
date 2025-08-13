@@ -113,7 +113,7 @@ fun MainScenarioScreen() {
                     selected = rows.lastIndex
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Add Step") }
+            ) { Text(modifier = Modifier,text = "Add Step") }
 
             Button(
                 onClick = { if (rows.isNotEmpty()) rows.removeAt(selected.coerceIn(0, rows.lastIndex)) },
@@ -123,42 +123,8 @@ fun MainScenarioScreen() {
 
             Spacer(Modifier.height(8.dp))
             SideButton("Copy")
-            SideButton("Cut")
             SideButton("Paste")
-            Spacer(Modifier.height(8.dp))
-            SideButton("Set LOOP 1")
-            SideButton("Set LOOP 2")
-            SideButton("Clear LOOPs")
         }
-    }
-}
-
-@Composable
-private fun ScenarioHeader() {
-    // fixed widths to align with rows
-    val wNumber = 64.dp
-    val wName = 140.dp
-    val wPass = 110.dp
-    val wDur = 150.dp
-    val wMsg = 220.dp
-    val wInterp = 370.dp
-    val wPress = 360.dp
-    val wAnalog = 140.dp
-
-    Row(
-        Modifier.fillMaxWidth()
-            .background(Color(0xFFEDEFF2))
-            .border(1.dp, Color(0xFFB0B0B0))
-            .padding(vertical = 6.dp)
-    ) {
-        HeaderBox("Number", wNumber)
-        HeaderBox("Name", wName)
-        HeaderBox("Pass Through", wPass)
-        HeaderBox("Duration (in ms)", wDur)
-        HeaderBox("Message Text", wMsg)
-        HeaderBox("Interpolation Parameters", wInterp)
-        HeaderBox("Pressure highlight settings", wPress)
-        HeaderBox("Analog Outputs", wAnalog)
     }
 }
 
@@ -229,19 +195,6 @@ private fun ScenarioRowItem(
             textStyle = TextStyle(fontSize = 15.sp),
             singleLine = true
         )
-
-
-        // Interpolation Parameters (per-row 1..16 + flags)
-        Column(ModifierCellBorder.width(wInterp).padding(horizontal = 8.dp, vertical = 4.dp)) {
-            Text((1..16).joinToString("  "), fontSize = 11.sp)
-            FlagsStrip(row.interpolationFlags)
-        }
-
-        // Pressure highlight settings (per-row 1..16 + flags)
-        Column(ModifierCellBorder.width(wPress).padding(horizontal = 8.dp, vertical = 4.dp)) {
-            Text((1..16).joinToString("  "), fontSize = 11.sp)
-            FlagsStrip(row.pressureHighlightFlags)
-        }
 
         // Analog outputs
         Column(
