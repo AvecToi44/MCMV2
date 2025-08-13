@@ -78,7 +78,7 @@ fun SolenoidsPanel(
         }
     }
 
-    Row(modifier = Modifier.fillMaxSize().background(Color.DarkGray), horizontalArrangement = Arrangement.End) {
+    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
         if (solenoids[0].isVisible) {
             SolenoidControl(
                 index = 1,
