@@ -1,6 +1,8 @@
 package ru.atrs.mcm.ui.chartsv3
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize
@@ -212,12 +214,22 @@ fun App(analysisAfterExperiment : Boolean = false) {
     }
 
     val seriesColors = listOf(
-        Color.Blue, Color.Red, Color.Green, Color.Magenta,
-        Color.Cyan, Color.Yellow, Color.Gray, Color.Black,
-        Color(0xFF800080), // Purple
-        Color(0xFFFFA500), // Orange
-        Color(0xFF00FF00), // Lime
-        Color(0xFF00FFFF)  // Aqua
+        Color(0xFF2E7D32),  // Dark Green
+        Color(0xFF5D4037),  // Brown
+        Color(0xFF424242),  // Dark Gray
+        Color(0xFF1976D2),  // Blue
+        Color(0xFFD32F2F),  // Red
+        Color(0xFFFBC02D),  // Yellow
+        Color(0xFF42322C),  // Medium Brown
+        Color(0xFFF5F5F5),  // Light Gray
+        Color(0xFF9C27B0),  // Purple
+        Color(0xFFE91E63),  // Pink
+        Color(0xFF9FA8DA),  // Light Purple
+        Color(0xFF4CAF50),  // Green
+        Color(0xFF8D6E63),  // Light Brown
+        Color(0xFFAB47BC),  // Medium Purple
+        Color(0xFF66BB6A),  // Light Green
+        Color(0xFFF06292)   // Light Pink
     )
 
     Column(
@@ -363,10 +375,12 @@ fun ToggleSeriesButtons(
             Box(
                 modifier = Modifier
                     .background(bg, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+
                     .clickable { onChange(visibility.toMutableList().apply { this[idx] = !this[idx] }) }
+                    .border(width = 6.dp,if (visibility[idx]) Color.Black else Color.White)
                     .padding(8.dp)
             ) {
-                Text("Ch${idx+1}", fontSize = 14.sp, color = Color.White)
+                Text("Ch${idx+1}", fontSize = 14.sp, color = Color.LightGray)
             }
         }
     }

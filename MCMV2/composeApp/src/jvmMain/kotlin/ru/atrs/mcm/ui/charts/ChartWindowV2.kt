@@ -32,6 +32,8 @@ import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 
+
+// DEPRECATED
 @Composable
 fun chartWindowV2() {
 
