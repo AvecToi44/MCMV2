@@ -31,8 +31,8 @@ val Dir1Configs = File("${JFileChooser().fileSystemView.defaultDirectory.toStrin
 val Dir2Reports = File("${JFileChooser().fileSystemView.defaultDirectory.toString()}\\${MAINFOLDER}\\reports")
 val Dir3Scenarios = File("${JFileChooser().fileSystemView.defaultDirectory.toString()}\\${MAINFOLDER}\\scenarios")
 val Dir4MainConfig_Json = File(Dir1Configs,"\\config.json")
-val Dir4MainConfig_Txt = File(Dir1Configs,"\\config.txt")
-val Dir4MainConfig_Log by lazy { File(Dir1Configs,"\\log${generateTimestampLastUpdate()}.txt") }
+val Dir4MainConfig_LogFolder = File(Dir1Configs,"\\logs")
+val MainConfig_LogFile by lazy { File(Dir1Configs,"\\logs\\log${generateTimestampLastUpdate()}.txt") }
 val Dir5Operators = File(Dir1Configs,"\\operator_ids.txt")
 
 val Dir6 = File(Dir2Reports,"\\demo.txt")
@@ -42,18 +42,23 @@ val Dir9Scenario = File(Dir3Scenarios,"scenario_demo.xls")
 
 var Dir_10_ScenarioForChart = File(Dir3Scenarios,"scenario_demo.xls")
 var Dir11ForTargetingSaveNewExperiment = Dir2Reports
-var NAME_OF_NEW_EXPERIMENT = "No Name"
+var NAME_OF_NEW_SCENARIO = "No Name"
 
 var COM_PORT = "COM0"
 var BAUD_RATE = 500000
-var OPERATOR_ID = "no name"
+var COMMENT_OF_EXPERIMENT = "no name"
 var SOUND_ENABLED = 1
 var LAST_SCENARIO = Dir9Scenario
 var DELAY_BEFORE_CHART = 2000
-var LOG_LEVEL : LogLevel= LogLevel.DEBUG // from 0 NO logs, and 2 is super detailed logs
+var LOG_LEVEL : LogLevel= LogLevel.ERRORS // from 0 NO logs, and 2 is super detailed logs
 enum class LogLevel { ERRORS, DEBUG }
 var SHOW_FULLSCREEN = false
 var SHOW_BOTTOM_PANEL = true
+var GAUGES_IN_THE_ROW = 6
+
+enum class ChartFileNameEnding { COMMENT_AND_TIMESTAMP, TIMESTAMP, COMMENT }
+var CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
+
 const val APP_VERSION = "1.2.13"
 
 var solenoids = mutableListOf<SolenoidHolder>()
@@ -74,7 +79,7 @@ val CURRENT_MAX_RAW = 255
 var TWELVE_CHANNELS_MODE = false
 var PROTOCOL_TYPE : ProtocolType = ProtocolType.OLD_AUG_2025
 
-enum class ProtocolType { OLD_AUG_2025, NEW }
+enum class ProtocolType(val id: Int) { OLD_AUG_2025(0), NEW(1) }
 ////////////////////////////////////////////////////
 var arr1Measure = arrayListOf<Pointer>()
 var arr2Measure = arrayListOf<Pointer>()

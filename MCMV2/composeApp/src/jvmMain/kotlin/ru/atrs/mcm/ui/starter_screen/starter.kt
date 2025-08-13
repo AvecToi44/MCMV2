@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -21,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fazecast.jSerialComm.SerialPort
 import kotlinx.coroutines.delay
-import ru.atrs.mcm.openChartViewer
 import ru.atrs.mcm.openLastScenario
 import ru.atrs.mcm.openNewScenario
 import ru.atrs.mcm.storage.refreshJsonParameters
@@ -29,8 +29,11 @@ import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.ui.navigation.Screens
 import ru.atrs.mcm.ui.styles.fontRoboGirls
 import ru.atrs.mcm.utils.BAUD_RATE
+import ru.atrs.mcm.utils.CHART_FILE_NAME_ENDING
 import ru.atrs.mcm.utils.COM_PORT
-import ru.atrs.mcm.utils.OPERATOR_ID
+import ru.atrs.mcm.utils.ChartFileNameEnding
+import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
+import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.LOG_LEVEL
 import ru.atrs.mcm.utils.LogLevel
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
@@ -43,7 +46,6 @@ import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.logAct
-import ru.atrs.mcm.utils.shimmerEffect
 
 
 @OptIn(ExperimentalTextApi::class)
@@ -56,15 +58,18 @@ fun StarterScreen() {
     var expandedSound by remember { mutableStateOf(false) }
     var expandedLogs by remember { mutableStateOf(false) }
     var expandedProtocolChooser by remember { mutableStateOf(false) }
+    var expandedChartFileEnding by remember { mutableStateOf(false) }
+    var expandedGaugesInRow by remember { mutableStateOf(false) }
+
     var visibilitySettings = remember { mutableStateOf(false)}
     var choosenCOM = remember { mutableStateOf(0) }
     var choosenBaud = remember { mutableStateOf(BAUD_RATE) }
-    val textState = remember { mutableStateOf(OPERATOR_ID) }
+    val textState = remember { mutableStateOf(COMMENT_OF_EXPERIMENT) }
     var listOfOperators = mutableListOf<String>()//loadOperators()
 
     var crtxscp = rememberCoroutineScope().coroutineContext
 
-    //var remarrayports = remember { arrayOfComPorts }
+
     LaunchedEffect(true) {
 
         while (true) {
@@ -98,14 +103,14 @@ fun StarterScreen() {
                     value = textState.value,
                     onValueChange = {
                         textState.value = it
-                        OPERATOR_ID = it
+                        COMMENT_OF_EXPERIMENT = it
                         refreshJsonParameters()
                     },
                     textStyle = TextStyle.Default.copy(fontSize = 35.sp)
                 )
 
                 Box {
-                    Text("OPERATOR ID ⬆️",
+                    Text(text = "Comment",
                         modifier = Modifier.fillMaxSize().clickable {
                             expandedOperator = true
                         }, fontSize = 20.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
@@ -217,25 +222,22 @@ fun StarterScreen() {
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                         expandedCom = !expandedCom
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
-
                                 DropdownMenu(
                                     modifier = Modifier.background(Color.White).width(200.dp),
                                     expanded = expandedCom,
                                     onDismissRequest = { expandedCom = false },
                                 ) {
-                                    repeat(arrayOfComPorts.size-1) {
-                                        Text("${arrayOfComPorts[it].descriptivePortName}", fontSize=18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+                                    (arrayOfComPorts).forEachIndexed { index, port ->
+                                        Text("${arrayOfComPorts[index].descriptivePortName}", fontSize=18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
                                             .clickable(onClick= {
-                                                choosenCOM.value = it
-                                                COM_PORT = arrayOfComPorts[it].systemPortName
+                                                choosenCOM.value = index
+                                                COM_PORT = arrayOfComPorts[index].systemPortName
                                                 logAct("DropdownMenu click ${COM_PORT}")
                                                 refreshJsonParameters()
                                             }))
-
                                     }
                                 }
                             }
-
                         }
                     }
 
@@ -444,31 +446,78 @@ fun StarterScreen() {
                             }
                         }
                     }
+                        item {
+                            Row {
+                                Text("Chart File Ending",
+                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
+                                Box {
+                                    Text("${CHART_FILE_NAME_ENDING.name}",
+                                        modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                            expandedChartFileEnding = !expandedChartFileEnding
+                                        }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
+
+                                    DropdownMenu(
+                                        modifier = Modifier.background(Color.White),
+                                        expanded = expandedChartFileEnding,
+                                        onDismissRequest = { expandedChartFileEnding = false },
+                                    ) {
+                                        Text("Timestamp and Comment",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                            CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
+                                            refreshJsonParameters()
+                                            expandedChartFileEnding = false
+                                        })  .fillMaxSize().padding(10.dp))
+                                        Text("Timestamp",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                            CHART_FILE_NAME_ENDING = ChartFileNameEnding.TIMESTAMP
+                                            refreshJsonParameters()
+                                            expandedChartFileEnding = false
+                                        })  .fillMaxSize().padding(10.dp))
+                                        Text("Comment",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                            CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT
+                                            refreshJsonParameters()
+                                            expandedChartFileEnding = false
+                                        })  .fillMaxSize().padding(10.dp))
+
+                                    }
+                                }
+                            }
+                        }
+                    item {
+                        Row {
+                            Text(
+                                "MAX Gauges in Row",
+                                modifier = Modifier.width(200.dp).padding(4.dp).clickable { expandedGaugesInRow = true },
+                                fontSize = 24.sp,
+                                fontFamily = FontFamily.Monospace,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                            Box {
+                                Text("${GAUGES_IN_THE_ROW}",
+                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                        expandedGaugesInRow = !expandedGaugesInRow
+                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
+                                DropdownMenu(
+                                    expanded = expandedGaugesInRow,
+                                    onDismissRequest = { expandedGaugesInRow = false }
+                                ) {
+                                    (1..6).forEach { gaugesNumber ->
+                                        DropdownMenuItem(onClick = {
+                                            GAUGES_IN_THE_ROW = gaugesNumber
+                                            refreshJsonParameters()
+                                            expandedGaugesInRow = false
+                                        }) {
+                                            Text("$gaugesNumber Channels")
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
                 })
             }
-
-//                Column(Modifier.width(600.dp).verticalScroll(rememberScrollState())) {
-//                    Row(Modifier.width(600.dp)) {
-//                        Text("⌨️\uD83D\uDD25Hot Keys:" +
-//                                "\n [ctrl + N] - new experiment" +
-//                                "\n [ctrl + L] - later experiment" +
-//                                "\n [ctrl + V] - open viewer" +
-//                                "\n [ctrl + Space] - start experiment" +
-//                                "\n [<-] - previous scenario" +
-//                                "\n [->] - next scenario" +
-//                                "",
-//                            modifier = Modifier.fillMaxSize().clickable {
-//                            },
-//                            fontSize = 24.sp,
-//                            fontFamily = FontFamily.Monospace,
-//                            color = Color.White,
-//                            textAlign = TextAlign.Center
-//                        )
-//                    }
-//                }
-
-
         }
     }
 }

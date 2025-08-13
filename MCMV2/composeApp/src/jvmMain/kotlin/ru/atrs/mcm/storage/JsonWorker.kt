@@ -10,13 +10,19 @@ import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir3Scenarios
 import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.LOG_LEVEL
-import ru.atrs.mcm.utils.OPERATOR_ID
+import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
 import ru.atrs.mcm.utils.logAct
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import kotlinx.serialization.Serializable
+import ru.atrs.mcm.utils.CHART_FILE_NAME_ENDING
+import ru.atrs.mcm.utils.ChartFileNameEnding
+import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
+import ru.atrs.mcm.utils.LogLevel
+import ru.atrs.mcm.utils.PROTOCOL_TYPE
+import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import java.io.File
@@ -52,14 +58,21 @@ fun initialize(params: List<ParameterCommon>) {
         when (param.name) {
             "comport" -> COM_PORT = param.value
             "baudrate" -> BAUD_RATE = param.value.toIntOrNull() ?: 115200
-            "last_operator_id" -> OPERATOR_ID = param.value
+            "last_operator_id" -> COMMENT_OF_EXPERIMENT = param.value
             "sound_enabled" -> SOUND_ENABLED = param.value.toIntOrNull() ?: 1
             "last_scenario" -> LAST_SCENARIO = File(param.value)
             "delay_before_chart" -> DELAY_BEFORE_CHART = param.value.toIntOrNull() ?: 0
-//            "save_log" -> LOG_LEVEL = param.value.toIntOrNull() ?: 0
+            "LOG_LEVEL" -> LOG_LEVEL = if (param.value.contains("DEBUG", ignoreCase = true)) LogLevel.DEBUG else LogLevel.ERRORS
             "isFullscreenEnabled" -> SHOW_FULLSCREEN = param.value.toBoolean()
             "isBottomPanelShow" -> SHOW_BOTTOM_PANEL = param.value.toBoolean()
             "is12ChannelsMode" -> TWELVE_CHANNELS_MODE = param.value.toBoolean()
+            "GAUGES_IN_THE_ROW" -> GAUGES_IN_THE_ROW = param.value.toInt()
+            "protocolType" -> PROTOCOL_TYPE = if(param.value.contains("old",ignoreCase = true)) ProtocolType.OLD_AUG_2025 else ProtocolType.NEW
+            "CHART_FILE_NAME_ENDING" -> CHART_FILE_NAME_ENDING =
+                if (param.value.contains("${ChartFileNameEnding.COMMENT_AND_TIMESTAMP.name}",ignoreCase = true))
+                    ChartFileNameEnding.COMMENT_AND_TIMESTAMP
+                else if (param.value.contains("${ChartFileNameEnding.TIMESTAMP.name}",ignoreCase = true)) ChartFileNameEnding.TIMESTAMP
+                else ChartFileNameEnding.COMMENT
         }
     }
 }
@@ -71,14 +84,17 @@ fun refreshJsonParameters() {
     val params = listOf(
         ParameterCommon("comport", COM_PORT),
         ParameterCommon("baudrate", BAUD_RATE.toString()),
-        ParameterCommon("last_operator_id", OPERATOR_ID),
+        ParameterCommon("last_operator_id", COMMENT_OF_EXPERIMENT),
         ParameterCommon("sound_enabled", SOUND_ENABLED.toString()),
         ParameterCommon("last_scenario", LAST_SCENARIO.absolutePath),
         ParameterCommon("delay_before_chart", DELAY_BEFORE_CHART.toString()),
-        ParameterCommon("save_log", LOG_LEVEL.toString()),
+        ParameterCommon("LOG_LEVEL", LOG_LEVEL.name.toString()),
         ParameterCommon("isFullscreenEnabled", SHOW_FULLSCREEN.toString()),
         ParameterCommon("isBottomPanelShow", SHOW_BOTTOM_PANEL.toString()),
-        ParameterCommon("is12ChannelsMode", TWELVE_CHANNELS_MODE.toString())
+        ParameterCommon("is12ChannelsMode", TWELVE_CHANNELS_MODE.toString()),
+        ParameterCommon("protocolType", PROTOCOL_TYPE.name.toString()),
+        ParameterCommon("CHART_FILE_NAME_ENDING", CHART_FILE_NAME_ENDING.name.toString()),
+        ParameterCommon("GAUGES_IN_THE_ROW", GAUGES_IN_THE_ROW.toString()),
     )
     try {
         val jsonText = Json.encodeToString(ListSerializer(ParameterCommon.serializer()), params)

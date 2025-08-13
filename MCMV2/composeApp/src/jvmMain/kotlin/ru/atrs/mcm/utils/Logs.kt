@@ -14,8 +14,8 @@ fun logGarbage(msg: String) = logAgregator("g~>"+msg + " |${currentDateTime}", l
 
 fun logAgregator(msg: String, logLevel: LogLevel) {
     println(msg)
-
     if (LOG_LEVEL == logLevel) {
-        writeToFile(msg, Dir4MainConfig_Log)
+        Dir4MainConfig_LogFolder.mkdirs()
+        writeToFile(msg, MainConfig_LogFile)
     }
 }

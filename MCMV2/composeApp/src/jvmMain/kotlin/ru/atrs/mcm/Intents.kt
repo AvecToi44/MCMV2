@@ -78,14 +78,11 @@ fun launchPlay() {
 
 
 fun openNewScenario(isRefreshForChart: Boolean = false) {
-
     CoroutineScope(Dispatchers.Default).launch {
-        //openPicker(Dir3Scenarios)
-        //targetParseScenario(createDemoConfigFile())
         if (isRefreshForChart) {
             //open just viewer
 
-            _root_ide_package_.ru.atrs.mcm.ui.showMeSnackBar("Нужно выбрать сценарий для отметки степов")
+            showMeSnackBar("Нужно выбрать сценарий для отметки степов")
             if (!targetParseScenario(
                     openPicker(
                         Dir3Scenarios
@@ -112,8 +109,6 @@ fun openNewScenario(isRefreshForChart: Boolean = false) {
                 screenNav.value = Screens.MAIN
             }
         }
-
-
     }
 }
 

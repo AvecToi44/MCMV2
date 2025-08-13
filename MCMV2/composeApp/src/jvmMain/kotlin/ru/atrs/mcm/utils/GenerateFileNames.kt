@@ -3,7 +3,7 @@ package ru.atrs.mcm.utils
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun generateChartShapshoot() = generateTimestampLastUpdate()+" ${OPERATOR_ID}"
+fun generateChartShapshoot() = generateTimestampLastUpdate()+" ${COMMENT_OF_EXPERIMENT}"
 
 fun generateTimestampLastUpdate() : String{
     //return SimpleDateFormat("HHmmss dd_MM_yyyy").format(Date())

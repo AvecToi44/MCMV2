@@ -12,8 +12,7 @@ import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir7ReportsStandard
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.LAST_SCENARIO
-import ru.atrs.mcm.utils.NAME_OF_NEW_EXPERIMENT
-import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
+import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logGarbage
@@ -206,8 +205,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     // Create folder with name of EXCEL, coz name of EXCEL == name of experiment
     File(Dir2Reports,inputScenarioFile.nameWithoutExtension).mkdirs()
 
-    NAME_OF_NEW_EXPERIMENT = inputScenarioFile.nameWithoutExtension
-    Dir11ForTargetingSaveNewExperiment = File(Dir2Reports,NAME_OF_NEW_EXPERIMENT)
+    NAME_OF_NEW_SCENARIO = inputScenarioFile.nameWithoutExtension
+    Dir11ForTargetingSaveNewExperiment = File(Dir2Reports,NAME_OF_NEW_SCENARIO)
 
     // Fill file address to Standard chart, Эталон . txt
     val standard = File(Dir7ReportsStandard, wholeSheet[0][0])

@@ -161,7 +161,7 @@ object CommunicationMachineV1: COMProtocol {
             ch7 = pwm7SeekBar.value.toByte() //(rawPreByte6).toByte()
             ch8 = pwm8SeekBar.value.toByte() //(rawPreByte7).toByte()
 
-            ch9 =  pwm9SeekBar.value.toByte() //(rawPreByte7).toByte()
+            ch9 =   pwm9SeekBar.value.toByte() //(rawPreByte7).toByte()
             ch10 = pwm10SeekBar.value.toByte() //(rawPreByte7).toByte()
             ch11 = pwm11SeekBar.value.toByte() //(rawPreByte7).toByte()
             ch12 = pwm12SeekBar.value.toByte() //(rawPreByte7).toByte()

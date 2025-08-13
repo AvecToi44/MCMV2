@@ -70,6 +70,14 @@ fun AppRoot() {
 
     val tabs = listOf("Main Scenario", "Pressures", "Currents")
     Column(Modifier.fillMaxSize()) {
+        Row(Modifier.fillMaxWidth()) {
+            var text by remember { mutableStateOf("") }
+            TextField(
+                value = text,
+                onValueChange = { newText -> text = newText },
+                label = { Text("Future scenario name") }
+            )
+        }
         TabRow(selectedTabIndex = tab) {
             tabs.forEachIndexed { i, title ->
                 Tab(selected = tab == i, onClick = { tab = i }, text = { Text(title) })

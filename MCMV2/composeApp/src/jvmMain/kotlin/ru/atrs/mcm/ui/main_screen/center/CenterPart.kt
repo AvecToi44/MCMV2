@@ -46,6 +46,7 @@ import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.Dir9Scenario
 import ru.atrs.mcm.utils.EXPLORER_MODE
+import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.GLOBAL_STATE
 import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
@@ -228,9 +229,14 @@ fun CenterPiece(
         Row(Modifier.weight(5f)) {
 
             LazyVerticalGrid(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxSize().onGloballyPositioned { coordinates ->
+                    // Set column height using the LayoutCoordinates
+                    if (coordinates.size.width != 0) {
+                        columnHeightDp = (coordinates.size.width / GAUGES_IN_THE_ROW).dp
+                    }
+                },
                 //columns = GridCells.Adaptive(150.dp),
-                columns = GridCells.Fixed(6),
+                columns = GridCells.Fixed(GAUGES_IN_THE_ROW),
                 verticalArrangement =   Arrangement.Center,
                 horizontalArrangement = Arrangement.Center,
                 // content padding
@@ -243,15 +249,7 @@ fun CenterPiece(
                 content = {
                     if (pressures[0].isVisible) {
                         item {
-                            Box(Modifier
-                                .aspectRatio(1f)
-                                .onGloballyPositioned { coordinates ->
-                                    // Set column height using the LayoutCoordinates
-                                    if (coordinates.size.width != 0) {
-                                        columnHeightDp = with(localDensity) { coordinates.size.width.toDp() }
-                                    }
-
-                                }
+                            Box(Modifier.aspectRatio(1f)
                             ) {
                                 GaugeX(
                                     DpSize(columnHeightDp, columnHeightDp),
@@ -438,13 +436,22 @@ fun CenterPiece(
                         }
                     }
                     item {
-                        Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
+                        Box(Modifier.aspectRatio(1f)
+//                            .onGloballyPositioned { coordinates ->
+//                            // Set column height using the LayoutCoordinates
+//                            if (coordinates.size.width != 0) {
+//                                columnHeightDp = with(localDensity) { coordinates.size.width.toDp() }
+//                            }
+//                            }
+                        ) {
+                            Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
+                        }
                     }
                 }
             )
         }
         if(showBottomPanel.value) {
-            Row(Modifier.fillMaxSize().weight(1.1f), horizontalArrangement = Arrangement.SpaceAround) {
+            Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                     if (isExperimentStarts.value) {
@@ -539,6 +546,25 @@ fun CenterPiece(
                 }
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
+//                    Text("", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
+//                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
+//                    )
+
+                    Text(
+                        "${txt.value}",
+                        modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
+                            //screenNav.value = Screens.STARTER
+                        },
+                        fontFamily = FontFamily.Default,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Blue
+                    )
+
+                    Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
+                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
+                    )
+
                     Box(Modifier.clickable {
                         expandedCom.value = !expandedCom.value
                     }) {
@@ -568,21 +594,6 @@ fun CenterPiece(
                             )
                         }
                     }
-
-                    Text(
-                        "${txt.value}",
-                        modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
-                            //screenNav.value = Screens.STARTER
-                        },
-                        fontFamily = FontFamily.Default,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Blue
-                    )
-
-                    Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
-                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
-                    )
 
                     Box(Modifier.clickable {
                         showBottomPanel.value = !showBottomPanel.value

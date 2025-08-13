@@ -2,11 +2,9 @@ package ru.atrs.mcm.ui.charts
 
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.Dir2Reports
-import ru.atrs.mcm.utils.OPERATOR_ID
+import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
 import ru.atrs.mcm.utils.generateTimestampLastUpdate
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
 
 data class Pointer(val x: Float, val y: Float)
 
@@ -17,7 +15,7 @@ fun generateToChartFile(
     arr2: ArrayList<Pointer>? = null,
     arr3: ArrayList<Pointer>? = null,
 ) {
-    val fl = File(Dir2Reports,"\\${OPERATOR_ID} ${generateTimestampLastUpdate()}.txt")
+    val fl = File(Dir2Reports,"\\${COMMENT_OF_EXPERIMENT} ${generateTimestampLastUpdate()}.txt")
     fl.createNewFile()
     val bw = fl.bufferedWriter()
 

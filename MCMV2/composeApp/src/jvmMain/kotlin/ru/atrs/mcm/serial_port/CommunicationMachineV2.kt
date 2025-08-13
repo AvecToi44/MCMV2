@@ -37,6 +37,7 @@ import ru.atrs.mcm.utils.pwm8SeekBar
 import ru.atrs.mcm.utils.pwm9SeekBar
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
+import ru.atrs.mcm.utils.to2ByteArray
 import ru.atrs.mcm.utils.toHexString
 import ru.atrs.mcm.utils.txtOfScenario
 import java.math.BigInteger
@@ -202,9 +203,12 @@ object CommunicationMachineV2 {
         } else {
             scenario.forEachIndexed { index, s ->
                 val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
+                val indexHex = index.to2ByteArray()
 
                 val send = byteArrayOf(
-                    0x73,index.toByte(),0x00,
+                    0x73,
+                    indexHex[0],// ones
+                    indexHex[1], // tens
 
                     s.channels[0].toByte(),
                     s.channels[1].toByte(),
@@ -217,8 +221,8 @@ object CommunicationMachineV2 {
                     s.channels[7].toByte(),
 
                     //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
-                    time.getOrNull(1) ?: 0x00,
-                    time[0],
+                    time.getOrNull(1) ?: 0x00, // tens
+                    time[0], // ones
 
                     0x00
                 )

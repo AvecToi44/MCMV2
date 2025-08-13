@@ -74,21 +74,21 @@ fun SolenoidControl(
             else -> pwm1SeekBar
         }
     }
-    Column(modifier = Modifier.width(80.dp).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)).background(color = Color.Gray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.width(70.dp).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)).background(color = Color.Gray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(Modifier.fillMaxSize().weight(0.5f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            androidx.compose.material3.Text("${displayName}")
+            androidx.compose.material3.Text(text = "${displayName}", fontSize = 12.sp)
         }
         Row(Modifier.fillMaxSize().weight(1f).background(Color.DarkGray)) {
             Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
                     "$current",
-                    fontSize = 16.sp
+                    fontSize = 10.sp
                 )
             }
             Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 androidx.compose.material3.Text(
                     "${map(PWMremember.value, 0, 255, 0, 100)}\n%",
-                    fontSize = 16.sp
+                    fontSize = 10.sp
                 )
             }
         }
