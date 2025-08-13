@@ -16,7 +16,7 @@ object RouterCommunication: COMProtocol {
     private val crtx2 = CoroutineName("main")
 
     override suspend fun initSerialCommunication() {
-        println(">>>serial communication has been started, COM_PORT:${COM_PORT} ${BAUD_RATE}")
+        println(">>>serial communication has been started, COM_PORT:${COM_PORT} ${BAUD_RATE}, Protocol: ${PROTOCOL_TYPE.name}")
         serialPort = SerialPort.getCommPort(COM_PORT)
         serialPort.setComPortParameters(BAUD_RATE,8,1, SerialPort.NO_PARITY)
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0)

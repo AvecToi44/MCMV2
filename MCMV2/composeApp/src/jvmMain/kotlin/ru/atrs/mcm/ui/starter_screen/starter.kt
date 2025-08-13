@@ -4,6 +4,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.*
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -31,6 +33,8 @@ import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.OPERATOR_ID
 import ru.atrs.mcm.utils.LOG_LEVEL
 import ru.atrs.mcm.utils.LogLevel
+import ru.atrs.mcm.utils.PROTOCOL_TYPE
+import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
@@ -51,6 +55,7 @@ fun StarterScreen() {
     var expandedBaud by remember { mutableStateOf(false) }
     var expandedSound by remember { mutableStateOf(false) }
     var expandedLogs by remember { mutableStateOf(false) }
+    var expandedProtocolChooser by remember { mutableStateOf(false) }
     var visibilitySettings = remember { mutableStateOf(false)}
     var choosenCOM = remember { mutableStateOf(0) }
     var choosenBaud = remember { mutableStateOf(BAUD_RATE) }
@@ -186,14 +191,27 @@ fun StarterScreen() {
         if(visibilitySettings.value) {
             Row(modifier = Modifier.fillMaxSize().weight(4f).background(Color.DarkGray),
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                LazyColumn(Modifier.width(300.dp)) {
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxWidth(),
+                    //columns = GridCells.Adaptive(150.dp),
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement =   Arrangement.Center,
+                    horizontalArrangement = Arrangement.Center,
+                    // content padding
+                    contentPadding = PaddingValues(
+                        start = 0.dp,
+                        top = 0.dp,
+                        end = 0.dp,
+                        bottom = 0.dp
+                    ),
+                    content = {
                     item {
-                        Row {
+                        Row(modifier = Modifier.width(500.dp)) {
                             Text("COM Port:",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
-                            Box {
+                            Box(modifier = Modifier.width(150.dp)) {
                                 Text(
                                     if (arrayOfComPorts.isEmpty()) "‼️NO COM PORTS‼️" else arrayOfComPorts[choosenCOM.value].systemPortName,
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
@@ -201,7 +219,7 @@ fun StarterScreen() {
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
 
                                 DropdownMenu(
-                                    modifier = Modifier.background(Color.White),
+                                    modifier = Modifier.background(Color.White).width(200.dp),
                                     expanded = expandedCom,
                                     onDismissRequest = { expandedCom = false },
                                 ) {
@@ -394,8 +412,41 @@ fun StarterScreen() {
                             )
                         }
                     }
-                }
-                }
+                    item {
+                        Row {
+                            Text("Protocol Type",
+                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+
+                            Box {
+                                Text("${PROTOCOL_TYPE.name}",
+                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+                                        expandedProtocolChooser = !expandedProtocolChooser
+                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
+
+                                DropdownMenu(
+                                    modifier = Modifier.background(Color.White),
+                                    expanded = expandedProtocolChooser,
+                                    onDismissRequest = { expandedProtocolChooser = false },
+                                ) {
+                                    Text("OLD_AUG_2025",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        PROTOCOL_TYPE = ProtocolType.OLD_AUG_2025
+                                        refreshJsonParameters()
+                                        expandedProtocolChooser = false
+                                    })  .fillMaxSize().padding(10.dp))
+                                    Text("NEW",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        PROTOCOL_TYPE = ProtocolType.NEW
+                                        refreshJsonParameters()
+                                        expandedProtocolChooser = false
+                                    })  .fillMaxSize().padding(10.dp))
+
+                                }
+                            }
+                        }
+                    }
+
+                })
+            }
 
 //                Column(Modifier.width(600.dp).verticalScroll(rememberScrollState())) {
 //                    Row(Modifier.width(600.dp)) {
@@ -418,6 +469,6 @@ fun StarterScreen() {
 //                }
 
 
-            }
         }
+    }
 }

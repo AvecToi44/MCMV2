@@ -29,6 +29,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
+import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import java.awt.FileDialog
 import java.io.File
 import ru.atrsx.chartviewer.koala.ExperimentalKoalaPlotApi
@@ -73,7 +74,14 @@ class AppChartV3 {
         Window(
             title = "ChartViewer V3",
             state = WindowState(size = DpSize(1200.dp, 800.dp)),
-            onCloseRequest = { doOpen_First_ChartWindow.value = false }
+            onCloseRequest = {
+                if (doOpen_First_ChartWindow.value && analysisAfterExperiment) {
+                    doOpen_First_ChartWindow.value = false
+                }
+                if (doOpen_Second_ChartWindow.value && !analysisAfterExperiment) {
+                    doOpen_Second_ChartWindow.value = false
+                }
+            }
         ) {
             App(analysisAfterExperiment = analysisAfterExperiment)
         }

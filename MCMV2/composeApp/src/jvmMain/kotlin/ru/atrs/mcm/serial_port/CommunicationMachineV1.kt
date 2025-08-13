@@ -23,6 +23,7 @@ import ru.atrs.mcm.utils.checkIntervalScenarios
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.logAct
+import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.pwm10SeekBar
 import ru.atrs.mcm.utils.pwm11SeekBar
@@ -80,6 +81,8 @@ object CommunicationMachineV1: COMProtocol {
 //    }
         if (!serialPort.isOpen) {
             initSerialCommunication()
+        } else {
+            logError("!!! Port (${serialPort.systemPortName}) was not opened !!!")
         }
 
         if (TWELVE_CHANNELS_MODE) {

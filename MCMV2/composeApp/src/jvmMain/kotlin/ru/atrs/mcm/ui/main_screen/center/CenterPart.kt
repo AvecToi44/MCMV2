@@ -41,10 +41,13 @@ import ru.atrs.mcm.ui.custom.GaugeX
 import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
 import ru.atrs.mcm.ui.screenNav
+import ru.atrs.mcm.ui.styles.colorDarkForDashboardText
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
+import ru.atrs.mcm.utils.Dir9Scenario
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GLOBAL_STATE
+import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
@@ -433,6 +436,9 @@ fun CenterPiece(
                                 )
                             }
                         }
+                    }
+                    item {
+                        Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
                     }
                 }
             )

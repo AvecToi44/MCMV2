@@ -67,7 +67,7 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
     if (delta >= 1000) {
         // measure number of packets:
-        println("coreParse8Channels: ${System.currentTimeMillis()/1000L}> ${updData[0]} ${updData[15]} [size:${updData.size}] ${incr} ]-[ ${delta} ms ** ${limitTime} >= ${incrementTime} .state${STATE_EXPERIMENT.value.name}")
+        //logGarbage("coreParse8Channels: ${System.currentTimeMillis()/1000L}> ${updData[0]} ${updData[15]} [size:${updData.size}] ${incr} ]-[ ${delta} ms ** ${limitTime} >= ${incrementTime} .state${STATE_EXPERIMENT.value.name}")
         incr = 0
     }
 
@@ -119,7 +119,7 @@ suspend fun coreParse(updData: ByteArray) = withContext(Dispatchers.IO) {
 
 
 
-            logGarbage(">>> ${dch.toString()}")
+            //logGarbage(">>> ${dch.toString()}")
             //println("PRES ${dch.toString()}")
 
             dataChunkGauges.emit(dch)
