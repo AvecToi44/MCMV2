@@ -37,6 +37,8 @@ import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
 import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
 import ru.atrs.mcm.serial_port.bytesMachine
 import ru.atrs.mcm.serial_port.incrementExperiment
+import ru.atrs.mcm.storage.NewPointerLine
+import ru.atrs.mcm.storage.addNewLineForChart
 import ru.atrs.mcm.storage.createMeasureExperiment
 import ru.atrs.mcm.ui.charts.Pointer
 import ru.atrs.mcm.ui.custom.GaugeX
@@ -50,6 +52,7 @@ import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.GLOBAL_STATE
 import ru.atrs.mcm.utils.LAST_SCENARIO
+import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
@@ -65,7 +68,9 @@ import ru.atrs.mcm.utils.arr6Measure
 import ru.atrs.mcm.utils.arr7Measure
 import ru.atrs.mcm.utils.arr8Measure
 import ru.atrs.mcm.utils.arr9Measure
+import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.dataChunkGauges
+import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.incrementTime
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
@@ -137,7 +142,7 @@ fun CenterPiece(
             dataChunkGauges.collect {
                 isShowPlay.value = true
                 //delay(DELAY_FOR_GET_DATA)
-                //logGarbage(">>>> ${it.toString()}")
+                logGarbage(">>>> ${it.toString()}")
 
                 //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
 
@@ -162,35 +167,56 @@ fun CenterPiece(
                 when (EXPLORER_MODE.value) {
                     ExplorerMode.AUTO -> {
                         //logGarbage("konec ${}")
-                        if (
-                            (it.isExperiment)
-                        ) {
-                            count++
+                        if (it.isExperiment) {
 
-                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //.takeIf { pressure1X > 0f } //it.firstGaugeData, ))
-                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //.takeIf { pressure2X > 0f } //it.secondGaugeData,))
-                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //.takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
-                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //.takeIf { pressure4X > 0f } //it.fourthGaugeData,))
-                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //.takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
-                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //.takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
-                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //.takeIf { pressure7X > 0f } //it.seventhGaugeData))
-                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //.takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
+                            addNewLineForChart(
+                                newLine = NewPointerLine(
+                                    incrementTime = incrementTime,
+                                    ch1 = pressure1X,
+                                    ch2 = pressure2X,
+                                    ch3 = pressure3X,
+                                    ch4 = pressure4X,
+                                    ch5 = pressure5X,
+                                    ch6 = pressure6X,
+                                    ch7 = pressure7X,
+                                    ch8 = pressure8X,
+                                    ch9 = pressure9X ,
+                                    ch10 =pressure10X,
+                                    ch11 =pressure11X,
+                                    ch12 =pressure12X
+                                ),
+                                isRecordingExperiment = it.isExperiment
+                            )
+//                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //.takeIf { pressure1X > 0f } //it.firstGaugeData, ))
+//                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //.takeIf { pressure2X > 0f } //it.secondGaugeData,))
+//                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //.takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
+//                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //.takeIf { pressure4X > 0f } //it.fourthGaugeData,))
+//                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //.takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
+//                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //.takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
+//                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //.takeIf { pressure7X > 0f } //it.seventhGaugeData))
+//                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //.takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
+//
+//                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),  y = pressure9X )) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
+//                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)) //.takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
+//                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
+//                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
 
-                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),  y = pressure9X )) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
-                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)) //.takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
-                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
-                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
-
-                            incrementTime += 2
+                            incrementTime += 2L
 
                         } else if (STATE_EXPERIMENT.value == StateExperiments.PREP_DATA) {
-                            logGarbage("Output: |${incrementExperiment}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
+                           // logGarbage("Output: |${incrementExperiment}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
 
                             STATE_EXPERIMENT.value = StateExperiments.PREPARE_CHART
                             incrementTime = 0
                             if (!isAlreadyReceivedBytesForChart.value) {
                                 isAlreadyReceivedBytesForChart.value = true
-                                createMeasureExperiment()
+
+                                //createMeasureExperiment()
+                                delay(1200)
+                                chartFileAfterExperiment.value = NAME_OF_NEW_CHART_LOG_FILE!!
+                                doOpen_First_ChartWindow.value = true
+                                STATE_EXPERIMENT.value = StateExperiments.NONE
+                                NAME_OF_NEW_CHART_LOG_FILE = null
                             }
                         }
                     }

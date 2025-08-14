@@ -28,6 +28,7 @@ import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
+import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arr10Measure
@@ -117,6 +118,133 @@ fun createMeasureExperiment() {
         STATE_EXPERIMENT.value = StateExperiments.NONE
     }
 }
+
+fun generateNewChartLogName() {
+    println("Generate new chart file")
+    val endingOfName = when(CHART_FILE_NAME_ENDING) {
+        ChartFileNameEnding.COMMENT_AND_TIMESTAMP -> "${generateTimestampLastUpdate()}_${COMMENT_OF_EXPERIMENT}"
+        ChartFileNameEnding.TIMESTAMP -> "${generateTimestampLastUpdate()}"
+        ChartFileNameEnding.COMMENT -> "${COMMENT_OF_EXPERIMENT}"
+    }
+    NAME_OF_NEW_CHART_LOG_FILE = File(Dir11ForTargetingSaveNewExperiment,"${NAME_OF_NEW_SCENARIO}_${endingOfName}"+".txt")
+    NAME_OF_NEW_CHART_LOG_FILE?.createNewFile()
+}
+
+data class NewPointerLine(
+    val incrementTime: Long,
+    val ch1: Float,
+    val ch2: Float,
+    val ch3: Float,
+    val ch4: Float,
+    val ch5: Float,
+    val ch6: Float,
+    val ch7: Float,
+    val ch8: Float,
+    val ch9: Float,
+    val ch10: Float,
+    val ch11: Float,
+    val ch12: Float,
+)
+
+suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: Boolean) {
+    if (NAME_OF_NEW_CHART_LOG_FILE == null || !NAME_OF_NEW_CHART_LOG_FILE!!.exists()) {
+        generateNewChartLogName()
+    }
+
+    val file = NAME_OF_NEW_CHART_LOG_FILE!!
+    val fileIsEmpty = file.length() <= 0
+
+    try {
+        BufferedWriter(FileWriter(file, true)).use { bw ->
+            println("RECORD! isRecordingExperiment $isRecordingExperiment ${newLine.toString()}")
+
+            if (fileIsEmpty) {
+                bw.append("#standard#${chartFileStandard.value?.name}\n")
+                val twelveChannels = if (TWELVE_CHANNELS_MODE) {
+                    "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
+                } else ""
+                bw.append(
+                    "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}" +
+                            "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}$twelveChannels\n"
+                )
+                bw.append("#\n")
+            }
+
+            val time = newLine.incrementTime
+            var newStroke = "$time;${newLine.ch1}|$time;${newLine.ch2}|$time;${newLine.ch3}|$time;${newLine.ch4}|" +
+                    "$time;${newLine.ch5}|$time;${newLine.ch6}|$time;${newLine.ch7}|$time;${newLine.ch8}|"
+
+            if (TWELVE_CHANNELS_MODE) {
+                newStroke += "$time;${newLine.ch9}|$time;${newLine.ch10}|$time;${newLine.ch11}|$time;${newLine.ch12}|"
+            }
+
+            bw.append("$newStroke\n")
+        }
+    } catch (e: Exception) {
+        showMeSnackBar("Error! ${e.message}")
+        STATE_EXPERIMENT.value = StateExperiments.NONE
+    }
+}
+
+
+//suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: Boolean) {
+//    if (NAME_OF_NEW_CHART_LOG_FILE == null || NAME_OF_NEW_CHART_LOG_FILE?.exists() == false) {
+//        generateNewChartLogName()
+//    }
+//
+//    val bw = NAME_OF_NEW_CHART_LOG_FILE?.bufferedWriter()
+//    try {
+//        println("RECORD! isRecordingExperiment ${isRecordingExperiment} ${newLine.toString()}")
+//        val fileIsEmpty = (NAME_OF_NEW_CHART_LOG_FILE?.length() ?: 0L) <= 0
+//
+//        if (fileIsEmpty) {
+//            // standard file
+//            bw?.append("#standard#${chartFileStandard.value?.name}\n")
+//            // visibility
+//            val twelveChannels = if (TWELVE_CHANNELS_MODE) {
+//                "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
+//            } else ""
+//
+//            bw?.append(
+//                "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}"+
+//                        "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}${twelveChannels}\n"
+//            )
+//            bw?.append("#\n")
+//        }
+//
+//        val newStroke =
+//            "${newLine.incrementTime};${newLine.ch1}|"+
+//            "${newLine.incrementTime};${newLine.ch2}|"+
+//            "${newLine.incrementTime};${newLine.ch3}|"+
+//            "${newLine.incrementTime};${newLine.ch4}|"+
+//            "${newLine.incrementTime};${newLine.ch5}|"+
+//            "${newLine.incrementTime};${newLine.ch6}|"+
+//            "${newLine.incrementTime};${newLine.ch7}|"+
+//            "${newLine.incrementTime};${newLine.ch8}|"
+//
+//
+//        var newStrokeFor12 = ""
+//
+//        if (TWELVE_CHANNELS_MODE) {
+//            newStrokeFor12 =
+//                "${newLine.incrementTime};${newLine.ch9}|" +
+//                "${newLine.incrementTime};${newLine.ch10}|" +
+//                "${newLine.incrementTime};${newLine.ch11}|" +
+//                "${newLine.incrementTime};${newLine.ch12}|"
+//        }
+//
+//        //logGarbage("newStroke= ${newStroke}")
+//        bw?.append("${newStroke}${newStrokeFor12}\n")
+//        bw?.close()
+//
+//    }catch (e: Exception){
+//        showMeSnackBar("Error! ${e.message}")
+//        STATE_EXPERIMENT.value = StateExperiments.NONE
+//    }
+//
+//}
+
+
 
 fun readMeasuredExperiment(file: File) {
     try {

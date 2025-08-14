@@ -108,9 +108,6 @@ suspend fun bytesMachine() {
                     //onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())
                 )
 
-
-
-
                 //logGarbage(">>> ${dch.toString()}")
                 //println("PRES ${dch.toString()}")
 
@@ -134,7 +131,6 @@ suspend fun bytesMachine() {
             }
 
             //currency
-            //!isExperimentStarts.value &&  // 24????????????????????????
             isCurrencyType(updData) -> {
                 //logGarbage("Currency: ${updData.toHexString()} size:${updData.size}")
                 if (isExperimentStarts) {
