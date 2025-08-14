@@ -50,7 +50,7 @@ var COMMENT_OF_EXPERIMENT = "no name"
 var SOUND_ENABLED = 1
 var LAST_SCENARIO = Dir9Scenario
 var DELAY_BEFORE_CHART = 2000
-var LOG_LEVEL : LogLevel= LogLevel.ERRORS // from 0 NO logs, and 2 is super detailed logs
+var LOG_LEVEL : LogLevel= LogLevel.DEBUG // from 0 NO logs, and 2 is super detailed logs
 enum class LogLevel { ERRORS, DEBUG }
 var SHOW_FULLSCREEN = false
 var SHOW_BOTTOM_PANEL = true
@@ -70,6 +70,7 @@ var STATE_EXPERIMENT = mutableStateOf(StateExperiments.NONE)
 var EXPLORER_MODE = mutableStateOf(ExplorerMode.AUTO)
 
 
+var dataChunkRAW   =       MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 var dataChunkGauges   =       MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 
@@ -127,7 +128,7 @@ var chartFileAfterExperiment = mutableStateOf( File(Dir2Reports,"demo2.txt") )
 var chartFileStandard = mutableStateOf<File?>( null ) // File(Dir7ReportsStandard,"17_02_2023X12_04_04_chart.txt")
 //var chartFileStandard = mutableStateOf<File?>( File("C:\\Users\\Agregatka\\Documents\\mcm\\reports\\тестирование переделанных МИЛ","07_08_2025 16_56_55_2300_chart.txt"))
 
-var isExperimentStarts = mutableStateOf(false)
+var isExperimentStarts = false
 var incrementTime = 0
 
 data class DataChunkG(

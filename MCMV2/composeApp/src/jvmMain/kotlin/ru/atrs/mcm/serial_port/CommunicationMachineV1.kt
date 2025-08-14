@@ -39,6 +39,7 @@ import ru.atrs.mcm.utils.pwm8SeekBar
 import ru.atrs.mcm.utils.pwm9SeekBar
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.solenoids
+import ru.atrs.mcm.utils.to2ByteArray
 import ru.atrs.mcm.utils.toHexString
 import ru.atrs.mcm.utils.txtOfScenario
 import java.math.BigInteger
@@ -115,7 +116,7 @@ object CommunicationMachineV1: COMProtocol {
 //    }
         repeat(1) {
 
-            logAct("Run Send bytes:: ${sendBytes.toHexString()}   size of bytes: ${sendBytes.size}")
+            logAct("Run Send bytes:: ${sendBytes.toHexString()}   size of bytes: ${sendBytes.size}. delay ${delay} withFlush ${withFlush}}")
             serialPort.writeBytes(sendBytes, sendBytes.size.toLong())
             if (withFlush) {
                 serialPort.flushIOBuffers()
@@ -207,10 +208,14 @@ object CommunicationMachineV1: COMProtocol {
 
         } else {
             scenario.forEachIndexed { index, s ->
-                val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
+                val time = s.time.to2ByteArray()
+//                val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
+                val indexHex = index.to2ByteArray()
 
                 val send = byteArrayOf(
-                    0x73,index.toByte(),0x00,
+                    0x73, // in string is 115
+                    indexHex[0],// ones
+                    indexHex[1], // tens
 
                     s.channels[0].toByte(),
                     s.channels[1].toByte(),
@@ -220,12 +225,11 @@ object CommunicationMachineV1: COMProtocol {
                     s.channels[4].toByte(),
                     s.channels[5].toByte(),
                     s.channels[6].toByte(),
-                    s.channels[7].toByte(),
+                    s.channels[7].toByte(), // # 10
 
                     //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
-                    time.getOrNull(1) ?: 0x00,
-                    time[0],
-
+                    time[0], // tens
+                    time.getOrNull(1) ?: 0x00, // ones
                     0x00
                 )
                 writeToSerialPort(send,delay = 10)

@@ -29,12 +29,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
 import ru.atrs.mcm.launchPlay
+import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
 import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
 import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
-import ru.atrs.mcm.serial_port.incrX
+import ru.atrs.mcm.serial_port.bytesMachine
+import ru.atrs.mcm.serial_port.incrementExperiment
 import ru.atrs.mcm.storage.createMeasureExperiment
 import ru.atrs.mcm.ui.charts.Pointer
 import ru.atrs.mcm.ui.custom.GaugeX
@@ -44,7 +46,6 @@ import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.ui.styles.colorDarkForDashboardText
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
-import ru.atrs.mcm.utils.Dir9Scenario
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.GLOBAL_STATE
@@ -108,15 +109,18 @@ fun CenterPiece(
     val txt = remember { txtOfScenario }
 
     val ctxScope =
-        CoroutineScope(Dispatchers.Swing) + rememberCoroutineScope().coroutineContext + CoroutineName("MainScreen-CenterPart")
+        CoroutineScope(Dispatchers.IO) + rememberCoroutineScope().coroutineContext + CoroutineName("MainScreen-CenterPart")
 
-    // Get local density from composable
-    val localDensity = LocalDensity.current
 
     // Create element height in dp state
     var columnHeightDp by remember {
         mutableStateOf(0.dp)
     }
+
+    LaunchedEffect(true) {
+        bytesMachine()
+    }
+
     var isShowPlay = remember { mutableStateOf(false) }
     LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
@@ -137,7 +141,6 @@ fun CenterPiece(
 
                 //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
 
-
                 //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
                 // in_max 65535 instead of 4095
                 mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }//.takeIf { pressures.size >= 1 }
@@ -156,15 +159,10 @@ fun CenterPiece(
                     if (pressures.getOrNull(11) != null && it.twelfthGaugeData != null) {(mapFloat(it.twelfthGaugeData !! , 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
                 }
 
-
-
-
-
                 when (EXPLORER_MODE.value) {
                     ExplorerMode.AUTO -> {
                         //logGarbage("konec ${}")
                         if (
-                            //limitTime >= incrementTime &&
                             (it.isExperiment)
                         ) {
                             count++
@@ -183,22 +181,10 @@ fun CenterPiece(
                             arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
                             arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
 
-
-//                            num = scenario[indexScenario].time
-//
-//                            if (num > 0) {
-//                                // 2 - is recieve data every 2ms
-//                                num -= 2
-//                            } else {
-//                                indexScenario++
-//                                num = scenario[indexScenario].time
-//                                txt.value = scenario[indexScenario].text
-//                            }
                             incrementTime += 2
-                            //test_time += 2
 
                         } else if (STATE_EXPERIMENT.value == StateExperiments.PREP_DATA) {
-                            logGarbage("Output: |${incrX}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
+                            logGarbage("Output: |${incrementExperiment}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
 
                             STATE_EXPERIMENT.value = StateExperiments.PREPARE_CHART
                             incrementTime = 0
@@ -206,8 +192,6 @@ fun CenterPiece(
                                 isAlreadyReceivedBytesForChart.value = true
                                 createMeasureExperiment()
                             }
-
-
                         }
                     }
                     ExplorerMode.MANUAL -> { /** without recording */ }
@@ -454,77 +438,83 @@ fun CenterPiece(
             Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
 
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-                    if (isExperimentStarts.value) {
-                        Text(
-                            "Rec...",
-                            modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
-                            },
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Red
-                        )
-                    }
+
 
                     AnimatedVisibility(isShowPlay.value) {
-                        Box(Modifier.clickable {
-                            test_time = 0
-                            // launch
-                            if (explMode.value == ExplorerMode.AUTO) {
-                                launchPlay()
-                            } else if (explMode.value == ExplorerMode.MANUAL) {
-                                indexOfScenario.value--
-
-                                ctxScope.launch {
-                                    comparatorToSolenoid(indexOfScenario.value)
-                                }
-
-                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                                //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
-                                //txtOfScenario.value = scenario[indexOfScenario.value].text
-                            }
-
-
-                        }) {
+                        if (STATE_EXPERIMENT.value != StateExperiments.NONE) {
                             Text(
-                                if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
-                                modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                                "Rec... ${STATE_EXPERIMENT.value.name}",
+                                modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
+                                },
                                 fontFamily = FontFamily.Default,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.Red
                             )
-                        }
-                    }
+                        } else {
+                            Column {
+                                Box(Modifier.clickable {
+                                    test_time = 0
+                                    // launch
+                                    if (explMode.value == ExplorerMode.AUTO) {
+                                        launchPlay()
+                                    } else if (explMode.value == ExplorerMode.MANUAL) {
+                                        indexOfScenario.value--
 
-                    Box(Modifier.clickable {
-                        //stop scenario
+                                        ctxScope.launch {
+                                            comparatorToSolenoid(indexOfScenario.value)
+                                        }
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            if (explMode.value == ExplorerMode.AUTO) {
-                                reInitSolenoids()
-                                GLOBAL_STATE.value = StateParseBytes.WAIT
+                                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
+                                        //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
+                                        //txtOfScenario.value = scenario[indexOfScenario.value].text
+                                    }
+
+
+                                }) {
+                                    Text(
+                                        if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
+                                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                                Box(Modifier.clickable {
+                                    //stop scenario
+
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        if (explMode.value == ExplorerMode.AUTO) {
+                                            reInitSolenoids()
+                                            GLOBAL_STATE.value = StateParseBytes.WAIT
 //                            initSerialCommunication()
 //                            startReceiveFullData()
-                            } else if (explMode.value == ExplorerMode.MANUAL) {
-                                indexOfScenario.value++
-                                comparatorToSolenoid(indexOfScenario.value)
+                                        } else if (explMode.value == ExplorerMode.MANUAL) {
+                                            indexOfScenario.value++
+                                            comparatorToSolenoid(indexOfScenario.value)
 
-                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
+                                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
+                                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                                        }
+                                    }
+                                }) {
+                                    Text(
+                                        if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
+                                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
+                                        fontFamily = FontFamily.Default,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
                             }
+
                         }
-                    }) {
-                        Text(
-                            if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
-                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
                     }
+
+
 
                     Box(Modifier.clickable {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
@@ -617,7 +607,7 @@ fun CenterPiece(
             }
         } else {
             Row(Modifier.fillMaxSize().background(Color.DarkGray).weight(0.2f), horizontalArrangement = Arrangement.SpaceAround) {
-                if (isExperimentStarts.value) {
+                if (isExperimentStarts) {
                     Text(
                         "Rec...",
                         modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {

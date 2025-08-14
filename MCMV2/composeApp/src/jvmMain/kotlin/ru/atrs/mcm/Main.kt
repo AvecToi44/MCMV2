@@ -2,6 +2,7 @@ package ru.atrs.mcm// Copyright 2000-2021 JetBrains s.r.o. and contributors. Use
 
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -50,7 +51,7 @@ import kotlin.concurrent.fixedRateTimer
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val APP_NAME = "MCM 1.2.17"
+    val APP_NAME = "MCM 1.2.18"
     // Attempt to acquire a named mutex or file lock
     if (isAnotherInstanceRunning(APP_NAME)) {
         println("Another instance is already running. Exiting.")
@@ -88,7 +89,6 @@ fun main() = application {
 
 
             println("Dir1 ${Dir1Configs.absolutePath}")
-
 
 
             var isHaveConn = false

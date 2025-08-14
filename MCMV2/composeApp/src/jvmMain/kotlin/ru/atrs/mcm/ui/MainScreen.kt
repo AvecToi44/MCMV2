@@ -84,7 +84,7 @@ fun App() {
             snackBarShow()
         }
     }
-    showMeSnackBar("Приветствую!",Color.White)
+    //showMeSnackBar("Приветствую!",Color.White)
 }
 
 fun showMeSnackBar(msg : String,color: Color = Color.White) {
@@ -102,13 +102,14 @@ fun snackBarShow() {
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.Black.copy(alpha = 0.6f))
         ) {
-            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.fillMaxSize().padding(30.dp), color =textForSnackBarColor.value)
+            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.fillMaxSize().padding(30.dp).align(
+                Alignment.Center), color =textForSnackBarColor.value)
         }
         GlobalScope.launch {
-            delay(3000)
+            delay(5000)
             visibilityOfToast = false
         }
     }

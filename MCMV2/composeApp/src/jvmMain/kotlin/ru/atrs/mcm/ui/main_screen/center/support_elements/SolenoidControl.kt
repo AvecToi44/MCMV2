@@ -53,7 +53,7 @@ fun SolenoidControl(
     step: Int,
     duration: MutableStateFlow<Long>
 ) {
-    logGarbage("FULL>  || ${solenoids.joinToString()} ][ ${pressures.joinToString()} ][ ${scenario.joinToString()} ||")
+    //logGarbage("FULL>  || ${solenoids.joinToString()} ][ ${pressures.joinToString()} ][ ${scenario.joinToString()} ||")
     // PWM [from 0 to 255]
     val PWMremember = remember {
         when(index) {

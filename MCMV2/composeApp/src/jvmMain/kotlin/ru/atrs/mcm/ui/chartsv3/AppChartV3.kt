@@ -1,6 +1,5 @@
 package ru.atrs.mcm.ui.chartsv3
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.produceState
@@ -19,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,10 +31,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import ru.atrs.mcm.ui.showMeSnackBar
+import ru.atrs.mcm.ui.snackBarShow
 import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
+import ru.atrs.mcm.utils.logGarbage
 import java.awt.FileDialog
 import java.io.File
 import ru.atrsx.chartviewer.koala.ExperimentalKoalaPlotApi
@@ -52,7 +58,6 @@ import kotlin.collections.filterIndexed
 import kotlin.collections.flatMapIndexed
 import kotlin.collections.forEach
 import kotlin.collections.forEachIndexed
-import kotlin.collections.getOrNull
 import kotlin.collections.isNotEmpty
 import kotlin.collections.map
 import kotlin.collections.mapNotNull
@@ -85,7 +90,11 @@ class AppChartV3 {
                 }
             }
         ) {
-            App(analysisAfterExperiment = analysisAfterExperiment)
+            Box {
+                App(analysisAfterExperiment = analysisAfterExperiment)
+                snackBarShow()
+            }
+
         }
     }
 }
@@ -95,14 +104,20 @@ class AppChartV3 {
 // --- Data model holds Float Points directly ---
 data class ChartData(
     val series: List<List<Point<Float, Float>>>,
-    val visibility: List<Boolean>
+    val visibility: List<Boolean>,
+    val pathEffect: PathEffect? = null
 )
 private var COUNT_OF_CHANNELS_CHART_1 = 12
 private var COUNT_OF_CHANNELS_CHART_2 = 12
 private var COUNT_OF_CHANNELS_CHART_3 = 12
 // --- Suspend parser runs on IO dispatcher ---
-suspend fun parseChartFile(path: String, countOfChannels: Int): ChartData? = withContext(Dispatchers.IO) {
+suspend fun parseChartFile(path: String, countOfChannels: Int, pathEffect: PathEffect? = null): ChartData? = withContext(Dispatchers.IO) {
     try {
+        if (File(path).exists() == false) {
+
+            return@withContext null
+        }
+
         val lines = File(path).bufferedReader().useLines { it.toList() }
         if (lines.size < 2) return@withContext null
 //        println(">>>>>>>> parseChartFile")
@@ -130,7 +145,7 @@ suspend fun parseChartFile(path: String, countOfChannels: Int): ChartData? = wit
             }.forEachIndexed { i, p -> if (i < floatSeries.size) floatSeries[i].add(p) }
         }
         println(">>>>>>>> parseChartFile   4")
-        ChartData(floatSeries, visibility)
+        ChartData(floatSeries, visibility, pathEffect = pathEffect)
     } catch (e: Exception) {
         e.printStackTrace(); null
     }
@@ -145,25 +160,45 @@ fun App(analysisAfterExperiment : Boolean = false) {
     var path2 by remember { mutableStateOf<String?>(if (analysisAfterExperiment) chartFileStandard.value?.absolutePath       else null) }
     var path3 by remember { mutableStateOf<String?>(null) }
 
+    var comment1 = mutableStateOf("222")
+    var comment2 = mutableStateOf("222")
+
     // load data asynchronously
     val data1 by produceState<ChartData?>(initialValue = null, path1) {
         value = path1?.let {
+            if (!it.isNullOrEmpty() || !it.isNullOrBlank()) {
+                if (File(it).exists() == false) {
+                    comment1.value = "(not exist!)"
+                    return@let null
+                }
+            }
             val lines = File(it).bufferedReader().useLines { it.toList() }
             if (lines.size < 2) return@produceState
             println(">>>>>>>> parseChartFile")
             COUNT_OF_CHANNELS_CHART_1 = countPairs(lines[5])
             delay(1000)
-            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_1)
+            val fileEffects = listOf<PathEffect?>(
+                null,
+                PathEffect.dashPathEffect(floatArrayOf(10f, 10f)),
+                PathEffect.dashPathEffect(floatArrayOf(2f, 6f))
+            )
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_1, pathEffect = null)
         }
     }
     val data2 by produceState<ChartData?>(initialValue = null, path2) {
         value = path2?.let {
+            if (!it.isNullOrEmpty() || !it.isNullOrBlank()) {
+                if (File(it).exists() == false) {
+                    comment2.value  = "(not exist!)"
+                    return@let null
+                }
+            }
             val lines = File(it).bufferedReader().useLines { it.toList() }
             if (lines.size < 2) return@produceState
             println(">>>>>>>> parseChartFile")
             COUNT_OF_CHANNELS_CHART_2 = countPairs(lines[5])
             delay(1000)
-            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_2)
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_2, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f)))
         }
     }
     val data3 by produceState<ChartData?>(initialValue = null, path3) {
@@ -173,7 +208,7 @@ fun App(analysisAfterExperiment : Boolean = false) {
             println(">>>>>>>> parseChartFile")
             COUNT_OF_CHANNELS_CHART_3 = countPairs(lines[5])
             delay(1000)
-            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_3)
+            parseChartFile(it, countOfChannels = COUNT_OF_CHANNELS_CHART_3, pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 6f)))
         }
     }
 
@@ -197,8 +232,6 @@ fun App(analysisAfterExperiment : Boolean = false) {
             }
         }
     }
-
-
     LaunchedEffect(data2) {
         if (data2 != null) {
             vis2 = if (data2?.visibility?.size == COUNT_OF_CHANNELS_CHART_2) {
@@ -241,24 +274,26 @@ fun App(analysisAfterExperiment : Boolean = false) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Per-series toggles
             Column {
-                FileButton("File 1", path1, listOf(path1, path2, path3)) { path1 = it }
-                FileButton("File 2", path2, listOf(path1, path2, path3)) { path2 = it }
-                FileButton("File 3", path3, listOf(path1, path2, path3)) { path3 = it }
-            }
-            Column {
-                // Per-series toggles
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    FileButton("File 1", path1, listOf(path1, path2, path3)) { path1 = it }
+
                     if (path1 != null) FileControl(
-                        name = File(path1!!).name,
+                        fileName = "${File(path1!!).name} ${comment1.value }",
                         color = Color.Blue,
                         visible = fileVisible1,
                         onToggle = { vis1 = vis1.map { !fileVisible1 } },
                         onClear = { path1 = null }
-                    )
+                    ) else {
+                        if (path1.isNullOrEmpty() || path1.isNullOrBlank() || File(path1).exists() == false) {
+
+                            Text("File (${path1}) is not exist}")
+                        }
+                    }
                     Row { ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it } }
 
                 }
@@ -266,42 +301,39 @@ fun App(analysisAfterExperiment : Boolean = false) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    FileButton("File 2", path2, listOf(path1, path2, path3)) { path2 = it }
+
                     if (path2 != null) FileControl(
-                        name = File(path2!!).name,
+                        fileName = "${File(path2!!).name} ${comment2.value }",
                         color = Color.Red,
                         visible = fileVisible2,
                         onToggle = { vis2 = vis2.map { !fileVisible2 } },
                         onClear = { path2 = null }
-                    )
+                    )else {
+                        if (path2.isNullOrEmpty() || path2.isNullOrBlank() || File(path2).exists() == false) {
+                            Text("File (${path1}) is not exist}")
+                        }
+
+                    }
                     Row { ToggleSeriesButtons(vis2, data2?.series, seriesColors) { vis2 = it } }
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    FileButton("File 3", path3, listOf(path1, path2, path3)) { path3 = it }
+
                     if (path3 != null) FileControl(
-                        name = File(path3!!).name,
+                        fileName = File(path3!!).name,
                         color = Color.Green,
                         visible = fileVisible3,
                         onToggle = { vis3 = vis3.map { !fileVisible3 } },
                         onClear = { path3 = null }
                     )
                     Row { ToggleSeriesButtons(vis3, data3?.series, seriesColors) { vis3 = it } }
-
                 }
             }
         }
-
-        // File name & clear/toggle row
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(12.dp)
-//        ) {
-//
-//
-//
-//        }
-
         // Chart area
         Box(
             modifier = Modifier
@@ -318,14 +350,12 @@ fun App(analysisAfterExperiment : Boolean = false) {
                 )
             }
         }
-
-
     }
 }
 
 @Composable
 private fun FileControl(
-    name: String,
+    fileName: String,
     color: Color,
     visible: Boolean,
     onToggle: () -> Unit,
@@ -335,9 +365,26 @@ private fun FileControl(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(name, fontSize = 12.sp)
-        Button(onClick = onToggle) { Text(if (visible) "Hide" else "Show", fontSize = 12.sp) }
-        Button(onClick = onClear) { Text("Clear", fontSize = 12.sp) }
+        Text(fileName, fontSize = 12.sp)
+
+        Button(onClick = onToggle, modifier = Modifier, colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 8.dp
+            )) { Text(if (visible) "Hide" else "Show", fontSize = 12.sp) }
+        Button(onClick = onClear, colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 8.dp
+            )) { Text("Clear", fontSize = 12.sp) }
     }
 }
 
@@ -348,16 +395,35 @@ fun FileButton(
     existingPaths: List<String?>,
     onFileSelected: (String) -> Unit
 ) {
-    Button(onClick = {
-        FileDialog(null as Frame?, "Select $label", FileDialog.LOAD).apply {
-            isVisible = true
-            file?.let { fn ->
-                val dir = directory
-                val full = if (dir.endsWith(File.separator)) "$dir$fn" else "$dir${File.separator}$fn"
-                if (!existingPaths.contains(full)) onFileSelected(full)
+    Button(
+        onClick = {
+            FileDialog(null as Frame?, "Select $label", FileDialog.LOAD).apply {
+                isVisible = true
+                file?.let { filePath ->
+                    val dir = directory
+                    val full = if (dir.endsWith(File.separator)) "$dir$filePath" else "$dir${File.separator}$filePath"
+                    onFileSelected(full)
+                }
             }
-        }
-    }) { Text(label) }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(8.dp),
+        elevation = ButtonDefaults.elevatedButtonElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp
+        )
+    ) {
+        Text(
+            text = label,
+            style = TextStyle(
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp
+            )
+        )
+    }
 }
 
 @Composable
@@ -397,11 +463,11 @@ fun ChartView(
     val minPoints = 200
 
     // Per-file line style effects (dashes)
-    val fileEffects = listOf<PathEffect?>(
-        null,
-        PathEffect.dashPathEffect(floatArrayOf(10f, 10f)),
-        PathEffect.dashPathEffect(floatArrayOf(2f, 6f))
-    )
+//    val fileEffects = listOf<PathEffect?>(
+//        null,
+//        PathEffect.dashPathEffect(floatArrayOf(10f, 10f)),
+//        PathEffect.dashPathEffect(floatArrayOf(2f, 6f))
+//    )
 
     val downsampledAll by remember(datasets, visibilityStates) {
         derivedStateOf {
@@ -458,8 +524,8 @@ fun ChartView(
                 independentZoomEnabled = false
             )
         ) {
-            datasets.forEachIndexed { di, cd ->
-                cd.series.forEachIndexed { si, series ->
+            datasets.forEachIndexed { di, chartData ->
+                chartData.series.forEachIndexed { si, series ->
                     if (!visibilityStates[di][si]) return@forEachIndexed
                     val step = (series.size / minPoints).coerceAtLeast(1)
                     val plotData = if (series.size > maxPoints)
@@ -469,11 +535,11 @@ fun ChartView(
                     // Color per series index
                     val baseColor = colors[si % colors.size]
                     // Style dashing per file index
-                    val effect = fileEffects.getOrNull(di)
+                    //val effect = fileEffects.getOrNull(di)
                     val style = LineStyle(
                         brush = SolidColor(baseColor),
                         strokeWidth = 2.dp,
-                        pathEffect = effect
+                        pathEffect = chartData.pathEffect
                     )
 
                     LinePlot(

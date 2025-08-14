@@ -3,6 +3,7 @@ package ru.atrs.mcm
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
@@ -32,7 +33,11 @@ import ru.atrs.mcm.utils.test_time
 
 fun launchPlay() {
     if (STATE_EXPERIMENT.value != StateExperiments.START) {
+
+
         CoroutineScope(Dispatchers.IO).launch {
+            RouterCommunication.cleanCOMPort()
+            delay(2000)
             RouterCommunication.writeToSerialPort(
                 byteArrayOf(
                     0x78,

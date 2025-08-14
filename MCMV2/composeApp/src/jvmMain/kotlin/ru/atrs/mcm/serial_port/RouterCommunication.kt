@@ -37,6 +37,10 @@ object RouterCommunication: COMProtocol {
         println(">< STOP SERIAL PORT // is Open:${serialPort.isOpen} ${BAUD_RATE}")
     }
 
+
+    fun cleanCOMPort() {
+        serialPort.flushIOBuffers()
+    }
     override suspend fun startReceiveFullData() {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.startReceiveFullData()

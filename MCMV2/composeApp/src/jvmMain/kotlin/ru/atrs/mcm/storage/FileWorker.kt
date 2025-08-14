@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.CHART_FILE_NAME_ENDING
 import ru.atrs.mcm.utils.ChartFileNameEnding
@@ -27,6 +28,7 @@ import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
+import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arr10Measure
 import ru.atrs.mcm.utils.arr11Measure
@@ -87,7 +89,7 @@ fun createMeasureExperiment() {
                         "${arr12Measure[it].x};${arr12Measure[it].y}|"
                 }
 
-                logInfo("newStroke= ${newStroke}")
+                //logGarbage("newStroke= ${newStroke}")
                 bw.write("${newStroke}${newStrokeFor12}\n")
             }
             bw.close()
@@ -107,10 +109,12 @@ fun createMeasureExperiment() {
 
         }catch (e: Exception){
             showMeSnackBar("Error! ${e.message}")
+            STATE_EXPERIMENT.value = StateExperiments.NONE
         }
         delay(1200)
         chartFileAfterExperiment.value = fl
         doOpen_First_ChartWindow.value = true
+        STATE_EXPERIMENT.value = StateExperiments.NONE
     }
 }
 
