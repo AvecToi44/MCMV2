@@ -25,7 +25,6 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.indexScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.logGarbage
-import ru.atrs.mcm.utils.num
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.sound_Error
 import ru.atrs.mcm.utils.sound_On
@@ -33,7 +32,6 @@ import ru.atrs.mcm.utils.test_time
 
 fun launchPlay() {
     if (STATE_EXPERIMENT.value != StateExperiments.START) {
-
 
         CoroutineScope(Dispatchers.IO).launch {
             RouterCommunication.cleanCOMPort()
@@ -58,13 +56,6 @@ fun launchPlay() {
             )
         }
 
-//                            if (GLOBAL_STATE.value != StateParseBytes.PLAY) {
-//                                ctxScope.launch {
-//
-//                                    initSerialCommunication()
-//                                }
-//                            }
-
         GLOBAL_STATE.value = StateParseBytes.PLAY
         sound_On()
         logGarbage("ONON ${test_time} V")
@@ -72,7 +63,6 @@ fun launchPlay() {
 
         indexOfScenario.value = 0
         indexScenario = 0
-        num = scenario[indexScenario].time
         isAlreadyReceivedBytesForChart.value = false
         logGarbage("Start Play ${test_time} A")
 

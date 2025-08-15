@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import ru.atrs.mcm.parsing_excel.models.PressuresHolder
 import ru.atrs.mcm.parsing_excel.models.ScenarioStep
 import ru.atrs.mcm.parsing_excel.models.SolenoidHolder
+import ru.atrs.mcm.storage.models.UIGaugesData
 import ru.atrs.mcm.ui.charts.Pointer
 import java.io.File
 import javax.swing.JFileChooser
@@ -61,6 +62,8 @@ var CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
 
 const val APP_VERSION = "1.2.13"
 
+var SOLENOID_MAIN_FREQ: Int? = 0
+var GRADIENT_TIME: Int? = 0
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()
 var scenario  = mutableListOf<ScenarioStep>()
@@ -70,9 +73,10 @@ var STATE_EXPERIMENT = mutableStateOf(StateExperiments.NONE)
 var EXPLORER_MODE = mutableStateOf(ExplorerMode.AUTO)
 
 
-var dataChunkRAW   =       MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
-var dataChunkGauges   =       MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
-var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1000_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataChunkRAW   =       MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataChunkGauges   =       MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataGauges   =       MutableSharedFlow<UIGaugesData>(replay = 0, extraBufferCapacity = 100, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
 
 val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255
@@ -104,7 +108,6 @@ var commentOfScenario = mutableStateOf("")
 // recording:
 var test_time = 0
 var indexScenario = 0
-var num : Int = 0
 
 var isAlreadyReceivedBytesForChart = mutableStateOf(false)
 var doOpen_First_ChartWindow = mutableStateOf(false)

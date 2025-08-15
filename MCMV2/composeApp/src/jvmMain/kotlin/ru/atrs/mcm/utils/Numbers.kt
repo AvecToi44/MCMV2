@@ -11,7 +11,7 @@ fun rndTo2deci(num : Float) : Float{
 
 }
 
-
+// ones, tens
 fun Int.to2ByteArray() : ByteArray = byteArrayOf(toByte(), shr(8).toByte())
 
 

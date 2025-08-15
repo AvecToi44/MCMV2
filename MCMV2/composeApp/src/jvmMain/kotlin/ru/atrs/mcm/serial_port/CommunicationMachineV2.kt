@@ -252,7 +252,7 @@ object CommunicationMachineV2 {
     fun sendFrequency() {
         var arrSend = arrayListOf<Frequence>()
         solenoids.forEachIndexed { index, solenoidHolder ->
-            val mkrs = 1_000_000 / solenoidHolder.frequency
+            val mkrs = 1_000_000 / solenoidHolder.ditherFrequency
 
             val time = BigInteger.valueOf(mkrs.toLong()).toByteArray()
             arrSend.add(Frequence(units = time[0], dozens = time[1]))

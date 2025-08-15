@@ -11,8 +11,10 @@ import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir7ReportsStandard
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
+import ru.atrs.mcm.utils.GRADIENT_TIME
 import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
+import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logGarbage
@@ -122,17 +124,9 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     var maxPWMs = arrayListOf<Int>()
 
     repeat(NUMBER_OF_GAUGES) {
-//        var asd = arrayListOf<String>(
-//            wholeSheet[14][it+1],
-//            wholeSheet[15][it+1],
-//            wholeSheet[16][it+1],
-//            wholeSheet[17][it+1],
-//            wholeSheet[18][it+1],
-//            wholeSheet[19][it+1],
-//            wholeSheet[20][it+1],
-//            wholeSheet[21][it+1]
-//        )
-//        println( pizdec [${it}] ${asd.joinToString()} ${pressures.size}")
+
+        SOLENOID_MAIN_FREQ = wholeSheet[13][2].toFloat().toInt()
+        GRADIENT_TIME      = wholeSheet[13][4].toFloat().toInt()
 
         solenoids.add(
             SolenoidHolder(
@@ -140,9 +134,9 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
                 index =             wholeSheet[15][it+1].toDouble().toInt(),
                 maxPWM =            wholeSheet[16][it+1].toDouble().toInt(),
                 step =              wholeSheet[17][it+1].toDouble().toInt(),
-                preferredColor =    wholeSheet[18][it+1],
-                frequency =         wholeSheet[19][it+1].toDouble().toInt(),
-                expectedTestValue = wholeSheet[20][it+1].toDouble().toInt(),
+                ditherAmplitude =    wholeSheet[18][it+1],
+                ditherFrequency =   wholeSheet[19][it+1].toDouble().toInt(),
+                currentMinValue =   wholeSheet[20][it+1].toDouble().toInt(),
                 currentMaxValue =   wholeSheet[21][it+1].toDouble().toInt(),
                 isVisible =         wholeSheet[22].getOrNull(it+1) == "true"
             )
@@ -184,7 +178,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
 //            }
 
         }
-
+        println("SOLENOID_MAIN_FREQ: ${SOLENOID_MAIN_FREQ}")
         println("<>>> ${valueSteps.joinToString()}")
 
         val newTime = wholeSheet[i][0].toDouble().toInt()

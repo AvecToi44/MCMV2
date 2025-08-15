@@ -87,7 +87,7 @@ fun SolenoidsPanel(
                     x = current1,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
+                    out_min = solenoids[0].currentMinValue,
                     out_max = solenoids[0].currentMaxValue
                 ),
                 maxPWM = solenoids[0].maxPWM,
@@ -103,7 +103,7 @@ fun SolenoidsPanel(
                     x = current2,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
+                    out_min = solenoids[1].currentMinValue,
                     out_max = solenoids[1].currentMaxValue
                 ),
                 maxPWM = solenoids[1].maxPWM,
@@ -119,7 +119,7 @@ fun SolenoidsPanel(
                     x = current3,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
+                    out_min = solenoids[2].currentMinValue,
                     out_max = solenoids[2].currentMaxValue
                 ),
                 maxPWM = solenoids[2].maxPWM,
@@ -135,7 +135,7 @@ fun SolenoidsPanel(
                     x = current4,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
+                    out_min = solenoids[3].currentMinValue,
                     out_max = solenoids[3].currentMaxValue
                 ),
                 maxPWM = solenoids[3].maxPWM,
@@ -152,8 +152,8 @@ fun SolenoidsPanel(
                     x = current5,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[4].currentMinValue,
+                    out_max = solenoids[4].currentMaxValue
                 ),
                 maxPWM = solenoids[4].maxPWM,
                 step = solenoids[4].step,
@@ -168,8 +168,8 @@ fun SolenoidsPanel(
                     x = current6,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[5].currentMinValue,
+                    out_max = solenoids[5].currentMaxValue
                 ),
                 maxPWM = solenoids[5].maxPWM,
                 step = solenoids[5].step,
@@ -185,8 +185,8 @@ fun SolenoidsPanel(
                     x = current7,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[6].currentMinValue,
+                    out_max = solenoids[6].currentMaxValue
                 ),
                 maxPWM = solenoids[6].maxPWM,
                 step = solenoids[6].step,
@@ -201,8 +201,8 @@ fun SolenoidsPanel(
                     x = current8,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[7].currentMinValue,
+                    out_max = solenoids[7].currentMaxValue
                 ),
                 maxPWM = solenoids[7].maxPWM,
                 step = solenoids[7].step,
@@ -217,8 +217,8 @@ fun SolenoidsPanel(
                     x = current9,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[8].currentMinValue,
+                    out_max = solenoids[8].currentMaxValue
                 ),
                 maxPWM = solenoids[8].maxPWM,
                 step = solenoids[8].step,
@@ -233,8 +233,8 @@ fun SolenoidsPanel(
                     x = current10,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[9].currentMinValue,
+                    out_max = solenoids[9].currentMaxValue
                 ),
                 maxPWM = solenoids[9].maxPWM,
                 step = solenoids[9].step,
@@ -249,8 +249,8 @@ fun SolenoidsPanel(
                     x = current11,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[10].currentMinValue,
+                    out_max = solenoids[10].currentMaxValue
                 ),
                 maxPWM = solenoids[10].maxPWM,
                 step =   solenoids[10].step,
@@ -265,8 +265,8 @@ fun SolenoidsPanel(
                     x = current11,
                     in_min = 0,
                     in_max = 4095,
-                    out_min = 0,
-                    out_max = solenoids[0].currentMaxValue
+                    out_min = solenoids[11].currentMinValue,
+                    out_max = solenoids[11].currentMaxValue
                 ),
                 maxPWM = solenoids[11].maxPWM,
                 step =   solenoids[11].step,

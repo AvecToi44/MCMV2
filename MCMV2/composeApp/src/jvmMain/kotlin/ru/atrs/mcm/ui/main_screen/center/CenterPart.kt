@@ -27,14 +27,12 @@ import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import ru.atrs.mcm.launchPlay
+import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
-import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
-import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
-import ru.atrs.mcm.serial_port.bytesMachine
-import ru.atrs.mcm.storage.NewPointerLine
-import ru.atrs.mcm.storage.addNewLineForChart
+import ru.atrs.mcm.serial_port.payloadWriterMachine
+import ru.atrs.mcm.serial_port.bytesReceiverMachine
 import ru.atrs.mcm.ui.custom.GaugeX
 import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
@@ -46,20 +44,13 @@ import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.GLOBAL_STATE
 import ru.atrs.mcm.utils.LAST_SCENARIO
-import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
-import ru.atrs.mcm.utils.chartFileAfterExperiment
-import ru.atrs.mcm.utils.dataChunkGauges
-import ru.atrs.mcm.utils.doOpen_First_ChartWindow
-import ru.atrs.mcm.utils.incrementTime
+import ru.atrs.mcm.utils.dataGauges
 import ru.atrs.mcm.utils.indexOfScenario
-import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
-import ru.atrs.mcm.utils.logGarbage
-import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.test_time
@@ -81,7 +72,6 @@ fun CenterPiece(
     var pressure6X by remember { mutableStateOf(0f) }
     var pressure7X by remember { mutableStateOf(0f) }
     var pressure8X by remember { mutableStateOf(0f) }
-
     var pressure9X by remember  { mutableStateOf(0f) }
     var pressure10X by remember { mutableStateOf(0f) }
     var pressure11X by remember { mutableStateOf(0f) }
@@ -103,111 +93,33 @@ fun CenterPiece(
     var columnHeightDp by remember {
         mutableStateOf(0.dp)
     }
-
-    LaunchedEffect(true) {
-        bytesMachine()
-    }
-
     var isPayloadComing = remember { mutableStateOf(false) }
     LaunchedEffect(true) {
+        RouterCommunication.sendFrequency()
+        bytesReceiverMachine()
+    }
+    LaunchedEffect(true) {
+        payloadWriterMachine()
+    }
+    LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
-        ctxScope.launch {
-            //EXPLORER_MODE.value = ExplorerMode.MANUAL
-            //reInitSolenoids()
-            indexOfScenario.value = 0
-
-            //sound_On()
-            startReceiveFullData()
-            comparatorToSolenoid(indexOfScenario.value)
-            sendScenarioToController()
-            var count = 0
-            dataChunkGauges.collect {
-                isPayloadComing.value = true
-                //delay(DELAY_FOR_GET_DATA)
-                logGarbage(">>>> ${it.toString()}")
-
-                //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
-
-                //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-                // in_max 65535 instead of 4095
-                mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }//.takeIf { pressures.size >= 1 }
-                mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }//.takeIf { pressures.size >= 2 }
-                mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }//.takeIf { pressures.size >= 3 }
-                mapFloat(it.fourthGaugeData, 0f, 4095f, (pressures[3].minValue), (pressures[3].maxValue )).let { it1 -> pressure4X = it1 }//.takeIf { pressures.size >= 4 }
-                mapFloat(it.fifthGaugeData, 0f, 4095f, (pressures[4].minValue), (pressures[4].maxValue  )).let { it1 -> pressure5X = it1 }//.takeIf { pressures.size >= 5 }
-                mapFloat(it.sixthGaugeData, 0f, 4095f, (pressures[5].minValue), (pressures[5].maxValue  )).let { it1 -> pressure6X = it1 }//.takeIf { pressures.size >= 6 }
-                mapFloat(it.seventhGaugeData, 0f, 4095f, (pressures[6].minValue), (pressures[6].maxValue)).let { it1 -> pressure7X = it1 }//.takeIf { pressures.size >= 7 }
-                mapFloat(it.eighthGaugeData, 0f, 4095f, (pressures[7].minValue), (pressures[7].maxValue )).let { it1 -> pressure8X = it1 }//.takeIf { pressures.size >= 8 }
-
-                if (TWELVE_CHANNELS_MODE) {
-                    if (pressures.getOrNull(8)  != null && it.ninthGaugeData   != null) {(mapFloat(it.ninthGaugeData   !!   , 0f, 4095f, (pressures[8].minValue),    (pressures[8].maxValue)).let { pressure9X = it })}
-                    if (pressures.getOrNull(9)  != null && it.tenthGaugeData   != null) {(mapFloat(it.tenthGaugeData   !!   , 0f, 4095f, (pressures[9].minValue),   (pressures[9].maxValue)).let { pressure10X = it })}
-                    if (pressures.getOrNull(10) != null && it.eleventhGaugeData!= null) {(mapFloat(it.eleventhGaugeData!!, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue)).let { pressure11X = it })}
-                    if (pressures.getOrNull(11) != null && it.twelfthGaugeData != null) {(mapFloat(it.twelfthGaugeData !! , 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
-                }
-
-                when (EXPLORER_MODE.value) {
-                    ExplorerMode.AUTO -> {
-                        //logGarbage("konec ${}")
-                        if (it.isExperiment) {
-
-                            addNewLineForChart(
-                                newLine = NewPointerLine(
-                                    incrementTime = incrementTime,
-                                    ch1 = pressure1X,
-                                    ch2 = pressure2X,
-                                    ch3 = pressure3X,
-                                    ch4 = pressure4X,
-                                    ch5 = pressure5X,
-                                    ch6 = pressure6X,
-                                    ch7 = pressure7X,
-                                    ch8 = pressure8X,
-                                    ch9 = pressure9X ,
-                                    ch10 =pressure10X,
-                                    ch11 =pressure11X,
-                                    ch12 =pressure12X
-                                ),
-                                isRecordingExperiment = it.isExperiment
-                            )
-//                            arr1Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure1X)) //.takeIf { pressure1X > 0f } //it.firstGaugeData, ))
-//                            arr2Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure2X)) //.takeIf { pressure2X > 0f } //it.secondGaugeData,))
-//                            arr3Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure3X)) //.takeIf { pressure3X > 0f } //it.thirdGaugeData, ))
-//                            arr4Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure4X)) //.takeIf { pressure4X > 0f } //it.fourthGaugeData,))
-//                            arr5Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure5X)) //.takeIf { pressure5X > 0f } //it.fifthGaugeData, ))
-//                            arr6Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure6X)) //.takeIf { pressure6X > 0f } //it.sixthGaugeData, ))
-//                            arr7Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure7X)) //.takeIf { pressure7X > 0f } //it.seventhGaugeData))
-//                            arr8Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure8X)) //.takeIf { pressure8X > 0f } //it.eighthGaugeData, ))
-//
-//                            arr9Measure.add(Pointer(x = incrementTime.toFloat(),  y = pressure9X )) //.takeIf { pressure9X > 0f }  //it.eighthGaugeData, ))
-//                            arr10Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure10X)) //.takeIf { pressure10X > 0f } //it.eighthGaugeData, ))
-//                            arr11Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure11X)) //.takeIf { pressure11X > 0f } //it.eighthGaugeData, ))
-//                            arr12Measure.add(Pointer(x = incrementTime.toFloat(), y = pressure12X)) //.takeIf { pressure12X > 0f } //it.eighthGaugeData, ))
-
-                            incrementTime += 2L
-
-                        } else if (STATE_EXPERIMENT.value == StateExperiments.ENDING_OF_EXPERIMENT) {
-                           // logGarbage("Output: |${incrementExperiment}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
-
-                            STATE_EXPERIMENT.value = StateExperiments.PREPARE_CHART
-
-                            if (!isAlreadyReceivedBytesForChart.value) {
-                                isAlreadyReceivedBytesForChart.value = true
-
-                                //createMeasureExperiment()
-                                delay(1200)
-                                chartFileAfterExperiment.value = NAME_OF_NEW_CHART_LOG_FILE!!
-                                doOpen_First_ChartWindow.value = true
-                                STATE_EXPERIMENT.value = StateExperiments.NONE
-                                NAME_OF_NEW_CHART_LOG_FILE = null
-                                incrementTime = 0
-                            }
-                        }
-                    }
-                    ExplorerMode.MANUAL -> { /** without recording */ }
-                }
-            }
+        dataGauges.collect {
+            isPayloadComing.value = true
+            pressure1X = it.pressure1
+            pressure2X = it.pressure2
+            pressure3X = it.pressure3
+            pressure4X = it.pressure4
+            pressure5X = it.pressure5
+            pressure6X = it.pressure6
+            pressure7X = it.pressure7
+            pressure8X = it.pressure8
+            pressure9X = it.pressure9
+            pressure10X = it.pressure10
+            pressure11X = it.pressure11
+            pressure12X = it.pressure12
         }
     }
+
     /**
      * Composer:
      */

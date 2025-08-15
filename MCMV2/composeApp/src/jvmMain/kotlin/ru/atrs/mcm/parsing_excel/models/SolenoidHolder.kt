@@ -6,9 +6,9 @@ data class SolenoidHolder(
     val maxPWM : Int,
     val step : Int,
 
-    val frequency : Int,
-    val preferredColor : String,
-    val expectedTestValue : Int,
+    val ditherFrequency : Int,
+    val ditherAmplitude : String,
+    val currentMinValue : Int,
     val currentMaxValue : Int,
     var isVisible : Boolean
 )

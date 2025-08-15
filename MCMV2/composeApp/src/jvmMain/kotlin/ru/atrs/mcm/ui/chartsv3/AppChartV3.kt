@@ -221,6 +221,14 @@ fun App(analysisAfterExperiment : Boolean = false) {
     val fileVisible2 = vis2.any { it }
     val fileVisible3 = vis3.any { it }
 
+    LaunchedEffect(true) {
+        if (analysisAfterExperiment && chartFileAfterExperiment.value?.exists() == false) {
+            comment1.value  = "(not exist!)"
+        }
+        if (analysisAfterExperiment && chartFileStandard.value?.exists() == false) {
+            comment2.value  = "(not exist!)"
+        }
+    }
     // reset per-file visibility when file changes
     LaunchedEffect(data1) {
         if (data1 != null) {
@@ -240,8 +248,6 @@ fun App(analysisAfterExperiment : Boolean = false) {
             } else {
                 vis2.map { true }
             }
-        } else {
-            comment2.value  = "(not exist!)"
         }
 //        data2?.let { vis2 = it.visibility }
     }
