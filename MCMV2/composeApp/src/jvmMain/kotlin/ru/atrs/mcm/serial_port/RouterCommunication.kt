@@ -45,7 +45,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.startReceiveFullData()
         } else {
-
+            CommunicationMachineV2.startReceiveFullData()
         }
     }
 
@@ -54,7 +54,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.pauseSerialComm()
         } else {
-
+            CommunicationMachineV2.startReceiveFullData()
         }
     }
 
@@ -63,7 +63,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.writeToSerialPort(sendBytes, withFlush, delay)
         } else {
-
+            CommunicationMachineV2.writeToSerialPort(sendBytes, withFlush, delay)
         }
     }
 
@@ -71,7 +71,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.comparatorToSolenoid(newIndex)
         } else {
-
+            CommunicationMachineV2.comparatorToSolenoid(newIndex)
         }
     }
 
@@ -79,7 +79,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.sendZerosToSolenoid()
         } else {
-
+            CommunicationMachineV2.sendZerosToSolenoid()
         }
     }
 
@@ -88,7 +88,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.sendScenarioToController()
         } else {
-
+            CommunicationMachineV2.sendScenarioToController()
         }
     }
 
@@ -96,7 +96,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.reInitSolenoids()
         } else {
-
+            CommunicationMachineV2.reInitSolenoids()
         }
     }
 
@@ -104,7 +104,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.sendFrequency()
         } else {
-
+            CommunicationMachineV2.sendFrequency()
         }
     }
 
@@ -112,7 +112,7 @@ object RouterCommunication: COMProtocol {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommunicationMachineV1.solenoidControl(isChangedFirstFourthInternal)
         } else {
-
+            CommunicationMachineV2.solenoidControl(isChangedFirstFourthInternal)
         }
     }
 
