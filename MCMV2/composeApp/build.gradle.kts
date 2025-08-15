@@ -40,6 +40,7 @@ kotlin {
             implementation("io.github.thechance101:chart:1.1.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
+            implementation("br.com.devsrsouza.compose.icons:feather:1.1.1")
 //            // for version control
 //            implementation("com.akuleshov7:ktoml-core:0.7.0")
 //            implementation("com.akuleshov7:ktoml-file:0.7.0")

@@ -25,13 +25,12 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.indexScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.logGarbage
-import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.sound_Error
 import ru.atrs.mcm.utils.sound_On
 import ru.atrs.mcm.utils.test_time
 
 fun launchPlay() {
-    if (STATE_EXPERIMENT.value != StateExperiments.START) {
+    if (STATE_EXPERIMENT.value != StateExperiments.RECORDING) {
 
         CoroutineScope(Dispatchers.IO).launch {
             RouterCommunication.cleanCOMPort()

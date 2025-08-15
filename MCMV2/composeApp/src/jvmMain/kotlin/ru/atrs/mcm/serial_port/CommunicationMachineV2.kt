@@ -70,11 +70,6 @@ object CommunicationMachineV2 {
     }
 
     suspend fun startReceiveFullData() {
-//    repeat(
-//        getComPorts_Array().size
-//    ) {
-//        println(">>>Available Com ports:${getComPorts_Array().get(it).systemPortName} is Open: ${getComPorts_Array().get(it).isOpen}||${getComPorts_Array().get(it).descriptivePortName}")
-//    }
         if (!serialPort.isOpen) {
             initSerialCommunication()
         }
@@ -90,20 +85,16 @@ object CommunicationMachineV2 {
     }
 
     suspend fun pauseSerialComm() {
-        //writeToSerialPort(byteArrayOf(0x71,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-        //writeToSerialPort(byteArrayOf(0x51,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
         sendZerosToSolenoid()
-        //writeToSerialPort(byteArrayOf(0x78, 0x8A.toByte(), 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),withFlush = false)
-        //delay(500)
-        //serialPort.flushIOBuffers()
 
         writeToSerialPort(byteArrayOf(0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),withFlush = false)
     }
 
     suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean = false, delay: Long = 0L) {
-//    if (sendBytes[0] == 0x74.toByte()) {
-//        //startTimer()
-//    }
+        if (!serialPort.isOpen) {
+            logError("Trying to writeToSerialPort: ${sendBytes.toHexString()}")
+            return
+        }
         repeat(1) {
 
             logAct("Run Send bytes:: ${sendBytes.toHexString()}   size of bytes: ${sendBytes.size}")

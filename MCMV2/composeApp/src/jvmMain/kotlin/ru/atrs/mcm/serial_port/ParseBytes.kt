@@ -82,7 +82,7 @@ suspend fun flowReceiverMachine() {
         when {
             isStartExperiment(updData)  -> {
                 isExperimentStarts = true
-                STATE_EXPERIMENT.value = StateExperiments.START
+                STATE_EXPERIMENT.value = StateExperiments.RECORDING
                 println("isStartExperiment ${updData.toHexString()}")
                 logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
 

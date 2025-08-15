@@ -1,31 +1,49 @@
 package ru.atrs.mcm.ui.main_screen.center
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import compose.icons.AllIcons
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeftCircle
+import compose.icons.feathericons.ArrowRightCircle
+import compose.icons.feathericons.Eye
+import compose.icons.feathericons.Home
+import compose.icons.feathericons.Pause
+import compose.icons.feathericons.PauseCircle
+import compose.icons.feathericons.Play
+import compose.icons.feathericons.PlayCircle
+import compose.icons.feathericons.Sliders
 import ru.atrs.mcm.enums.ExplorerMode
 import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.painterResource
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
@@ -360,6 +378,7 @@ fun CenterPiece(
 //                            }
 //                            }
                         ) {
+
                             Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
                         }
                     }
@@ -368,180 +387,160 @@ fun CenterPiece(
         }
         if(showBottomPanel.value) {
             Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
+                Column(
+                    Modifier
+                        .width(200.dp)
+                        .fillMaxHeight()
+                        .border(width = 2.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
+                        .background(color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
+                        .padding(2.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(Modifier.padding(3.dp).fillMaxWidth().border(width = 2.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp)).padding(10.dp)) {
+                        Text(if (explMode.value == ExplorerMode.AUTO) {"${STATE_EXPERIMENT.value.name}"} else {"${txt.value}"}, fontWeight = FontWeight.Bold)
+                        Text( "${COM_PORT},${BAUD_RATE},${limitTime}ms" , fontSize = 12.sp)
+                    }
 
-                Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
+                    Row(Modifier.fillMaxWidth().padding(5.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        if (explMode.value == ExplorerMode.AUTO) {
 
-
-                    if (isPayloadComing.value) {
-                        if (STATE_EXPERIMENT.value != StateExperiments.NONE) {
-                            Text(
-                                "Rec... ${STATE_EXPERIMENT.value.name}",
-                                modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
-                                },
-                                fontFamily = FontFamily.Default,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Red
-                            )
-                        } else {
-                            Column {
-                                Box(Modifier.clickable {
-                                    test_time = 0
-                                    // launch
-                                    if (explMode.value == ExplorerMode.AUTO) {
-                                        launchPlay()
-                                    } else if (explMode.value == ExplorerMode.MANUAL) {
-                                        indexOfScenario.value--
-
-                                        ctxScope.launch {
+                        }
+                        Box(
+                            Modifier
+                                .width(80.dp)
+                                .height(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable {
+                                    ctxScope.launch {
+                                        if (explMode.value == ExplorerMode.AUTO) {
+                                            launchPlay()
+                                        } else if (explMode.value == ExplorerMode.MANUAL) {
+                                            indexOfScenario.value--
                                             comparatorToSolenoid(indexOfScenario.value)
+                                            scenario.getOrNull(indexOfScenario.value)
+                                                ?.let { txtOfScenario.value = it.comment }
                                         }
-
-                                        scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                                        //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
-                                        //txtOfScenario.value = scenario[indexOfScenario.value].text
                                     }
-
-
-                                }) {
-                                    Text(
-                                        if (explMode.value == ExplorerMode.AUTO) "▶" else "⏪",
-                                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                                Box(Modifier.clickable {
-                                    //stop scenario
-
-                                    CoroutineScope(Dispatchers.IO).launch {
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                imageVector = if (explMode.value == ExplorerMode.AUTO) FeatherIcons.PlayCircle else FeatherIcons.ArrowLeftCircle,
+                                contentDescription = "Play",
+                                colorFilter = ColorFilter.tint(Color.White),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        ///////////////////
+                        Box(
+                            Modifier
+                                .width(80.dp)
+                                .height(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable {
+                                    ctxScope.launch {
                                         if (explMode.value == ExplorerMode.AUTO) {
                                             reInitSolenoids()
                                             GLOBAL_STATE.value = StateParseBytes.WAIT
-//                            initSerialCommunication()
-//                            startReceiveFullData()
                                         } else if (explMode.value == ExplorerMode.MANUAL) {
                                             indexOfScenario.value++
                                             comparatorToSolenoid(indexOfScenario.value)
-
-                                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
                                             scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
                                         }
                                     }
-                                }) {
-                                    Text(
-                                        if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
-                                        modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                                        fontFamily = FontFamily.Default,
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
-
-                        }
-                    } else {
-                        Text(
-                            "${STATE_EXPERIMENT.value.name}",
-                            modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
-                            },
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Green
-                        )
-                    }
-
-
-
-                    Box(Modifier.clickable {
-                        CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                            delay(10)
-                            pauseSerialComm()
-                            scenario.clear()
-                        }
-                        screenNav.value = Screens.STARTER
-                    }) {
-                        Text(
-                            "Home↩️",
-                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-//                    Text("", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
-//                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
-//                    )
-
-                    Text(
-                        "${txt.value}",
-                        modifier = Modifier.width(90.dp).padding(top = (10).dp, start = 20.dp).clickable {
-                            //screenNav.value = Screens.STARTER
-                        },
-                        fontFamily = FontFamily.Default,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Blue
-                    )
-
-                    Text("${COM_PORT},${BAUD_RATE},${limitTime}ms", modifier = Modifier.padding(top = (10).dp,start = 20.dp)
-                        , fontFamily = FontFamily.Default, fontSize = 20.sp, fontWeight = FontWeight.Light, color = Color.DarkGray
-                    )
-
-                    Box(Modifier.clickable {
-                        expandedCom.value = !expandedCom.value
-                    }) {
-                        Text(
-                            "Mode: ${explMode.value.name}",
-                            modifier = Modifier.padding(top = (10).dp, start = 20.dp),
-                            fontFamily = FontFamily.Default, fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold, color = Color.White
-                        )
-
-                        DropdownMenu(
-                            modifier = Modifier.background(Color.White),
-                            expanded = expandedCom.value,
-                            onDismissRequest = { expandedCom.value = false },
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-                                    .clickable(onClick = {
-                                        EXPLORER_MODE.value = ExplorerMode.AUTO
-                                    }), color = Color.Black
-                            )
-                            Text(
-                                "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
-                                    .clickable(onClick = {
-                                        EXPLORER_MODE.value = ExplorerMode.MANUAL
-                                    }), color = Color.Black
+                            Image(
+                                imageVector = if (explMode.value == ExplorerMode.AUTO) FeatherIcons.PauseCircle else FeatherIcons.ArrowRightCircle,
+                                contentDescription = "Pause",
+                                colorFilter = ColorFilter.tint(Color.White),
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
 
-                    Box(Modifier.clickable {
-                        showBottomPanel.value = !showBottomPanel.value
-                        SHOW_BOTTOM_PANEL = showBottomPanel.value
-                    }) {
-                        Text(
-                            "Hide Currents⚡️",
-                            modifier = Modifier.align(Alignment.TopCenter).padding(top = (10).dp, start = 20.dp),
-                            fontFamily = FontFamily.Default,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                    Row(Modifier.fillMaxWidth().padding(5.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        Box(
+                            Modifier
+                                .size(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable {
+                                    CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                                        delay(10)
+                                        pauseSerialComm()
+                                        scenario.clear()
+                                    }
+                                    screenNav.value = Screens.STARTER
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                imageVector = FeatherIcons.Home,
+                                contentDescription = "Home",
+                                colorFilter = ColorFilter.tint(Color.White),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        /////////////
+                        Box(
+                            Modifier
+                                .size(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable { expandedCom.value = !expandedCom.value },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                imageVector = FeatherIcons.Sliders,
+                                contentDescription = "Show and Hide",
+                                colorFilter = ColorFilter.tint(Color.White),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            DropdownMenu(
+                                modifier = Modifier.background(Color.White),
+                                expanded = expandedCom.value,
+                                onDismissRequest = { expandedCom.value = false },
+                            ) {
+                                Text(
+                                    "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+                                        .clickable(onClick = {
+                                            EXPLORER_MODE.value = ExplorerMode.AUTO
+                                        }), color = Color.Black
+                                )
+                                Text(
+                                    "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
+                                        .clickable(onClick = {
+                                            EXPLORER_MODE.value = ExplorerMode.MANUAL
+                                        }), color = Color.Black
+                                )
+                            }
+                        }
+                        /////////////////
+                        Box(
+                            Modifier
+                                .size(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable {
+                                    showBottomPanel.value = !showBottomPanel.value
+                                    SHOW_BOTTOM_PANEL = showBottomPanel.value
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                imageVector = FeatherIcons.Eye,
+                                contentDescription = "Show and Hide",
+                                colorFilter = ColorFilter.tint(Color.White),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
-
                 }
+
                 /**
                  * SOLENOIDS PANEL
                  */

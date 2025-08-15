@@ -77,11 +77,6 @@ object CommunicationMachineV1: COMProtocol {
     }
 
     override suspend fun startReceiveFullData() {
-//    repeat(
-//        getComPorts_Array().size
-//    ) {
-//        println(">>>Available Com ports:${getComPorts_Array().get(it).systemPortName} is Open: ${getComPorts_Array().get(it).isOpen}||${getComPorts_Array().get(it).descriptivePortName}")
-//    }
         if (!serialPort.isOpen) {
             initSerialCommunication()
         } else {
@@ -98,12 +93,7 @@ object CommunicationMachineV1: COMProtocol {
 
 
     override suspend fun pauseSerialComm() {
-        //writeToSerialPort(byteArrayOf(0x71,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
-        //writeToSerialPort(byteArrayOf(0x51,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
         sendZerosToSolenoid()
-        //writeToSerialPort(byteArrayOf(0x78, 0x8A.toByte(), 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),withFlush = false)
-        //delay(500)
-        //serialPort.flushIOBuffers()
 
         if (TWELVE_CHANNELS_MODE) {
 
@@ -113,9 +103,10 @@ object CommunicationMachineV1: COMProtocol {
     }
 
     override suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean, delay: Long) {
-//    if (sendBytes[0] == 0x74.toByte()) {
-//        //startTimer()
-//    }
+        if (!serialPort.isOpen) {
+            logError("Trying to writeToSerialPort: ${sendBytes.toHexString()}")
+            return
+        }
         repeat(1) {
 
             logAct("Run Send bytes:: ${sendBytes.toHexString()}   size of bytes: ${sendBytes.size}. delay ${delay} withFlush ${withFlush}}")
@@ -124,7 +115,6 @@ object CommunicationMachineV1: COMProtocol {
                 serialPort.flushIOBuffers()
             }
             delay(delay)
-            //println("goo " + sendBytes.size)
         }
 
     }
