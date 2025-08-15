@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
@@ -27,20 +26,15 @@ import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.swing.Swing
 import ru.atrs.mcm.launchPlay
-import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
 import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
 import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
 import ru.atrs.mcm.serial_port.bytesMachine
-import ru.atrs.mcm.serial_port.incrementExperiment
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
-import ru.atrs.mcm.storage.createMeasureExperiment
-import ru.atrs.mcm.ui.charts.Pointer
 import ru.atrs.mcm.ui.custom.GaugeX
 import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
@@ -56,18 +50,6 @@ import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
-import ru.atrs.mcm.utils.arr10Measure
-import ru.atrs.mcm.utils.arr11Measure
-import ru.atrs.mcm.utils.arr12Measure
-import ru.atrs.mcm.utils.arr1Measure
-import ru.atrs.mcm.utils.arr2Measure
-import ru.atrs.mcm.utils.arr3Measure
-import ru.atrs.mcm.utils.arr4Measure
-import ru.atrs.mcm.utils.arr5Measure
-import ru.atrs.mcm.utils.arr6Measure
-import ru.atrs.mcm.utils.arr7Measure
-import ru.atrs.mcm.utils.arr8Measure
-import ru.atrs.mcm.utils.arr9Measure
 import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.dataChunkGauges
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
@@ -126,7 +108,7 @@ fun CenterPiece(
         bytesMachine()
     }
 
-    var isShowPlay = remember { mutableStateOf(false) }
+    var isPayloadComing = remember { mutableStateOf(false) }
     LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
         ctxScope.launch {
@@ -140,7 +122,7 @@ fun CenterPiece(
             sendScenarioToController()
             var count = 0
             dataChunkGauges.collect {
-                isShowPlay.value = true
+                isPayloadComing.value = true
                 //delay(DELAY_FOR_GET_DATA)
                 logGarbage(">>>> ${it.toString()}")
 
@@ -203,11 +185,11 @@ fun CenterPiece(
 
                             incrementTime += 2L
 
-                        } else if (STATE_EXPERIMENT.value == StateExperiments.PREP_DATA) {
+                        } else if (STATE_EXPERIMENT.value == StateExperiments.ENDING_OF_EXPERIMENT) {
                            // logGarbage("Output: |${incrementExperiment}|=>|${count}|  | ${arr1Measure.size} ${arr1Measure[arr1Measure.lastIndex]}")
 
                             STATE_EXPERIMENT.value = StateExperiments.PREPARE_CHART
-                            incrementTime = 0
+
                             if (!isAlreadyReceivedBytesForChart.value) {
                                 isAlreadyReceivedBytesForChart.value = true
 
@@ -217,6 +199,7 @@ fun CenterPiece(
                                 doOpen_First_ChartWindow.value = true
                                 STATE_EXPERIMENT.value = StateExperiments.NONE
                                 NAME_OF_NEW_CHART_LOG_FILE = null
+                                incrementTime = 0
                             }
                         }
                     }
@@ -466,7 +449,7 @@ fun CenterPiece(
                 Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
 
 
-                    AnimatedVisibility(isShowPlay.value) {
+                    if (isPayloadComing.value) {
                         if (STATE_EXPERIMENT.value != StateExperiments.NONE) {
                             Text(
                                 "Rec... ${STATE_EXPERIMENT.value.name}",
@@ -538,6 +521,16 @@ fun CenterPiece(
                             }
 
                         }
+                    } else {
+                        Text(
+                            "${STATE_EXPERIMENT.value.name}",
+                            modifier = Modifier.padding(top = (10).dp, start = 20.dp).clickable {
+                            },
+                            fontFamily = FontFamily.Default,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Green
+                        )
                     }
 
 
@@ -645,7 +638,7 @@ fun CenterPiece(
                     )
                 }
 
-                AnimatedVisibility(isShowPlay.value) {
+                AnimatedVisibility(isPayloadComing.value) {
                     Box(Modifier.clickable {
                         test_time = 0
                         // launch

@@ -230,6 +230,8 @@ fun App(analysisAfterExperiment : Boolean = false) {
             } else {
                 vis1.map { true }
             }
+        } else {
+            comment1.value  = "(not exist!)"
         }
     }
     LaunchedEffect(data2) {
@@ -239,6 +241,8 @@ fun App(analysisAfterExperiment : Boolean = false) {
             } else {
                 vis2.map { true }
             }
+        } else {
+            comment2.value  = "(not exist!)"
         }
 //        data2?.let { vis2 = it.visibility }
     }

@@ -15,7 +15,6 @@ import ru.atrs.mcm.utils.dataChunkRAW
 import ru.atrs.mcm.utils.incrementTime
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.logError
-import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.onesAndTensFloat
 import ru.atrs.mcm.utils.toHexString
@@ -63,9 +62,9 @@ suspend fun bytesMachine() {
 
 
 
-        if (incrementTime >= 100_000 && !isExperimentStarts) {
-            incrementTime = 0
-        }
+//        if (incrementTime >= 100_000 && !isExperimentStarts) {
+//            incrementTime = 0
+//        }
 
         when {
             isStartExperiment(updData)  -> {
@@ -77,7 +76,7 @@ suspend fun bytesMachine() {
             }
             isEndOfExperiment(updData) -> {
                 isExperimentStarts = false
-                STATE_EXPERIMENT.value = StateExperiments.PREP_DATA
+                STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
                 logInfo("End Experiment! all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
                 //incrX = 0

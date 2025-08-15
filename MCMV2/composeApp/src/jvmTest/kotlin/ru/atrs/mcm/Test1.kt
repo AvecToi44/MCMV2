@@ -7,7 +7,9 @@ import kotlinx.coroutines.launch
 import org.junit.Test
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
+import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.incrementTime
+import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.to2ByteArray
 import ru.atrs.mcm.utils.toHexString
 import kotlin.test.assertEquals
@@ -41,6 +43,15 @@ class Test1 : TestCase() {
         assertEquals(expected = byteArrayOf(),actual = 300.to2ByteArray())
 
 
+    }
+
+    @Test
+    fun test2() {
+        repeat(10) {
+            STATE_EXPERIMENT.value.msg = "${it}"
+        }
+        println(STATE_EXPERIMENT.value.msg)
+        assertEquals(STATE_EXPERIMENT.value.msg,"10")
     }
 }
 

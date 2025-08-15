@@ -2,6 +2,7 @@ package ru.atrs.mcm.serial_port
 
 import com.fazecast.jSerialComm.SerialPort
 import kotlinx.coroutines.*
+import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch1
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch10
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch11
@@ -17,6 +18,7 @@ import ru.atrs.mcm.ui.main_screen.center.support_elements.ch9
 import ru.atrs.mcm.ui.main_screen.center.support_elements.isChangedFirstFourth
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
+import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.checkIntervalScenarios
@@ -207,6 +209,7 @@ object CommunicationMachineV1: COMProtocol {
         if (TWELVE_CHANNELS_MODE) {
 
         } else {
+            STATE_EXPERIMENT.value = StateExperiments.SENDING_SCENARIO
             scenario.forEachIndexed { index, s ->
                 val time = s.time.to2ByteArray()
 //                val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
@@ -232,7 +235,13 @@ object CommunicationMachineV1: COMProtocol {
                     time.getOrNull(1) ?: 0x00, // ones
                     0x00
                 )
-                writeToSerialPort(send,delay = 10)
+
+                writeToSerialPort(send,delay = 4)
+                STATE_EXPERIMENT.value = StateExperiments.SENDING_SCENARIO//.also { it.msg = "${((index+1)*100)/scenario.size}" }
+
+                if (scenario.lastIndex == index) {
+                    STATE_EXPERIMENT.value = StateExperiments.NONE
+                }
             }
         }
     }
