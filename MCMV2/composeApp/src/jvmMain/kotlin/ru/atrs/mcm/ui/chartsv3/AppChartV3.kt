@@ -160,15 +160,15 @@ fun App(analysisAfterExperiment : Boolean = false) {
     var path2 by remember { mutableStateOf<String?>(if (analysisAfterExperiment) chartFileStandard.value?.absolutePath       else null) }
     var path3 by remember { mutableStateOf<String?>(null) }
 
-    var comment1 = mutableStateOf("222")
-    var comment2 = mutableStateOf("222")
+    var comment1 = mutableStateOf("")
+    var comment2 = mutableStateOf("")
 
     // load data asynchronously
     val data1 by produceState<ChartData?>(initialValue = null, path1) {
         value = path1?.let {
             if (!it.isNullOrEmpty() || !it.isNullOrBlank()) {
                 if (File(it).exists() == false) {
-                    comment1.value = "(not exist!)"
+
                     return@let null
                 }
             }
@@ -189,7 +189,6 @@ fun App(analysisAfterExperiment : Boolean = false) {
         value = path2?.let {
             if (!it.isNullOrEmpty() || !it.isNullOrBlank()) {
                 if (File(it).exists() == false) {
-                    comment2.value  = "(not exist!)"
                     return@let null
                 }
             }
@@ -293,10 +292,12 @@ fun App(analysisAfterExperiment : Boolean = false) {
                         onToggle = { vis1 = vis1.map { !fileVisible1 } },
                         onClear = { path1 = null }
                     ) else {
-                        if (path1.isNullOrEmpty() || path1.isNullOrBlank() || File(path1).exists() == false) {
-
-                            Text("File (${path1}) is not exist}")
+                        if (analysisAfterExperiment) {
+                            if (path1.isNullOrEmpty() || path1.isNullOrBlank() || File(path1).exists() == false) {
+                                Text("File (${path1}) is not exist")
+                            }
                         }
+
                     }
                     Row { ToggleSeriesButtons(vis1, data1?.series, seriesColors) { vis1 = it } }
 
@@ -314,10 +315,11 @@ fun App(analysisAfterExperiment : Boolean = false) {
                         onToggle = { vis2 = vis2.map { !fileVisible2 } },
                         onClear = { path2 = null }
                     )else {
-                        if (path2.isNullOrEmpty() || path2.isNullOrBlank() || File(path2).exists() == false) {
-                            Text("File (${path1}) is not exist}")
+                        if (analysisAfterExperiment) {
+                            if (path2.isNullOrEmpty() || path2.isNullOrBlank() || File(path2).exists() == false) {
+                                Text("File (${path2}) is not exist")
+                            }
                         }
-
                     }
                     Row { ToggleSeriesButtons(vis2, data2?.series, seriesColors) { vis2 = it } }
                 }
