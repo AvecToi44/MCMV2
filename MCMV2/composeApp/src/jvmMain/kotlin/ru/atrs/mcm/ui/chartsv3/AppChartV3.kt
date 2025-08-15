@@ -253,15 +253,15 @@ fun App(analysisAfterExperiment : Boolean = false) {
     val seriesColors = listOf(
         Color(0xFF2E7D32),  // Dark Green
         Color(0xFF5D4037),  // Brown
-        Color(0xFF424242),  // Dark Gray
+        Color(0xFF101010),  // Dark Gray
         Color(0xFF1976D2),  // Blue
         Color(0xFFD32F2F),  // Red
         Color(0xFFFBC02D),  // Yellow
-        Color(0xFF42322C),  // Medium Brown
-        Color(0xFFF5F5F5),  // Light Gray
+        Color(0xFFDE4504),  // Magenta
+        Color(0xFF7F7F7F),  // Light Gray
         Color(0xFF9C27B0),  // Purple
         Color(0xFFE91E63),  // Pink
-        Color(0xFF9FA8DA),  // Light Purple
+        Color(0xFFBE9FDA),  // Light Purple
         Color(0xFF4CAF50),  // Green
         Color(0xFF8D6E63),  // Light Brown
         Color(0xFFAB47BC),  // Medium Purple

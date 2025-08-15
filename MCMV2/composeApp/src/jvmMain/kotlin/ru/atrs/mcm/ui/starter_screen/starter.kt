@@ -258,26 +258,40 @@ fun StarterScreen() {
                                     expanded = expandedBaud,
                                     onDismissRequest = { expandedBaud = false },
                                 ) {
-                                    Text("38400",   fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 38400
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("38400",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 38400
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     })  .fillMaxSize().padding(10.dp))
-                                    Text("57600",   fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 57600
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("57600",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 57600
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     })  .fillMaxSize().padding(10.dp))
-                                    Text("115200",  fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 115200
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("115200",  fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 115200
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     }) .fillMaxSize().padding(10.dp))
-                                    Text("128000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 128000
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("128000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 128000
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     }) .fillMaxSize().padding(10.dp))
-                                    Text("256000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 256000
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("256000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 256000
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     }) .fillMaxSize().padding(10.dp))
-                                    Text("500000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 500000
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("500000",  fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 500000
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     }) .fillMaxSize().padding(10.dp))
-                                    Text("1000000", fontSize=18.sp, modifier = Modifier.clickable(onClick= { choosenBaud.value = 1000000
-                                    BAUD_RATE = choosenBaud.value
+                                    Text("1000000", fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        choosenBaud.value = 1000000
+                                        BAUD_RATE = choosenBaud.value
+                                        refreshJsonParameters()
                                     }).fillMaxSize().padding(10.dp))
                                     Divider()
                                 }

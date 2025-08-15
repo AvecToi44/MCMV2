@@ -8,14 +8,6 @@ import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.CHART_FILE_NAME_ENDING
 import ru.atrs.mcm.utils.ChartFileNameEnding
-import ru.atrs.mcm.utils.arr1Measure
-import ru.atrs.mcm.utils.arr2Measure
-import ru.atrs.mcm.utils.arr3Measure
-import ru.atrs.mcm.utils.arr4Measure
-import ru.atrs.mcm.utils.arr5Measure
-import ru.atrs.mcm.utils.arr6Measure
-import ru.atrs.mcm.utils.arr7Measure
-import ru.atrs.mcm.utils.arr8Measure
 import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
@@ -31,10 +23,6 @@ import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
 import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
-import ru.atrs.mcm.utils.arr10Measure
-import ru.atrs.mcm.utils.arr11Measure
-import ru.atrs.mcm.utils.arr12Measure
-import ru.atrs.mcm.utils.arr9Measure
 import java.io.*
 
 

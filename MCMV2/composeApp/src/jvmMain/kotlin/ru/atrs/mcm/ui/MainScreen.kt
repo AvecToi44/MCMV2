@@ -48,19 +48,6 @@ var screenNav = mutableStateOf<Screens>(Screens.STARTER)
 @Preview
 fun App() {
     val screenNavi = remember { screenNav }
-
-    // for test:
-//    LaunchedEffect(true) {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            if (targetParseScenario(File(Dir3Scenarios,"scenario_demo.xls"))) {
-//                screenNav.value = Screens.MAIN
-//            }
-//
-//
-//        }
-//    }
-
-
     MaterialTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             Row{

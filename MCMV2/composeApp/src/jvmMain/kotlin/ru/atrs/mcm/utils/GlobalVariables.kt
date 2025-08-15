@@ -81,20 +81,7 @@ var TWELVE_CHANNELS_MODE = false
 var PROTOCOL_TYPE : ProtocolType = ProtocolType.OLD_AUG_2025
 
 enum class ProtocolType(val id: Int) { OLD_AUG_2025(0), NEW(1) }
-////////////////////////////////////////////////////
-var arr1Measure = arrayListOf<Pointer>()
-var arr2Measure = arrayListOf<Pointer>()
-var arr3Measure = arrayListOf<Pointer>()
-var arr4Measure = arrayListOf<Pointer>()
-var arr5Measure = arrayListOf<Pointer>()
-var arr6Measure = arrayListOf<Pointer>()
-var arr7Measure = arrayListOf<Pointer>()
-var arr8Measure = arrayListOf<Pointer>()
 
-var arr9Measure = arrayListOf<Pointer>()
-var arr10Measure = arrayListOf<Pointer>()
-var arr11Measure = arrayListOf<Pointer>()
-var arr12Measure = arrayListOf<Pointer>()
 ////////////////////////////////////////////////////
 var pwm1SeekBar = mutableStateOf<Int>(-1)
 var pwm2SeekBar = mutableStateOf<Int>(-1)
