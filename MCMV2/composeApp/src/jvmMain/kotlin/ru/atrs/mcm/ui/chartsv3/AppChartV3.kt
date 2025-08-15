@@ -144,7 +144,8 @@ suspend fun parseChartFile(path: String, countOfChannels: Int, pathEffect: PathE
                 }
             }.forEachIndexed { i, p -> if (i < floatSeries.size) floatSeries[i].add(p) }
         }
-        println(">>>>>>>> parseChartFile   4")
+        println("parseChartFile output size: ${floatSeries.size}")
+        println("parseChartFile output size: ${floatSeries.joinToString()}")
         ChartData(floatSeries, visibility, pathEffect = pathEffect)
     } catch (e: Exception) {
         e.printStackTrace(); null

@@ -23,6 +23,7 @@ import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
 import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
+import ru.atrs.mcm.utils.to5Decimals
 import java.io.*
 
 
@@ -80,11 +81,11 @@ suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: B
             }
 
             val time = newLine.incrementTime
-            var newStroke = "$time;${newLine.ch1}|$time;${newLine.ch2}|$time;${newLine.ch3}|$time;${newLine.ch4}|" +
-                    "$time;${newLine.ch5}|$time;${newLine.ch6}|$time;${newLine.ch7}|$time;${newLine.ch8}|"
+            var newStroke = "$time;${newLine.ch1.to5Decimals()}|$time;${newLine.ch2.to5Decimals()}|$time;${newLine.ch3.to5Decimals()}|$time;${newLine.ch4.to5Decimals()}|" +
+                    "$time;${newLine.ch5.to5Decimals()}|$time;${newLine.ch6.to5Decimals()}|$time;${newLine.ch7.to5Decimals()}|$time;${newLine.ch8.to5Decimals()}|"
 
             if (TWELVE_CHANNELS_MODE) {
-                newStroke += "$time;${newLine.ch9}|$time;${newLine.ch10}|$time;${newLine.ch11}|$time;${newLine.ch12}|"
+                newStroke += "$time;${newLine.ch9.to5Decimals()}|$time;${newLine.ch10.to5Decimals()}|$time;${newLine.ch11.to5Decimals()}|$time;${newLine.ch12.to5Decimals()}|"
             }
 
             bw.append("$newStroke\n")

@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +52,7 @@ fun SolenoidControl(
     current: Int,
     maxPWM: Int,
     step: Int,
+    widthOfSolenoidControl: Dp,
     duration: MutableStateFlow<Long>
 ) {
     //logGarbage("FULL>  || ${solenoids.joinToString()} ][ ${pressures.joinToString()} ][ ${scenario.joinToString()} ||")
@@ -74,7 +76,7 @@ fun SolenoidControl(
             else -> pwm1SeekBar
         }
     }
-    Column(modifier = Modifier.width(70.dp).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)).background(color = Color.Gray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.width(widthOfSolenoidControl).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)).background(color = Color.Gray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(Modifier.fillMaxSize().weight(0.5f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text(text = "${displayName}", fontSize = 12.sp)
         }

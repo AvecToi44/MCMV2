@@ -4,18 +4,13 @@ import com.fazecast.jSerialComm.*
 import ru.atrs.mcm.enums.StateExperiments
 import kotlinx.coroutines.*
 import ru.atrs.mcm.enums.ExplorerMode
-import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
-import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
-import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
 import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
 import ru.atrs.mcm.storage.models.UIGaugesData
-import ru.atrs.mcm.storage.writeToFile
 import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG
 import ru.atrs.mcm.utils.EXPLORER_MODE
-import ru.atrs.mcm.utils.MainConfig_LogFile
 import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
@@ -31,7 +26,6 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.logError
-import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
@@ -73,7 +67,7 @@ var incrementExperiment = 0
 private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
-suspend fun bytesReceiverMachine() {
+suspend fun flowReceiverMachine() {
     println("bytesReceiverMachine")
     dataChunkRAW.collect { updData ->
         var dch: DataChunkG? = null
@@ -233,7 +227,7 @@ suspend fun bytesReceiverMachine() {
 }
 
 var limiterForUI = 0
-fun payloadWriterMachine() {
+fun flowWriterMachine() {
     println("payloadWriterMachine")
     CoroutineScope(Dispatchers.IO).launch {
         var pressure1X =  0f

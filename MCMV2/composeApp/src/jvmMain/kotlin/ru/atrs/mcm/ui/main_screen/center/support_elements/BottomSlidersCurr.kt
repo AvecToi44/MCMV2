@@ -6,12 +6,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.utils.DELAY_FOR_GET_DATA
+import ru.atrs.mcm.utils.GAUGES_IN_THE_ROW
 import ru.atrs.mcm.utils.dataChunkCurrents
 import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.solenoids
@@ -39,22 +42,9 @@ fun SolenoidsPanel(
     var current11 by remember { mutableStateOf(-1) }
     var current12 by remember { mutableStateOf(-1) }
 
-    //var internalIndexOfScenario = remember { indexOfScenario }
-//    var pwm1 by remember { pwm1SeekBar }
-//    var pwm2 by remember { pwm2SeekBar }
-//    var pwm3 by remember { pwm3SeekBar }
-//    var pwm4 by remember { pwm4SeekBar }
-//
-//    var pwm5 by remember { mutableStateOf(-1) }
-//    var pwm6 by remember { mutableStateOf(-1) }
-//    var pwm7 by remember { mutableStateOf(-1) }
-//    var pwm8 by remember { mutableStateOf(-1) }
+    var widthOfSolenoidControl by remember {mutableStateOf(0.dp)}
 
-//    if (solenoids.size<5){
-//        showMeSnackBar("Excel error",Color.Red)
-//    }else {
-//        showMeSnackBar("Excel config parse success",Color.White)
-//    }
+
     LaunchedEffect(true) {
         CoroutineScope(Dispatchers.IO+crctx).launch {
             dataChunkCurrents.collect {
@@ -78,7 +68,13 @@ fun SolenoidsPanel(
         }
     }
 
-    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
+    Row(modifier = Modifier.fillMaxSize().onGloballyPositioned { coordinates ->
+        // Set column height using the LayoutCoordinates
+        if (coordinates.size.width != 0) {
+            widthOfSolenoidControl = ((coordinates.size.width ) / 12).dp
+            println("<<<<< ${widthOfSolenoidControl}")
+        }
+    }, horizontalArrangement = Arrangement.End) {
         if (solenoids[0].isVisible) {
             SolenoidControl(
                 index = 1,
@@ -92,6 +88,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[0].maxPWM,
                 step =   solenoids[0].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -108,6 +105,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[1].maxPWM,
                 step = solenoids[1].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -124,6 +122,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[2].maxPWM,
                 step = solenoids[2].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -140,6 +139,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[3].maxPWM,
                 step = solenoids[3].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -157,6 +157,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[4].maxPWM,
                 step = solenoids[4].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -173,6 +174,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[5].maxPWM,
                 step = solenoids[5].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
 
@@ -190,6 +192,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[6].maxPWM,
                 step = solenoids[6].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -206,6 +209,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[7].maxPWM,
                 step = solenoids[7].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -222,6 +226,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[8].maxPWM,
                 step = solenoids[8].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -238,6 +243,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[9].maxPWM,
                 step = solenoids[9].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -254,6 +260,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[10].maxPWM,
                 step =   solenoids[10].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }
@@ -262,7 +269,7 @@ fun SolenoidsPanel(
                 index = 12,
                 solenoids[11].displayName,
                 current = map(
-                    x = current11,
+                    x = current12,
                     in_min = 0,
                     in_max = 4095,
                     out_min = solenoids[11].currentMinValue,
@@ -270,6 +277,7 @@ fun SolenoidsPanel(
                 ),
                 maxPWM = solenoids[11].maxPWM,
                 step =   solenoids[11].step,
+                widthOfSolenoidControl= widthOfSolenoidControl,
                 duration = duration
             )
         }

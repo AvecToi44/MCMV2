@@ -31,10 +31,8 @@ import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
-import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
-import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
-import ru.atrs.mcm.serial_port.payloadWriterMachine
-import ru.atrs.mcm.serial_port.bytesReceiverMachine
+import ru.atrs.mcm.serial_port.flowWriterMachine
+import ru.atrs.mcm.serial_port.flowReceiverMachine
 import ru.atrs.mcm.ui.custom.GaugeX
 import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
@@ -98,25 +96,21 @@ fun CenterPiece(
     var isPayloadComing = remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
-        payloadWriterMachine()
+        // FLOW
+        flowWriterMachine()
     }
     LaunchedEffect(true) {
-        comparatorToSolenoid(indexOfScenario.value)
+        // FLOW
+        flowReceiverMachine()
     }
     LaunchedEffect(true) {
-        sendScenarioToController()
-    }
-    LaunchedEffect(true) {
-        startReceiveFullData()
-    }
-    LaunchedEffect(true) {
+        RouterCommunication.startReceiveFullData()
+        RouterCommunication.comparatorToSolenoid(indexOfScenario.value)
+        RouterCommunication.sendScenarioToController()
         RouterCommunication.sendFrequency()
     }
 
-    LaunchedEffect(true) {
 
-        bytesReceiverMachine()
-    }
 
     LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
