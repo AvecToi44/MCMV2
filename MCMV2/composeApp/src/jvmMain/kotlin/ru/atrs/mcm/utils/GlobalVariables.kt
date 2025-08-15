@@ -63,7 +63,7 @@ var CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
 const val APP_VERSION = "1.2.13"
 
 var SOLENOID_MAIN_FREQ: Int? = 0
-var GRADIENT_TIME: Int? = 0
+//var GRADIENT_TIME: Int? = 0
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()
 var scenario  = mutableListOf<ScenarioStep>()

@@ -11,7 +11,6 @@ import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.utils.Dir2Reports
 import ru.atrs.mcm.utils.Dir7ReportsStandard
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
-import ru.atrs.mcm.utils.GRADIENT_TIME
 import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
@@ -126,7 +125,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     repeat(NUMBER_OF_GAUGES) {
 
         SOLENOID_MAIN_FREQ = wholeSheet[13][2].toFloat().toInt()
-        GRADIENT_TIME      = wholeSheet[13][4].toFloat().toInt()
+//        GRADIENT_TIME      = wholeSheet[13][4].toFloat().toInt()
 
         solenoids.add(
             SolenoidHolder(
@@ -189,8 +188,10 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
             ScenarioStep(
                 time = newTime,
                 channels = valueSteps,
-                transitionTime = wholeSheet[i][13].toIntOrNull() ?: 0,
-                comment = wholeSheet[i][14].toString()
+                analog1 =      wholeSheet[i][13].toIntOrNull() ?: 0,
+                analog2 =      wholeSheet[i][14].toIntOrNull() ?: 0,
+                gradientTime = wholeSheet[i][15].toIntOrNull() ?: 0,
+                comment =      wholeSheet[i][16].toString()
             )
         )
         logGarbage("<><>${wholeSheet[i][14]}")

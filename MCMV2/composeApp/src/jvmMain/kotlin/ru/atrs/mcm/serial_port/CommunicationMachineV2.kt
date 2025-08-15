@@ -2,6 +2,7 @@ package ru.atrs.mcm.serial_port
 
 import com.fazecast.jSerialComm.SerialPort
 import kotlinx.coroutines.*
+import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch1
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch10
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch11
@@ -16,12 +17,15 @@ import ru.atrs.mcm.ui.main_screen.center.support_elements.ch8
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch9
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
+import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
+import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.checkIntervalScenarios
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.logAct
+import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.pwm10SeekBar
 import ru.atrs.mcm.utils.pwm11SeekBar
@@ -75,11 +79,7 @@ object CommunicationMachineV2 {
             initSerialCommunication()
         }
 
-        if (TWELVE_CHANNELS_MODE) {
-
-        } else {
-            writeToSerialPort(byteArrayOf(0x74.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00))
-        }
+        writeToSerialPort(byteArrayOf(0x74.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00))
     }
 
     fun stopSerialCommunication() {
@@ -97,11 +97,7 @@ object CommunicationMachineV2 {
         //delay(500)
         //serialPort.flushIOBuffers()
 
-        if (TWELVE_CHANNELS_MODE) {
-
-        } else {
-            writeToSerialPort(byteArrayOf(0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),withFlush = false)
-        }
+        writeToSerialPort(byteArrayOf(0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),withFlush = false)
     }
 
     suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean = false, delay: Long = 0L) {
@@ -123,9 +119,6 @@ object CommunicationMachineV2 {
 
     // increment and decrement steps of scenario
     suspend fun comparatorToSolenoid(newIndex: Int) {
-        if (TWELVE_CHANNELS_MODE) {
-
-        } else {
             val idx = checkIntervalScenarios(newIndex)
 
             logGarbage("comparatorToSolenoid ${idx} ~~~ ]${scenario.size}[")
@@ -169,7 +162,6 @@ object CommunicationMachineV2 {
                 indexOfScenario.value = 0
                 scenario[0]
             }.comment
-        }
     }
 
     suspend fun sendZerosToSolenoid() {
@@ -186,51 +178,74 @@ object CommunicationMachineV2 {
         ch11 = 0x00.toByte()
         ch12 = 0x00.toByte()
 
-        if (TWELVE_CHANNELS_MODE) {
+        writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00), delay = 100L)
 
-        } else {
-            writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00), delay = 100L)
-
-            writeToSerialPort(byteArrayOf(0x51, ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 0L)
-        }
-
-
+        writeToSerialPort(byteArrayOf(0x51, ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 0L)
     }
 
     suspend fun sendScenarioToController() {
-        if (TWELVE_CHANNELS_MODE) {
+        STATE_EXPERIMENT.value = StateExperiments.SENDING_SCENARIO
+        scenario.forEachIndexed { index, s ->
+            val time = s.time.to2ByteArray()
+//                val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
+            val indexHex = index.to2ByteArray()
 
-        } else {
-            scenario.forEachIndexed { index, s ->
-                val time = BigInteger.valueOf(s.time.toLong()).toByteArray()
-                val indexHex = index.to2ByteArray()
+            val send = byteArrayOf(
+                0x73, // in string is 115
+                indexHex[0],// ones
+                indexHex[1], // tens
 
-                val send = byteArrayOf(
-                    0x73,
-                    indexHex[0],// ones
-                    indexHex[1], // tens
+                s.channels[0].toByte(),
+                s.channels[1].toByte(),
+                s.channels[2].toByte(),
+                s.channels[3].toByte(),
 
-                    s.channels[0].toByte(),
-                    s.channels[1].toByte(),
-                    s.channels[2].toByte(),
-                    s.channels[3].toByte(),
+                s.channels[4].toByte(),
+                s.channels[5].toByte(),
+                s.channels[6].toByte(),
+                s.channels[7].toByte(), // # 10
 
-                    s.channels[4].toByte(),
-                    s.channels[5].toByte(),
-                    s.channels[6].toByte(),
-                    s.channels[7].toByte(),
+                //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
+                time[0], // ones
+                time.getOrNull(1) ?: 0x00, // tens
+                0x00
+            )
 
-                    //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
-                    time.getOrNull(1) ?: 0x00, // tens
-                    time[0], // ones
+            CommunicationMachineV2.writeToSerialPort(send, delay = 10)
+            val gradientTimeByteArray = s.gradientTime.to2ByteArray()
 
-                    0x00
-                )
-                writeToSerialPort(send,delay = 10)
+            val send2 = byteArrayOf(
+                0x72, // in string is 115
+                indexHex[0],// ones
+                indexHex[1], // tens
+
+                s.channels[8].toByte(),
+                s.channels[9].toByte(),
+                s.channels[10].toByte(),
+
+                s.channels[11].toByte(),
+                s.analog1.toByte(),
+                s.analog2.toByte(),
+
+                //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
+                gradientTimeByteArray[0], // ones
+                gradientTimeByteArray[1] ?: 0x00, // tens
+                0x00,
+                0x00,
+                0x00,
+            )
+
+            CommunicationMachineV2.writeToSerialPort(send2, delay = 10)
+
+            STATE_EXPERIMENT.value = StateExperiments.SENDING_SCENARIO//.also { it.msg = "${((index+1)*100)/scenario.size}" }
+
+            if (scenario.lastIndex == index) {
+                STATE_EXPERIMENT.value = StateExperiments.NONE
             }
         }
     }
 
+    // making solenoids zero
     suspend fun reInitSolenoids() {
         if (TWELVE_CHANNELS_MODE) {
 
@@ -250,40 +265,52 @@ object CommunicationMachineV2 {
     }
 
     fun sendFrequency() {
-        var arrSend = arrayListOf<Frequence>()
-        solenoids.forEachIndexed { index, solenoidHolder ->
-            val mkrs = 1_000_000 / solenoidHolder.ditherFrequency
-
-            val time = BigInteger.valueOf(mkrs.toLong()).toByteArray()
-            arrSend.add(Frequence(units = time[0], dozens = time[1]))
+        if (SOLENOID_MAIN_FREQ == null) {
+            logError("NULL Main Frequency! Double check it")
         }
+
+        var mainFreq = SOLENOID_MAIN_FREQ?.to2ByteArray() ?: byteArrayOf(0,0)
 
 
         CoroutineScope(Dispatchers.IO).launch {
-            writeToSerialPort(byteArrayOf(
-                0x68,
-                arrSend[0].units,arrSend[0].dozens,
-                arrSend[1].units,arrSend[1].dozens,
-                arrSend[2].units,arrSend[2].dozens,
-                arrSend[3].units,arrSend[3].dozens,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ))
-            writeToSerialPort(byteArrayOf(
-                0x48,
-                arrSend[4].units,arrSend[4].dozens,
-                arrSend[5].units,arrSend[5].dozens,
-                arrSend[6].units,arrSend[6].dozens,
-                arrSend[7].units,arrSend[7].dozens,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ))
+            CommunicationMachineV2.writeToSerialPort(
+                byteArrayOf(
+                    0x68,
+                    // ones , tens
+                    mainFreq[0], mainFreq[1],
+                    0x00, 0x00,
+                    0x00, 0x00,
+                    0x00, 0x00,
+                    0x00, 0x00,
+                    0x00, 0x00,
+                    0x00,
+                )
+            )
+//            writeToSerialPort(byteArrayOf(
+//                0x68,
+//                // tens   ; ones
+//                array1[0],array1[1],
+//                array2[0],array2[1],
+//                array3[0],array3[1],
+//                array4[0],array4[1],
+//                array5[0],array5[1],
+//                array6[0],array6[1],
+//                array7[0],array7[1],
+//                array8[0],array8[1],
+//                0x00,
+//            ))
+//            writeToSerialPort(byteArrayOf(
+//                0x48,
+//                arrSend[4].units,arrSend[4].dozens,
+//                arrSend[5].units,arrSend[5].dozens,
+//                arrSend[6].units,arrSend[6].dozens,
+//                arrSend[7].units,arrSend[7].dozens,
+//                0x00,
+//                0x00,
+//                0x00,
+//                0x00,
+//                0x00,
+//            ))
         }
 
     }

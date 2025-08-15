@@ -11,10 +11,11 @@ import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
 import ru.atrs.mcm.storage.models.UIGaugesData
-import ru.atrs.mcm.ui.showMeSnackBar
+import ru.atrs.mcm.storage.writeToFile
 import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG
 import ru.atrs.mcm.utils.EXPLORER_MODE
+import ru.atrs.mcm.utils.MainConfig_LogFile
 import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
@@ -35,7 +36,6 @@ import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
 import ru.atrs.mcm.utils.pressures
-import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.toHexString
 
 
@@ -49,7 +49,7 @@ class PacketListener : SerialPortPacketListener {
     }
 
     override fun getPacketSize(): Int {
-        return 16 // 24?
+        return 24//if (TWELVE_CHANNELS_MODE) 24 else 16
     }
 
     override fun serialEvent(event: SerialPortEvent) {
@@ -82,16 +82,19 @@ suspend fun bytesReceiverMachine() {
 //        if (incrementTime >= 100_000 && !isExperimentStarts) {
 //            incrementTime = 0
 //        }
+//        logGarbage("bytesReceiverMachine ${updData.toHexString()}")
+        //writeToFile(">> ${updData.toHexString()}", MainConfig_LogFile)
 
         when {
             isStartExperiment(updData)  -> {
                 isExperimentStarts = true
                 STATE_EXPERIMENT.value = StateExperiments.START
-
+                println("isStartExperiment ${updData.toHexString()}")
                 logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
 
             }
             isEndOfExperiment(updData) -> {
+                println("isEndOfExperiment ${updData.toHexString()}")
                 isExperimentStarts = false
                 STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
@@ -99,7 +102,7 @@ suspend fun bytesReceiverMachine() {
             }
 
             //pressure
-            isPressureType(updData) -> { // 24???
+            isPressureTypeOld(updData) -> { // 24???
                 //logGarbage("Pressure: ${updData.toHexString()} size:${updData.size}")
                 //println("> ${updData.toHexString()} [size:${updData.size}]")
                 if (isExperimentStarts) {
@@ -115,12 +118,12 @@ suspend fun bytesReceiverMachine() {
                     onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt()),
                     onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt()),
                     onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt())
+                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt()),
 
-                    //onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt()),
-                    //onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()),
-                    //onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())
-                    //onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())
+                    updData.getOrNull(17)?.let { onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt()) },
+                    updData.getOrNull(19)?.let { onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()) },
+                    updData.getOrNull(21)?.let {onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())},
+                    updData.getOrNull(23)?.let {onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())}
                 )
 
                 //logGarbage(">>> ${dch.toString()}")
@@ -146,7 +149,7 @@ suspend fun bytesReceiverMachine() {
             }
 
             //currency
-            isCurrencyType(updData) -> {
+            isCurrencyTypeOld(updData) -> {
                 //logGarbage("Currency: ${updData.toHexString()} size:${updData.size}")
                 if (isExperimentStarts) {
                     incrementExperiment++
@@ -160,7 +163,12 @@ suspend fun bytesReceiverMachine() {
                     onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt() - 16u).toInt(),
                     onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt() - 16u).toInt(),
                     onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt() - 16u).toInt()
+                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt() - 16u).toInt(),
+
+                        ninthCurrentData = updData.getOrNull(17)?.let { onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt() - 16u).toInt() },
+                       tenthCurrentData =  updData.getOrNull(19)?.let { onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt() - 16u).toInt() },
+                     eleventhCurrentData = updData.getOrNull(21)?.let { onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt() - 16u).toInt() },
+                     twelfthCurrentData =  updData.getOrNull(23)?.let { onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt() - 16u).toInt() },
                 )
                 //println("CURR  ${updData.joinToString()}||${dchCurr.toString()}")
                 dataChunkCurrents.emit(dchCurr)
@@ -245,9 +253,7 @@ fun payloadWriterMachine() {
         indexOfScenario.value = 0
 
         //sound_On()
-        startReceiveFullData()
-        comparatorToSolenoid(indexOfScenario.value)
-        sendScenarioToController()
+
 //        scenario.clear()
         dataChunkGauges.collect {
 
@@ -317,10 +323,6 @@ fun payloadWriterMachine() {
                             ),
                             isRecordingExperiment = it.isExperiment
                         )
-
-
-
-
                         incrementTime += 2L
 
                     } else if (STATE_EXPERIMENT.value == StateExperiments.ENDING_OF_EXPERIMENT) {
@@ -350,18 +352,33 @@ fun payloadWriterMachine() {
 fun isEndOfExperiment(updData: ByteArray): Boolean = updData.all { it == 0xFF.toByte() }
 
 fun isStartExperiment(updData: ByteArray): Boolean {
-    return updData.size >= 14 &&
+    return updData.size >= 24 &&
             updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
             updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
             updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
             updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
             updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
             updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
-            updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte()
+            updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte() &&
+            updData[14] == 0xFE.toByte() && updData[15] == 0xFF.toByte() &&
+            updData[16] == 0xFE.toByte() && updData[17] == 0xFF.toByte() &&
+            updData[18] == 0xFE.toByte() && updData[19] == 0xFF.toByte() &&
+            updData[20] == 0xFE.toByte() && updData[21] == 0xFF.toByte() &&
+            updData[22] == 0xFE.toByte() && updData[23] == 0xFF.toByte()
 }
 
-fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
+//fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 24 && updData[3] < 24 && updData[5] < 24 && updData[7] < 24
+//
+//fun isCurrencyType(updData: ByteArray): Boolean  =
+//    updData[1] in 24..47 && updData[3] in 24..47 &&
+//            updData[5] in 24..47 && updData[7] in 24..47
 
-fun isCurrencyType(updData: ByteArray): Boolean  =
+
+/////////////////////////////////////////////////////////////////////////
+
+
+fun isPressureTypeOld(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
+
+fun isCurrencyTypeOld(updData: ByteArray): Boolean  =
     updData[1] in 16..31 && updData[3] in 16..31 &&
             updData[5] in 16..31 && updData[7] in 16..31

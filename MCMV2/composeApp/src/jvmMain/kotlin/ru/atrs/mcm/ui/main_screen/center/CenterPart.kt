@@ -31,6 +31,8 @@ import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
+import ru.atrs.mcm.serial_port.RouterCommunication.sendScenarioToController
+import ru.atrs.mcm.serial_port.RouterCommunication.startReceiveFullData
 import ru.atrs.mcm.serial_port.payloadWriterMachine
 import ru.atrs.mcm.serial_port.bytesReceiverMachine
 import ru.atrs.mcm.ui.custom.GaugeX
@@ -94,13 +96,28 @@ fun CenterPiece(
         mutableStateOf(0.dp)
     }
     var isPayloadComing = remember { mutableStateOf(false) }
-    LaunchedEffect(true) {
-        RouterCommunication.sendFrequency()
-        bytesReceiverMachine()
-    }
+
     LaunchedEffect(true) {
         payloadWriterMachine()
     }
+    LaunchedEffect(true) {
+        comparatorToSolenoid(indexOfScenario.value)
+    }
+    LaunchedEffect(true) {
+        sendScenarioToController()
+    }
+    LaunchedEffect(true) {
+        startReceiveFullData()
+    }
+    LaunchedEffect(true) {
+        RouterCommunication.sendFrequency()
+    }
+
+    LaunchedEffect(true) {
+
+        bytesReceiverMachine()
+    }
+
     LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
         dataGauges.collect {
