@@ -20,6 +20,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation("org.apache.poi:poi-ooxml:5.2.5")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
