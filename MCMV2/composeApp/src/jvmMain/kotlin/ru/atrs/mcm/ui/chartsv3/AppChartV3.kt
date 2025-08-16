@@ -446,7 +446,7 @@ fun ToggleSeriesButtons(
     colors: List<Color>,
     onChange: (List<Boolean>) -> Unit
 ) {
-    println("Series list: ${seriesList?.size} ${seriesList?.get(1)?.size} ")
+    println("Series list: ${seriesList?.size} Zero array:${seriesList?.getOrNull(0)?.size} ")
     seriesList?.forEachIndexed { idx, series ->
         if (series.isNotEmpty()) {
             println("${visibility.joinToString()}|| ${colors.size}")

@@ -51,7 +51,7 @@ import kotlin.concurrent.fixedRateTimer
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val APP_NAME = "MCM 1.2.19"
+    val APP_NAME = "MCM 1.2.20"
     // Attempt to acquire a named mutex or file lock
     if (isAnotherInstanceRunning(APP_NAME)) {
         println("Another instance is already running. Exiting.")
