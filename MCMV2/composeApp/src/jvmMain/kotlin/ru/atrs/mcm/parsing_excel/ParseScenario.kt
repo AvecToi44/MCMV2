@@ -191,7 +191,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
                 analog1 =      wholeSheet[i][13].toIntOrNull() ?: 0,
                 analog2 =      wholeSheet[i][14].toIntOrNull() ?: 0,
                 gradientTime = wholeSheet[i][15].toIntOrNull() ?: 0,
-                comment =      wholeSheet[i][16].toString()
+                comment =      wholeSheet[i].getOrNull(16) ?: "no name step"
             )
         )
         logGarbage("<><>${wholeSheet[i][14]}")

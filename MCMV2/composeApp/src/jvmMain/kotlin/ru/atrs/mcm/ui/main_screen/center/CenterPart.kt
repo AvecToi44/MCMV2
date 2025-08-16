@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,30 +19,25 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import compose.icons.AllIcons
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeftCircle
 import compose.icons.feathericons.ArrowRightCircle
 import compose.icons.feathericons.Eye
 import compose.icons.feathericons.Home
-import compose.icons.feathericons.Pause
 import compose.icons.feathericons.PauseCircle
-import compose.icons.feathericons.Play
 import compose.icons.feathericons.PlayCircle
 import compose.icons.feathericons.Sliders
 import ru.atrs.mcm.enums.ExplorerMode
-import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.jetbrains.compose.resources.painterResource
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
@@ -181,207 +175,223 @@ fun CenterPiece(
                     bottom = 0.dp
                 ),
                 content = {
-                    if (pressures[0].isVisible) {
+                    if (pressures.getOrNull(0)?.isVisible == true) {
                         item {
-                            Box(Modifier.aspectRatio(1f)
-                            ) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure1X,
-                                    (pressures[0].minValue),
-                                    (pressures[0].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[0].displayName,
-                                    comment = pressures[0].commentString
-                                )
+                            Box(Modifier.aspectRatio(1f)) {
+                                pressures.getOrNull(0)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure1X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
-                    if (pressures[1].isVisible) {
+                    if (pressures.getOrNull(1)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure2X,
-                                    (pressures[1].minValue),
-                                    (pressures[1].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[1].displayName,
-                                    comment = pressures[1].commentString
-                                )
+                                pressures.getOrNull(1)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure2X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
 
                         }
                     }
 
-                    if (pressures[2].isVisible) {
+                    if (pressures.getOrNull(2)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure3X,
-                                    (pressures[2].minValue),
-                                    (pressures[2].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[2].displayName,
-                                    comment = pressures[2].commentString
-                                )
+                                pressures.getOrNull(2)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure3X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (pressures[3].isVisible) {
+                    if (pressures.getOrNull(3)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure4X,
-                                    (pressures[3].minValue),
-                                    (pressures[3].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[3].displayName,
-                                    comment = pressures[3].commentString
-                                )
+                                pressures.getOrNull(3)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure4X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (pressures[4].isVisible) {
+                    if (pressures.getOrNull(4)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure5X,
-                                    (pressures[4].minValue),
-                                    (pressures[4].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[4].displayName,
-                                    comment = pressures[4].commentString
-                                )
+                                pressures.getOrNull(4)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure5X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (pressures[5].isVisible) {
+                    if (pressures.getOrNull(5)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure6X,
-                                    (pressures[5].minValue),
-                                    (pressures[5].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[5].displayName,
-                                    comment = pressures[5].commentString
-                                )
+                                pressures.getOrNull(5)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure6X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (pressures[6].isVisible) {
+                    if (pressures.getOrNull(6)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure7X,
-                                    (pressures[6].minValue),
-                                    (pressures[6].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[6].displayName,
-                                    comment = pressures[6].commentString
-                                )
+                                pressures.getOrNull(6)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure7X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (pressures[7].isVisible) {
+                    if (pressures.getOrNull(7)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure8X,
-                                    (pressures[7].minValue),
-                                    (pressures[7].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[7].displayName,
-                                    comment = pressures[7].commentString
-                                )
+                                pressures.getOrNull(7)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure8X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
-                    if (pressures[8].isVisible) {
+                    if (pressures.getOrNull(8)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure9X,
-                                    (pressures[8].minValue),
-                                    (pressures[8].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[8].displayName,
-                                    comment =     pressures[8].commentString
-                                )
+                                pressures.getOrNull(8)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure9X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
-                    if (pressures[9].isVisible) {
+                    if (pressures.getOrNull(9)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure10X,
-                                    (pressures[9].minValue),
-                                    (pressures[9].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[9].displayName,
-                                    comment =     pressures[9].commentString
-                                )
+                                pressures.getOrNull(9)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure10X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
-                    if (pressures[10].isVisible) {
+                    if (pressures.getOrNull(10)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure11X,
-                                    (pressures[10].minValue),
-                                    (pressures[10].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[10].displayName,
-                                    comment =     pressures[10].commentString
-                                )
+                                pressures.getOrNull(10)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure11X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
-                    if (pressures[11].isVisible) {
+                    if (pressures.getOrNull(11)?.isVisible == true) {
                         item {
                             Box(Modifier.aspectRatio(1f)) {
-                                GaugeX(
-                                    DpSize(columnHeightDp, columnHeightDp),
-                                    pressure12X,
-                                    (pressures[11].minValue),
-                                    (pressures[11].maxValue),
-                                    type = "Бар",
-                                    displayName = pressures[11].displayName,
-                                    comment = pressures[11].commentString
-                                )
+                                pressures.getOrNull(11)?.let {
+                                    GaugeX(
+                                        DpSize(columnHeightDp, columnHeightDp),
+                                        pressure12X,
+                                        (it.minValue),
+                                        (it.maxValue),
+                                        unit = (it).unit ?: "no defined",
+                                        displayName = it.displayName,
+                                        comment =     it.commentString
+                                    )
+                                }
                             }
                         }
                     }
                     item {
-                        Box(Modifier.aspectRatio(1f)
-//                            .onGloballyPositioned { coordinates ->
-//                            // Set column height using the LayoutCoordinates
-//                            if (coordinates.size.width != 0) {
-//                                columnHeightDp = with(localDensity) { coordinates.size.width.toDp() }
-//                            }
-//                            }
-                        ) {
-
+                        Box(Modifier.aspectRatio(1f)) {
                             Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
                         }
                     }
+                    //item { Box(Modifier.size(50.dp).background(Color.Red)) { Text(modifier = Modifier.align(Alignment.Center),textAlign = TextAlign.Center, text = "Pressure NOT Defined") } }
                 }
             )
         }
@@ -462,7 +472,7 @@ fun CenterPiece(
                         }
                     }
 
-                    Row(Modifier.fillMaxWidth().padding(5.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    Row(Modifier.fillMaxWidth().padding(1.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
                         Box(
                             Modifier
                                 .size(40.dp)
@@ -509,12 +519,14 @@ fun CenterPiece(
                                     "AUTO", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
                                         .clickable(onClick = {
                                             EXPLORER_MODE.value = ExplorerMode.AUTO
+                                            expandedCom.value = false
                                         }), color = Color.Black
                                 )
                                 Text(
                                     "MANUAL", fontSize = 18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
                                         .clickable(onClick = {
                                             EXPLORER_MODE.value = ExplorerMode.MANUAL
+                                            expandedCom.value = false
                                         }), color = Color.Black
                                 )
                             }

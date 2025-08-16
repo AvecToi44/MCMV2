@@ -18,18 +18,15 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Typeface
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.Font
-import org.jetbrains.skia.FontStyle
 import org.jetbrains.skia.TextLine
 import org.jetbrains.skia.Typeface
 import ru.atrs.mcm.ui.styles.colorTrans60
 import ru.atrs.mcm.ui.styles.fontDigital
-import ru.atrs.mcm.utils.map
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.toTwoDecimals
 import kotlin.math.PI
@@ -49,7 +46,7 @@ private fun createBasePaint() {
 // progress from 0 to 100
 // raw progress 0 to 240 degree
 @Composable
-fun GaugeX(inputSize: DpSize, progress : Float, minType : Float, maxType: Float, type: String = "",displayName: String = "", comment: String = "",withoutSingMap: Boolean = true) {
+fun GaugeX(inputSize: DpSize, progress : Float, minType : Float, maxType: Float, unit: String = "", displayName: String = "", comment: String = "", withoutSingMap: Boolean = true) {
     //println("well $progress ${minType} $maxType $type ~> ${checkInterval(map(progress, minType, maxType,0,240))}")
 
     val signValue = if (withoutSingMap) progress else mapFloat(checkSignInterval(progress,0f,4095f) , 0f,4095f, minType, maxType)
@@ -206,7 +203,7 @@ fun GaugeX(inputSize: DpSize, progress : Float, minType : Float, maxType: Float,
 
             }
 
-            Text("[${type}]", modifier = Modifier.align(Alignment.TopCenter).padding(top = (inputSize.height.value*0.25f).dp)
+            Text("[${unit}]", modifier = Modifier.align(Alignment.TopCenter).padding(top = (inputSize.height.value*0.25f).dp)
                 //.offset(calcNumGaug(90f,WIDTH).x.dp,calcNumGaug(90f,WIDTH).y.dp)
                 , fontFamily = FontFamily.Default, fontSize = (inputSize.height.value*0.075f).sp, fontWeight = FontWeight.Bold, color = Color.White
             )
