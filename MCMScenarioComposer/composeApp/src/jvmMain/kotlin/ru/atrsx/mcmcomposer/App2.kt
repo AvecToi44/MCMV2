@@ -1,5 +1,7 @@
 package ru.atrsx.mcmcomposer
 
+import PressuresScreen
+import SolenoidsScreen
 import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -27,9 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.atrsx.mcmcomposer.ui.CurrentsScreen
 import ru.atrsx.mcmcomposer.ui.MainScenarioScreen
-import ru.atrsx.mcmcomposer.ui.PressuresScreen
+import saveExperimentExcelWithDialogExact
 
 // ---------- Models ----------
 data class ScenarioRow(
@@ -84,6 +85,12 @@ fun AppRoot() {
                 onValueChange = { newText -> text = newText },
                 label = { Text("Future scenario name") }
             )
+            var text2 by remember { mutableStateOf("") }
+            TextField(
+                value = text2,
+                onValueChange = { newText -> text2 = newText },
+                label = { Text("Path to Standard") }
+            )
             Box(
                 Modifier
                     .size(40.dp)
@@ -92,6 +99,15 @@ fun AppRoot() {
                     .clickable {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                             delay(10)
+                            saveExperimentExcelWithDialogExact(
+                                config    = MainExperimentConfig(standardPath = "/Users/you/Desktop", sheetName = "test"),
+                                pressures = pressures,
+                                solenoids = solenoids,
+                                scenarios = scenarios,
+                                titleText = "0b5_combi_13_08_2025_16_05_50.txt", // or null
+                                mainFreq  = null,   // null → auto-derive from solenoids.tenthFrequency/10
+                                testVar   = 0
+                            )
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -131,7 +147,7 @@ fun AppRoot() {
         when (tab) {
             0 -> MainScenarioScreen()
             1 -> PressuresScreen()
-            2 -> CurrentsScreen()
+            2 -> SolenoidsScreen()
         }
     }
 }

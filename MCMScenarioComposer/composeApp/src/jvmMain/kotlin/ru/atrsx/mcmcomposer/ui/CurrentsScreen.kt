@@ -1,126 +1,286 @@
-package ru.atrsx.mcmcomposer.ui
+// SolenoidsScreen.kt — Compose Desktop
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import ru.atrsx.mcmcomposer.PWMChannel
-import ru.atrsx.mcmcomposer.pressures
+import ru.atrsx.mcmcomposer.SolenoidChannel
+import ru.atrsx.mcmcomposer.solenoids
 
-// ---------- Screen 3: Currents ----------
 @Composable
-fun CurrentsScreen() {
-    val palette = listOf(
-        Color(0xFF00A651), Color(0xFF8B0000), Color(0xFF0B61A4), Color(0xFFFFA500),
-        Color(0xFF9ACD32), Color(0xFF808000), Color(0xFFFFD700), Color(0xFF8B4513),
-        Color(0xFF8A2BE2), Color(0xFFFF1493), Color(0xFF9400D3), Color(0xFF000000),
-        Color(0xFF1E90FF), Color(0xFF008000), Color(0xFF2E8B57), Color(0xFFFF6F61)
-    )
-//    val channels = remember {
-//        mutableStateListOf<PWMChannel>().also { list ->
-//            repeat(16) { i -> list.add(PWMChannel(index = i + 1, color = palette[i])) }
-//        }
-//    }
+fun SolenoidsScreen(modifier: Modifier = Modifier) {
+    // --- Selection ---
+    var selectedIndex by remember { mutableStateOf(solenoids.firstOrNull()?.index) }
 
-    Row(Modifier.fillMaxSize()) {
-        // Right config
+    // --- Left editor state (mirrors selected item) ---
+    var mainFrequency by remember { mutableStateOf(0) } // global integer
+
+    var nameText by remember { mutableStateOf("") }
+    var pwmText by remember { mutableStateOf("") }
+    var divText by remember { mutableStateOf("") }
+    var amp10Text by remember { mutableStateOf("") }
+    var freq10Text by remember { mutableStateOf("") }
+    var minText by remember { mutableStateOf("") }
+    var maxText by remember { mutableStateOf("") }
+
+    // Load editor when selection changes
+    LaunchedEffect(selectedIndex) {
+        val ch = solenoids.firstOrNull { it.index == selectedIndex }
+        if (ch != null) {
+            nameText   = ch.displayName
+            pwmText    = ch.maxPwm0_255.toString()
+            divText    = ch.valueOfDivision.toString()
+            amp10Text  = ch.tenthAmplitude.toString()
+            freq10Text = ch.tenthFrequency.toString()
+            minText    = ch.minValue.toString()
+            maxText    = ch.maxValue.toString()
+        } else {
+            nameText = ""; pwmText = ""; divText = ""; amp10Text = ""
+            freq10Text = ""; minText = ""; maxText = ""
+        }
+    }
+
+    fun updateSelected(transform: (SolenoidChannel) -> SolenoidChannel) {
+        val idx = solenoids.indexOfFirst { it.index == selectedIndex }
+        if (idx != -1) solenoids[idx] = transform(solenoids[idx])
+    }
+
+    Row(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        val verticalScroll = rememberScrollState()
+        // -------- LEFT: Editor Panel --------
         Column(
-            Modifier.weight(1f).fillMaxHeight().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier
+                .width(360.dp)
+                .fillMaxHeight()
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
+                .padding(12.dp).verticalScroll(verticalScroll),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Card {
-                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("GENERAL SETTINGS", fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.width(24.dp))
-                    Text("TOLERANCE (%):")
-                    var tol by remember { mutableStateOf("10") }
-                    Spacer(Modifier.width(8.dp))
-                    TextField(tol, { tol = it }, modifier = Modifier.width(80.dp), singleLine = true)
+            Text("Solenoids — Global & Channel Params", style = MaterialTheme.typography.titleMedium)
 
-                    Spacer(Modifier.width(24.dp))
-                    Text("FREQUENCY (Hz)")
-                    var genFreq by remember { mutableStateOf("1000") }
-                    Spacer(Modifier.width(8.dp))
-                    TextField(genFreq, { genFreq = it }, modifier = Modifier.width(100.dp), singleLine = true)
-
-                    Spacer(Modifier.width(24.dp))
-                    var negative by remember { mutableStateOf(false) }
-                    Checkbox(negative, { negative = it })
-                    Text("IS NEGATIVE")
-                }
+            // --- Global: Main Frequency (Integer) ---
+            OutlinedTextField(
+                value = mainFrequency.toString(),
+                onValueChange = { txt ->
+                    mainFrequency = txt.toIntOrNull() ?: mainFrequency
+                },
+                label = { Text("Main Frequency (Integer)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        val f10 = mainFrequency * 10
+                        for (i in solenoids.indices) {
+                            solenoids[i] = solenoids[i].copy(tenthFrequency = f10)
+                        }
+                        if (selectedIndex != null) freq10Text = f10.toString()
+                    }
+                ) { Text("Apply to all") }
             }
 
-            val selected = pressures.first()
-            Card(Modifier.fillMaxWidth().weight(1f)) {
-                Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("DETAILS", fontWeight = FontWeight.SemiBold)
-                    LabeledField("DISPLAY NAME:", selected.displayName) {
-                        selected.displayName = it
+            Divider()
 
+            val enabled = selectedIndex != null
+
+            OutlinedTextField(
+                value = nameText,
+                onValueChange = {
+                    nameText = it
+                    if (enabled) updateSelected { ch -> ch.copy(displayName = it) }
+                },
+                label = { Text("DisplayName") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = pwmText,
+                onValueChange = { txt ->
+                    pwmText = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { raw ->
+                        val clamped = raw.coerceIn(0, 255)
+                        if (clamped.toString() != pwmText) pwmText = clamped.toString()
+                        updateSelected { ch -> ch.copy(maxPwm0_255 = clamped) }
                     }
+                },
+                label = { Text("MaxPWM [0 - 255]") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
+            OutlinedTextField(
+                value = divText,
+                onValueChange = { txt ->
+                    divText = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { newDiv ->
+                        updateSelected { ch -> ch.copy(valueOfDivision = newDiv) }
+                    }
+                },
+                label = { Text("Value of division") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-//                    LabeledField("MAX PWM:", selected.maxPwm, width = 120.dp) { selected.maxPwm = it }
-//                    LabeledField("TOLERANCE:", selected.tolerance, width = 120.dp) { selected.tolerance = it }
-//                    LabeledField("FREQUENCY:", selected.frequency, width = 120.dp) { selected.frequency = it }
+            OutlinedTextField(
+                value = amp10Text,
+                onValueChange = { txt ->
+                    amp10Text = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { newAmp10 ->
+                        updateSelected { ch -> ch.copy(tenthAmplitude = newAmp10) }
+                    }
+                },
+                label = { Text("Tenth amplitude") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-//                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                        Text("IS DC", modifier = Modifier.width(130.dp))
-//                        Checkbox(checked = selected.isDC, onCheckedChange = { selected.isDC = it })
-//                    }
-//
-//                    LabeledField("EXPECTED TEST VALUE:", selected.expectedTestValue, width = 160.dp) {
-//                        selected.expectedTestValue = it
-//                    }
-                }
+            OutlinedTextField(
+                value = freq10Text,
+                onValueChange = { txt ->
+                    freq10Text = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { newFreq10 ->
+                        updateSelected { ch -> ch.copy(tenthFrequency = newFreq10) }
+                    }
+                },
+                label = { Text("Tenth frequency") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = minText,
+                onValueChange = { txt ->
+                    minText = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { newMin ->
+                        updateSelected { ch ->
+                            val coercedMax = if (newMin > ch.maxValue) newMin else ch.maxValue
+                            if (coercedMax.toString() != maxText) maxText = coercedMax.toString()
+                            ch.copy(minValue = newMin, maxValue = coercedMax)
+                        }
+                    }
+                },
+                label = { Text("MinValue") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = maxText,
+                onValueChange = { txt ->
+                    maxText = txt
+                    if (!enabled) return@OutlinedTextField
+                    txt.toIntOrNull()?.let { newMax ->
+                        updateSelected { ch ->
+                            val coercedMin = if (newMax < ch.minValue) newMax else ch.minValue
+                            if (coercedMin.toString() != minText) minText = coercedMin.toString()
+                            ch.copy(maxValue = newMax, minValue = coercedMin)
+                        }
+                    }
+                },
+                label = { Text("MaxValue") },
+                enabled = enabled,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (!enabled) {
+                Text(
+                    "Выберите соленоид справа, чтобы редактировать параметры.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
 
-        Box(
-            Modifier.width(320.dp).fillMaxHeight()
-                .padding(12.dp).border(1.dp, Color.LightGray)
-        ) {
-            val vScroll = rememberScrollState()
-            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
-                Text("CURRENTS TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
-//                channels.forEach { ch ->
-//                    Row(
-//                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text("Channel PWM ${ch.index}", modifier = Modifier.weight(1f))
-//                        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
-//                        Box(
-//                            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
-//                        )
-//                    }
-//                }
+        // -------- RIGHT: Solenoids List (checkbox for visibility, row selection) --------
+        Column(Modifier.weight(1f)) {
+            Text("Соленоиды", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(12.dp))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    items = solenoids,
+                    key = { it.index }
+                ) { ch ->
+                    val isSelected = (selectedIndex == ch.index)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.surfaceVariant
+                                else MaterialTheme.colorScheme.surface
+                            )
+                            .border(
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outlineVariant,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .padding(12.dp)
+                            .alpha(if (ch.isVisible) 1f else 0.55f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // LEFT: visibility checkbox
+                        Checkbox(
+                            checked = ch.isVisible,
+                            onCheckedChange = { checked ->
+                                val idx = solenoids.indexOfFirst { it.index == ch.index }
+                                if (idx != -1) {
+                                    solenoids[idx] = solenoids[idx].copy(isVisible = checked)
+                                }
+                            }
+                        )
+
+                        // MIDDLE: selection + details
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { selectedIndex = ch.index },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(ch.displayName, style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp10: ${ch.tenthAmplitude}  •  Freq10: ${ch.tenthFrequency}\n" +
+                                            "Range: ${ch.minValue}…${ch.maxValue}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

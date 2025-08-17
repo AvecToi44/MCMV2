@@ -122,7 +122,7 @@ private fun writeSolenoids(sheet: Sheet, start: Int, block: SolenoidsBlock, st: 
     return r
 }
 
-private fun writeScenario(sheet: Sheet, start: Int, block: ScenarioBlock, nChannels: Int, st: ExcelStyles): Int {
+private fun writeScenario(sheet: Sheet, start: Int, block: ScenarioBlockDto, nChannels: Int, st: ExcelStyles): Int {
     var r = start
 
     // header
@@ -294,9 +294,10 @@ fun readSheetModelFromXlsx(file: File): MainExperimentConfig {
         }
 
         return MainExperimentConfig(
+            standardPath = "PPP",
             pressures = pressures,
             solenoids = solenoids,
-            scenario = ScenarioBlock(scenarioSteps)
+            scenario = ScenarioBlockDto(mainFrequency = 1500, steps = scenarioSteps)
         )
     }
 }

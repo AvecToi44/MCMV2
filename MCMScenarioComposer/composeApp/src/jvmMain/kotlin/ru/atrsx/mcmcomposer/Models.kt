@@ -7,8 +7,9 @@ import java.util.UUID
 data class MainExperimentConfig(
     val pressures: PressuresBlockDto = PressuresBlockDto(),
     val solenoids: SolenoidsBlock = SolenoidsBlock(),
-    val scenario: ScenarioBlock = ScenarioBlock(),
-    val sheetName: String = "стандарт не выбран"
+    val scenario: ScenarioBlockDto = ScenarioBlockDto(),
+    var standardPath: String,
+    val sheetName: String = "test"
 )
 
 // --- Pressures (orange) ---
@@ -39,7 +40,7 @@ data class PressureChannel(
     var comment: String,
     var preferredColorHex: String,
     var isVisible: Boolean,
-    var isSelected: Boolean
+    var isSelected: Boolean = false
 )
 
 data class PressureChannelDto(
@@ -109,8 +110,9 @@ data class ScenarioStepDto(
     var text: String? = null
 )
 
-data class ScenarioBlock(
-    val steps: MutableList<ScenarioStepDto> = mutableListOf(
+data class ScenarioBlockDto(
+    var mainFrequency: Int = 1500,
+    var steps: MutableList<ScenarioStepDto> = mutableListOf(
         ScenarioStepDto(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = "")
     )
 )
