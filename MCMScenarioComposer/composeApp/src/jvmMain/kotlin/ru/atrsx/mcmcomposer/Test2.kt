@@ -1,34 +1,34 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import java.util.UUID
 
 data class ScenarioStep2(
-    val id: String = UUID.randomUUID().toString(), // Unique ID
+    val id: String = UUID.randomUUID().toString(),
     var stepTimeMs: Int,
     var channelValues: MutableList<Int>,
     var analog1: Int? = null,
@@ -56,9 +56,7 @@ fun ScenarioStepItem(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             trailingIcon = {
-                Button(onClick = onSave) {
-                    Text("Save")
-                }
+                Button(onClick = onSave) { Text("Save") }
             }
         )
     } else {
@@ -87,51 +85,59 @@ fun EditableScenarioStepList() {
             ScenarioStep2(stepTimeMs = 3000, channelValues = mutableListOf(2, 3, 4), text = "Step 3")
         )
     }
-    var editingItem by remember { mutableStateOf<ScenarioStep2?>(null) }
+
+    var editingItemId by remember { mutableStateOf<String?>(null) }
     var editingText by remember { mutableStateOf("") }
 
     Column {
         Button(onClick = {
-            items.add(ScenarioStep2(stepTimeMs = 10, channelValues = MutableList(3) { 0 }, text = "Step ${items.size + 1}"))
-        }) {
-            Text("Add Step")
-        }
+            items.add(
+                ScenarioStep2(
+                    stepTimeMs = 10,
+                    channelValues = MutableList(3) { 0 },
+                    text = "Step ${items.size + 1}"
+                )
+            )
+        }) { Text("Add Step") }
+
         Button(
             onClick = { items.removeAll { it.isSelected } },
             enabled = items.any { it.isSelected }
-        ) {
-            Text("Remove Selected")
-        }
+        ) { Text("Remove Selected") }
 
         LazyColumn {
             items(
                 items = items,
-                key = { it.id } // Use unique ID
+                key = { it.id }
             ) { item ->
-                val isEditing = item == editingItem
+                val isEditing = (editingItemId == item.id)
+
                 val onToggle = rememberUpdatedState { _: Offset ->
-                    val index = items.indexOf(item)
+                    val index = items.indexOfFirst { it.id == item.id }
                     if (index != -1) {
-                        items[index] = item.copy(isSelected = !item.isSelected)
+                        val current = items[index]
+                        items[index] = current.copy(isSelected = !current.isSelected)
                     }
                 }
+
                 val onEdit = rememberUpdatedState { _: Offset ->
-                    editingItem = item
-                    editingText = item.text ?: ""
+                    editingItemId = item.id
+                    editingText = item.text.orEmpty()
                 }
+
                 ScenarioStepItem(
                     item = item,
                     isEditing = isEditing,
                     editingText = editingText,
                     onTextChange = { editingText = it },
                     onSave = {
-                        if (editingText.isNotBlank()) {
-                            val index = items.indexOf(item)
-                            if (index != -1) {
-                                items[index] = item.copy(text = editingText)
+                        editingItemId?.let { id ->
+                            val index = items.indexOfFirst { it.id == id }
+                            if (index != -1 && editingText.isNotBlank()) {
+                                items[index] = items[index].copy(text = editingText)
                             }
                         }
-                        editingItem = null
+                        editingItemId = null
                         editingText = ""
                     },
                     onToggle = onToggle.value,
