@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.atrsx.mcmcomposer.PWMChannel
+import ru.atrsx.mcmcomposer.pressures
 
 // ---------- Screen 3: Currents ----------
 @Composable
@@ -41,11 +42,11 @@ fun CurrentsScreen() {
         Color(0xFF8A2BE2), Color(0xFFFF1493), Color(0xFF9400D3), Color(0xFF000000),
         Color(0xFF1E90FF), Color(0xFF008000), Color(0xFF2E8B57), Color(0xFFFF6F61)
     )
-    val channels = remember {
-        mutableStateListOf<PWMChannel>().also { list ->
-            repeat(16) { i -> list.add(PWMChannel(index = i + 1, color = palette[i])) }
-        }
-    }
+//    val channels = remember {
+//        mutableStateListOf<PWMChannel>().also { list ->
+//            repeat(16) { i -> list.add(PWMChannel(index = i + 1, color = palette[i])) }
+//        }
+//    }
 
     Row(Modifier.fillMaxSize()) {
         // Right config
@@ -75,23 +76,28 @@ fun CurrentsScreen() {
                 }
             }
 
-            val selected = channels.first()
+            val selected = pressures.first()
             Card(Modifier.fillMaxWidth().weight(1f)) {
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("DETAILS", fontWeight = FontWeight.SemiBold)
-                    LabeledField("DISPLAY NAME:", selected.displayName) { selected.displayName = it }
-                    LabeledField("MAX PWM:", selected.maxPwm, width = 120.dp) { selected.maxPwm = it }
-                    LabeledField("TOLERANCE:", selected.tolerance, width = 120.dp) { selected.tolerance = it }
-                    LabeledField("FREQUENCY:", selected.frequency, width = 120.dp) { selected.frequency = it }
+                    LabeledField("DISPLAY NAME:", selected.displayName) {
+                        selected.displayName = it
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("IS DC", modifier = Modifier.width(130.dp))
-                        Checkbox(checked = selected.isDC, onCheckedChange = { selected.isDC = it })
                     }
 
-                    LabeledField("EXPECTED TEST VALUE:", selected.expectedTestValue, width = 160.dp) {
-                        selected.expectedTestValue = it
-                    }
+
+//                    LabeledField("MAX PWM:", selected.maxPwm, width = 120.dp) { selected.maxPwm = it }
+//                    LabeledField("TOLERANCE:", selected.tolerance, width = 120.dp) { selected.tolerance = it }
+//                    LabeledField("FREQUENCY:", selected.frequency, width = 120.dp) { selected.frequency = it }
+
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Text("IS DC", modifier = Modifier.width(130.dp))
+//                        Checkbox(checked = selected.isDC, onCheckedChange = { selected.isDC = it })
+//                    }
+//
+//                    LabeledField("EXPECTED TEST VALUE:", selected.expectedTestValue, width = 160.dp) {
+//                        selected.expectedTestValue = it
+//                    }
                 }
             }
         }
@@ -103,18 +109,18 @@ fun CurrentsScreen() {
             val vScroll = rememberScrollState()
             Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
                 Text("CURRENTS TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
-                channels.forEach { ch ->
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Channel PWM ${ch.index}", modifier = Modifier.weight(1f))
-                        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
-                        Box(
-                            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
-                        )
-                    }
-                }
+//                channels.forEach { ch ->
+//                    Row(
+//                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Text("Channel PWM ${ch.index}", modifier = Modifier.weight(1f))
+//                        Checkbox(checked = ch.used, onCheckedChange = { ch.used = it })
+//                        Box(
+//                            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
+//                        )
+//                    }
+//                }
             }
         }
     }

@@ -71,7 +71,7 @@ private fun writePressures(sheet: Sheet, start: Int, block: PressuresBlockDto, s
     row("CommentString", block.channels.map { it.comment })
     row("PreferredColor", block.channels.map { it.preferredColorHex })
     row("isVisible", block.channels.map { it.isVisible })
-    row("parameters", block.channels.map { if (it.parameters.isEmpty()) "" else it.parameters.entries.joinToString { e -> "${e.key}=${e.value}" } })
+//    row("parameters", block.channels.map { if (it.parameters.isEmpty()) "" else it.parameters.entries.joinToString { e -> "${e.key}=${e.value}" } })
     return r
 }
 
@@ -230,7 +230,7 @@ fun readSheetModelFromXlsx(file: File): MainExperimentConfig {
                     comment = sheet.getRow(pStart + 7).getCell(1 + i).stringCellValue,
                     preferredColorHex = sheet.getRow(pStart + 8).getCell(1 + i).stringCellValue,
                     isVisible = sheet.getRow(pStart + 9).getCell(1 + i).toString() == "true",
-                    parameters = mutableMapOf()
+//                    parameters = mutableMapOf()
                 )
             }
         )

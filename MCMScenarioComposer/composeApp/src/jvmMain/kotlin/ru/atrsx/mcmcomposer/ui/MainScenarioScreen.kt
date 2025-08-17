@@ -70,37 +70,19 @@ fun MainScenarioScreen() {
     }
 
     Row(Modifier.fillMaxSize()) {
-        // Left: table + canvas area
+        // Left: table
         Column(Modifier.weight(1f).background(Color.White).fillMaxHeight()) {
             LazyColumn {
                 items(
                     items = items,
                     key = { it.id }
                 ) { item ->
-                    val isEditing = (editingItemId == item.id)
-
-                    val onToggle = rememberUpdatedState { _: Offset ->
-                        val index = items.indexOfFirst { it.id == item.id }
-                        if (index != -1) {
-                            val current = items[index]
-                            items[index] = current.copy(isSelected = !current.isSelected)
-                        }
-                    }
-
-                    val onEdit = rememberUpdatedState { _: Offset ->
-                        editingItemId = item.id
-//                        editingText = item.text.orEmpty()
-                    }
-
                     ScenarioStepItem(
                         index = items.indexOf(item),
                         item = item,
                         onItemChange = { scenarioStep ->
-//                            editingText = it
-//                            items.map { scenarioStep -> if (scenarioStep.id == it.id) it = scenarioStep }
                             updateScenarioStep(items,scenarioStep)
-                        },
-//                        onToggle = onToggle.value,
+                        }
                     )
                 }
             }
@@ -114,12 +96,12 @@ fun MainScenarioScreen() {
             Button(
                 onClick = {
                     items.add(ScenarioStep(
-                        stepTimeMs = 777,
-                        channelValues = MutableList(12) { 44 },
+                        stepTimeMs = 1000,
+                        channelValues = MutableList(12) { 0 },
                         analog1 = 0,
                         analog2 = 1,
-                        gradientTimeMs = 123,
-                        text = "New"
+                        gradientTimeMs = 0,
+                        text = "New Step"
                     ))
                     selected = items.lastIndex
                 },
@@ -333,10 +315,6 @@ fun updateScenarioStep(items: MutableList<ScenarioStep>, updatedItem: ScenarioSt
         scenarios[index] = updatedItem
     }
     println(">>> ${scenarios.joinToString { "${it.text}" }}")
-//    val index = items.indexOfFirst { it.id == updatedItem.id }
-//    if (index != -1) {
-//        items[index] = updatedItem
-//    }
 }
 
 

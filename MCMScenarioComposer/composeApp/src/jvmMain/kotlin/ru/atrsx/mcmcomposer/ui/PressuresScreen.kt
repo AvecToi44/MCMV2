@@ -2,6 +2,7 @@ package ru.atrsx.mcmcomposer.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,18 +14,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,8 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ru.atrsx.mcmcomposer.PressureChannel
+import ru.atrsx.mcmcomposer.ScenarioStep
+import ru.atrsx.mcmcomposer.pressures
+import ru.atrsx.mcmcomposer.scenarios
 
-// ---------- Screen 2: Pressures ----------
+// ---------- Screen 2: Pressures ---------
+private val selectedPressureIndex = mutableStateOf(0)
+
 @Composable
 fun PressuresScreen() {
     val palette = listOf(
@@ -42,12 +50,11 @@ fun PressuresScreen() {
         Color(0xFF8A2BE2), Color(0xFFFF1493), Color(0xFF9400D3), Color(0xFF000000),
         Color(0xFF1E90FF), Color(0xFF008000), Color(0xFF2E8B57), Color(0xFFFF6F61)
     )
-    val channels = remember {
-        mutableStateListOf<PressureChannel>().also { list ->
-            repeat(16) { i ->
-                list.add(PressureChannel(index = i + 1, color = palette[i]))
-            }
-        }
+
+    val pressuresInternal = remember { pressures }
+
+    LaunchedEffect(selectedPressureIndex) {
+
     }
 
     Row(Modifier.fillMaxSize()) {
@@ -71,14 +78,19 @@ fun PressuresScreen() {
             }
 
             // Details bound to the currently selected item (first selected or first item)
-            val selected = channels.firstOrNull { it.used } ?: channels.first()
+            val selected = pressures.first()
             Card(Modifier.fillMaxWidth().weight(1f)) {
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("DETAILS", fontWeight = FontWeight.SemiBold)
-                    LabeledField("DISPLAY NAME:", selected.displayName) { selected.displayName = it }
-                    LabeledField("COMMENT:", selected.comment) { selected.comment = it }
-                    LabeledField("MAX VALUE:", selected.maxValue, width = 120.dp) { selected.maxValue = it }
-                    LabeledField("TOLERANCE:", selected.tolerance, width = 120.dp) { selected.tolerance = it }
+                    LabeledField("DISPLAY NAME:", selected.displayName) {
+                        selected.displayName = it
+                        updatePressureChannel(pressuresInternal, selected)
+                    }
+                    LabeledField("COMMENT:", selected.comment) {
+                        selected.comment = it
+                    }
+//                    LabeledField("MAX VALUE:", "${selected.maxValue}", width = 120.dp) { selected.maxValue = it }
+//                    LabeledField("MIN VALUE:", "${selected.tolerance}", width = 120.dp) { selected.tolerance = it }
                 }
             }
         }
@@ -89,27 +101,49 @@ fun PressuresScreen() {
                 .padding(12.dp).border(1.dp, Color.LightGray)
         ) {
             val vScroll = rememberScrollState()
-            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
-                Text("PRESSURES TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
-                channels.forEach { ch ->
-                    PressureListItem(ch)
+            LazyColumn {
+                items(
+                    items = pressuresInternal,
+                    key = { it.index }
+                ) { item ->
+                    PressureListItem(
+                        ch = item,
+                        onValueChange = { refreshedPressureChannel ->
+                            selectedPressureIndex.value = item.index
+                            updatePressureChannel(pressures, refreshedPressureChannel)
+                        }
+                    )
                 }
             }
+//            Column(Modifier.fillMaxSize().verticalScroll(vScroll)) {
+//                Text("PRESSURES TO USE", modifier = Modifier.padding(8.dp), fontWeight = FontWeight.SemiBold)
+//                channels.forEach { ch ->
+//                    PressureListItem(ch)
+//                }
+//            }
         }
     }
 }
 
 @Composable
-private fun PressureListItem(ch: PressureChannel) {
+private fun PressureListItem(ch: PressureChannel, onValueChange: (PressureChannel) -> Unit) {
+    val isSelected = remember { mutableStateOf(ch.isSelected) }
+    val isVisible = remember { mutableStateOf(ch.isVisible) }
+
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(if (isSelected.value) Color.Green else Color.White).clickable {
+            pressures = pressures.map { it.copy(isSelected = false) }.toMutableStateList()
+            isSelected.value = !isSelected.value
+            onValueChange(ch.copy(isSelected = isSelected.value))
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("Channel Data ${ch.index}", modifier = Modifier.weight(1f))
-        Checkbox(checked = ch.isVisible, onCheckedChange = { ch.isVisible = it })
-        Box(
-            Modifier.size(22.dp).border(1.dp, Color.DarkGray).background(ch.color)
-        )
+        Checkbox(checked = isVisible.value, onCheckedChange = {
+            isVisible.value = !isVisible.value
+            onValueChange(ch.copy(isVisible = isVisible.value))
+        })
+
     }
 }
 
@@ -119,4 +153,10 @@ fun LabeledField(label: String, value: String, width: Dp = 260.dp, onValue: (Str
         Text(label, modifier = Modifier.width(130.dp))
         TextField(value, onValueChange = onValue, singleLine = true, modifier = Modifier.width(width))
     }
+}
+
+private fun updatePressureChannel(items: MutableList<PressureChannel>, updatedItem: PressureChannel) {
+    val index = pressures.indexOfFirst { it.index == updatedItem.index }
+    if (index != -1) { pressures[index] = updatedItem }
+    println(">>> ${pressures.joinToString()}")
 }

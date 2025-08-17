@@ -43,16 +43,6 @@ data class ScenarioRow(
     var analogSetEnabled: Boolean = false
 )
 
-data class PressureChannel(
-    val index: Int,
-    var used: Boolean = true,
-    var isVisible: Boolean = true,
-    var color: Color,
-    var displayName: String = "Channel Data $index",
-    var comment: String = "",
-    var maxValue: String = "25",
-    var tolerance: String = "10"
-)
 
 data class PWMChannel(
     val index: Int,

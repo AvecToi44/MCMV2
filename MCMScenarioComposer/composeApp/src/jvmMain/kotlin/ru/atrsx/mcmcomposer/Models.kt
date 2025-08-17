@@ -29,6 +29,19 @@ data class PressuresBlockDto(
     }
 )
 
+data class PressureChannel(
+    var displayName: String,
+    var index: Int,
+    var minValue: Int,
+    var maxValue: Int,
+    var tolerance: Int,
+    var unit: String,
+    var comment: String,
+    var preferredColorHex: String,
+    var isVisible: Boolean,
+    var isSelected: Boolean
+)
+
 data class PressureChannelDto(
     var displayName: String,
     var index: Int,
@@ -39,7 +52,7 @@ data class PressureChannelDto(
     var comment: String,
     var preferredColorHex: String,
     var isVisible: Boolean,
-    var parameters: MutableMap<String, String> = mutableMapOf()
+//    var parameters: MutableMap<String, String> = mutableMapOf()
 )
 
 // --- Solenoids (blue) ---
