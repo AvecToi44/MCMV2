@@ -2,11 +2,11 @@ package ru.atrsx.mcmcomposer
 
 // ---------- Domain model (matches your updated Excel) ----------
 
-data class SheetModel(
+data class MainExperimentConfig(
     val pressures: PressuresBlockDto = PressuresBlockDto(),
     val solenoids: SolenoidsBlock = SolenoidsBlock(),
     val scenario: ScenarioBlock = ScenarioBlock(),
-    val sheetName: String = "0b5_combi"
+    val sheetName: String = "стандарт не выбран"
 )
 
 // --- Pressures (orange) ---
@@ -17,7 +17,7 @@ data class PressuresBlockDto(
             displayName = if (i == 0) "Первый показатель" else "Channel Data ${i+1}",
             index = i,
             minValue = 0,
-            maxValue = 25,
+            maxValue = 0,
             tolerance = 10,
             unit = "Bar",
             comment = "~",
@@ -47,14 +47,14 @@ data class SolenoidsBlock(
     var testVariable: Int? = 0,            // "TestVariable:" (optional)
     val channels: MutableList<SolenoidChannel> = MutableList(12) { i ->
         SolenoidChannel(
-            displayName = "привет ${i+1}",
+            displayName = "Без имени ${i+1}",
             index = i,
-            maxPwm0_255 = 100,
-            valueOfDivision = 10,
-            tenthAmplitude = 100,
-            tenthFrequency = 300,
+            maxPwm0_255 = 0,
+            valueOfDivision = 0,
+            tenthAmplitude = 0,
+            tenthFrequency = 0,
             minValue = 0,
-            maxValue = 1000,
+            maxValue = 0,
             isVisible = true
         )
     }
@@ -73,9 +73,18 @@ data class SolenoidChannel(
 )
 
 // --- Scenario (green) ---
+data class ScenarioStep(
+    var stepTimeMs: Int,
+    var channelValues: MutableList<Int>,   // size == number of channels
+    var analog1: Int? = null,
+    var analog2: Int? = null,
+    var gradientTimeMs: Int? = null,       // "Gradient Time"
+    var text: String? = null,
+    var isSelected: Boolean = false
+)
 
 /** One horizontal scenario row in Excel. */
-data class ScenarioStep(
+data class ScenarioStepDto(
     var stepTimeMs: Int,
     var channelValues: MutableList<Int>,   // size == number of channels
     var analog1: Int? = null,
@@ -85,8 +94,8 @@ data class ScenarioStep(
 )
 
 data class ScenarioBlock(
-    val steps: MutableList<ScenarioStep> = mutableListOf(
-        ScenarioStep(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = "")
+    val steps: MutableList<ScenarioStepDto> = mutableListOf(
+        ScenarioStepDto(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = "")
     )
 )
 
@@ -109,7 +118,7 @@ data class UiScenarioRow(
 
 // Mapping UI row <-> domain
 fun UiScenarioRow.toScenarioStep(nChannels: Int) =
-    ScenarioStep(
+    ScenarioStepDto(
         stepTimeMs = durationMs.toIntOrNull() ?: 0,
         channelValues = channels.take(nChannels).toMutableList(),
         analog1 = analog1,
@@ -118,7 +127,7 @@ fun UiScenarioRow.toScenarioStep(nChannels: Int) =
         text = messageText
     )
 
-fun ScenarioStep.toUiScenarioRow(number: Int) =
+fun ScenarioStepDto.toUiScenarioRow(number: Int) =
     UiScenarioRow(
         number = number,
         durationMs = stepTimeMs.toString(),

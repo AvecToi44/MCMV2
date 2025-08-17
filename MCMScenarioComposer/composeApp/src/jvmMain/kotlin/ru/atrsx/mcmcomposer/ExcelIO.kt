@@ -7,7 +7,7 @@ import java.io.File
 
 // ----------------- Export -----------------
 
-fun SheetModel.toWorkbook(): XSSFWorkbook {
+fun MainExperimentConfig.toWorkbook(): XSSFWorkbook {
     val wb = XSSFWorkbook()
     val sheet = wb.createSheet(sheetName)
     val st = ExcelStyles(wb)
@@ -202,7 +202,7 @@ private class ExcelStyles(wb: XSSFWorkbook) {
 
 // ----------------- Import (expects same structure as exporter) -----------------
 
-fun readSheetModelFromXlsx(file: File): SheetModel {
+fun readSheetModelFromXlsx(file: File): MainExperimentConfig {
     XSSFWorkbook(file).use { wb ->
         val sheet = wb.getSheetAt(0)
 
@@ -276,7 +276,7 @@ fun readSheetModelFromXlsx(file: File): SheetModel {
         val scStart = findRowIdx("Scenario:") ?: (sStart + 20)
         val scHeader = sheet.getRow(scStart + 1)
         val nChannels = (scHeader.physicalNumberOfCells - 1 - 4).coerceAtLeast(0) // step + N + 4 tails
-        val scenarioSteps = mutableListOf<ScenarioStep>()
+        val scenarioSteps = mutableListOf<ScenarioStepDto>()
         var rr = scStart + 2
         while (true) {
             val row = sheet.getRow(rr) ?: break
@@ -289,11 +289,11 @@ fun readSheetModelFromXlsx(file: File): SheetModel {
             val a2 = row.getCell(base + 1)?.numericCellValue?.toInt()
             val grad = row.getCell(base + 2)?.numericCellValue?.toInt()
             val txt = row.getCell(base + 3)?.toString()
-            scenarioSteps += ScenarioStep(step, ch, a1, a2, grad, txt)
+            scenarioSteps += ScenarioStepDto(step, ch, a1, a2, grad, txt)
             rr++
         }
 
-        return SheetModel(
+        return MainExperimentConfig(
             pressures = pressures,
             solenoids = solenoids,
             scenario = ScenarioBlock(scenarioSteps)

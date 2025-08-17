@@ -60,8 +60,6 @@ var GAUGES_IN_THE_ROW = 6
 enum class ChartFileNameEnding { COMMENT_AND_TIMESTAMP, TIMESTAMP, COMMENT }
 var CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
 
-const val APP_VERSION = "1.2.13"
-
 var SOLENOID_MAIN_FREQ: Int? = 0
 //var GRADIENT_TIME: Int? = 0
 var solenoids = mutableListOf<SolenoidHolder>()
