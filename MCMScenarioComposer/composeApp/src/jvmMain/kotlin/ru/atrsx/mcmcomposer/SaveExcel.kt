@@ -70,7 +70,7 @@ fun saveExperimentExcelWithDialogExact(
     val picked = chooseExcelSavePath(config.standardPath, suggestedName) ?: return
 
     runCatching {
-        exportExperimentToExcelExact(
+        exportExperimentToExcelExactCells(
             outPath   = picked,
             titleText = titleText,
             sheetName = config.sheetName.ifBlank { "test" },

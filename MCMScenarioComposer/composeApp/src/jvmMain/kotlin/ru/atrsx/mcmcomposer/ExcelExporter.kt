@@ -1,3 +1,4 @@
+// ExcelExporterExactCells.kt
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.*
 import ru.atrsx.mcmcomposer.PressureChannel
@@ -5,26 +6,16 @@ import ru.atrsx.mcmcomposer.ScenarioStep
 import ru.atrsx.mcmcomposer.SolenoidChannel
 import java.io.File
 import java.io.FileOutputStream
-import java.util.*
-
-// ===== Public API =============================================================
+import java.util.Locale
 
 /**
- * Exports a workbook with 3 stacked blocks on a single sheet:
- *   1) Pressures (orange)
- *   2) Solenoids (blue) + preamble row (Main Freq / TestVariable)
- *   3) Scenario (green) growing down
- *
- * Layout is transposed: attributes in rows, channels as columns — exactly like the screenshot.
- *
- * @param titleText    optional title in A1 (e.g., source file name)
- * @param sheetName    worksheet name
- * @param mainFreq     value shown in solenoids preamble row after "Main Freq:"
- * @param testVar      value shown after "TestVariable:"
+ * Writes the workbook in the *same cell positions* as your screenshot:
+ * A1 title; A2 "Pressures"; A15 "Solenoids"; A27 "Scenario:" etc.
+ * Channels span columns B..M (12 channels). Scenario extra columns: N..Q.
  */
-fun exportExperimentToExcelExact(
+fun exportExperimentToExcelExactCells(
     outPath: String,
-    titleText: String? = null,
+    titleText: String?,
     sheetName: String = "test",
     pressures: List<PressureChannel>,
     solenoids: List<SolenoidChannel>,
@@ -35,297 +26,279 @@ fun exportExperimentToExcelExact(
     val wb = XSSFWorkbook()
     val sheet = wb.createSheet(sheetName)
     val st = Styles(wb)
+    val L = Layout
 
-    // --- sheet geometry (tuned for screenshot proportions) ---
-    val pLabelColWidth = 18      // Pressures first column (labels)
-    val sLabelColWidth = 20      // Solenoids first column (labels)
-    val scLabelColWidth = 14     // Scenario first column ("step time")
-    val chanColWidth    = 7      // width for each channel column
-    val miscColWidth    = 12     // width for analog/gradient/text
-    val headerH         = 20f
-    val bodyH           = 18f
+    // -------- Column widths (A label wide, B..M tight, N..Q medium) --------
+    sheet.setColumnWidth(L.A, L.widthLabel * 256)
+    for (c in L.CH_START..L.CH_END) sheet.setColumnWidth(c, L.widthChannel * 256)
+    for ((i, col) in L.SC_MISC_COLS.withIndex()) sheet.setColumnWidth(col, L.widthMisc * 256)
 
-    var row = 0
-
-    // A1: source file name/title (no fill)
+    // -------- Title A1 --------
     if (!titleText.isNullOrBlank()) {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = headerH
-        r.createCell(0).apply {
-            setCellValue(titleText)
-            cellStyle = st.title
+        sheet.createRow(L.ROW_TITLE).apply {
+            heightInPoints = L.hHeader
+            createCell(L.A).apply { setCellValue(titleText); cellStyle = st.title }
         }
     }
 
-    // ================= Pressures (orange) ====================================
-    // Section title
-    sheet.createRow(row).apply {
-        heightInPoints = headerH
-        createCell(0).apply { setCellValue("Pressures"); cellStyle = st.sectionTitle }
+    // ========================= PRESSURES =========================
+    // A2 section caption
+    sheet.createRow(L.ROW_P_CAPTION).apply {
+        heightInPoints = L.hHeader
+        createCell(L.A).apply { setCellValue("Pressures"); cellStyle = st.sectionTitle }
     }
-    row++
 
-    // Column widths (label + N channels)
-    val pCols = 1 + pressures.size
-    sheet.setColumnWidth(0, pLabelColWidth * 256)
-    for (c in 1 until pCols) sheet.setColumnWidth(c, chanColWidth * 256)
-
-    // Header row (top labels for each channel column)
-    run {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = headerH
-        // corner cell: empty (orange fill)
-        r.createCell(0).apply { setCellValue(""); cellStyle = st.headerOrange }
-        pressures.forEachIndexed { i, ch ->
-            r.createCell(i + 1).apply {
-                // like "Channel Data 1/2..." or use displayName if you prefer
-                setCellValue("Channel Data ${ch.index + 1}")
-                cellStyle = st.headerOrange
-            }
+    // Row 3: header over channels (B..M)
+    sheet.createRow(L.ROW_P_HEADER).apply {
+        heightInPoints = L.hHeader
+        // corner A3 as orange header filler
+        createCell(L.A).apply { setCellValue(""); cellStyle = st.headerOrangeLeft }
+        for (c in L.CH_START..L.CH_END) {
+            val idx = c - L.CH_START
+            val ch = pressures.getOrNull(idx)
+            val headerText = ch?.displayName?.takeIf { it.isNotBlank() } ?: "Channel Data ${idx + 1}"
+            createCell(c).apply { setCellValue(headerText); cellStyle = st.headerOrangeCenter }
         }
     }
 
-    // Rows (attributes down; channels across)
-    fun pRow(label: String, valueOf: (PressureChannel) -> String) {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = bodyH
-        r.createCell(0).apply { setCellValue(label); cellStyle = st.orangeLeft }
-        pressures.forEachIndexed { i, ch ->
-            r.createCell(i + 1).apply {
-                setCellValue(valueOf(ch))
-                cellStyle = st.orangeCenter
-            }
+    // Rows 4..12 (labels in A, channel values B..M)
+    pRow(sheet, L.ROW_P_FIRST + 0, "DisplayName", pressures, st) { it.displayName }
+    pRow(sheet, L.ROW_P_FIRST + 1, "Index",       pressures, st) { it.index.toString() }
+    pRow(sheet, L.ROW_P_FIRST + 2, "MinValue",    pressures, st) { it.minValue.toString() }
+    pRow(sheet, L.ROW_P_FIRST + 3, "MaxValue",    pressures, st) { it.maxValue.toString() }
+    pRow(sheet, L.ROW_P_FIRST + 4, "Tolerance",   pressures, st) { it.tolerance.toString() }
+    pRow(sheet, L.ROW_P_FIRST + 5, "Unit",        pressures, st) { it.unit }
+    pRow(sheet, L.ROW_P_FIRST + 6, "CommentString", pressures, st) { it.comment }
+    pRow(sheet, L.ROW_P_FIRST + 7, "PreferredColor", pressures, st) { it.preferredColorHex.uppercase(Locale.US) }
+    pRow(sheet, L.ROW_P_FIRST + 8, "isVisible",   pressures, st) { it.isVisible.toString() }
+    pRow(sheet, L.ROW_P_FIRST + 9, "parameters",  pressures, st) { "" }
+
+    // Row 13: "~"
+    sheet.createRow(L.ROW_P_TILDE).apply {
+        heightInPoints = L.hBody
+        createCell(L.A).apply { setCellValue("~"); cellStyle = st.orangeLeft }
+    }
+
+    // ========================= SOLENOIDS =========================
+    // A15 caption
+    sheet.createRow(L.ROW_S_CAPTION).apply {
+        heightInPoints = L.hHeader
+        createCell(L.A).apply { setCellValue("Solenoids"); cellStyle = st.sectionTitle }
+    }
+
+    // Row 16: preamble "Main Freq:" value   "TestVariable:" value
+    sheet.createRow(L.ROW_S_PREAMBLE).apply {
+        heightInPoints = L.hHeader
+        createCell(L.A).apply { setCellValue(""); cellStyle = st.headerBlueLeft }
+        createCell(L.B).apply { setCellValue("Main Freq:"); cellStyle = st.headerBlueLeft }
+        createCell(L.C).apply { setCellValue(mainFreq.toDouble()); cellStyle = st.headerBlueCenter }
+        createCell(L.D).apply { setCellValue("TestVariable:"); cellStyle = st.headerBlueLeft }
+        createCell(L.E).apply { setCellValue(testVar.toDouble()); cellStyle = st.headerBlueCenter }
+    }
+
+    // Rows 17..23 (attributes exactly like screenshot)
+    sRow(sheet, L.ROW_S_FIRST + 0, "DisplayName",       solenoids, st) { it.displayName }
+    sRow(sheet, L.ROW_S_FIRST + 1, "Index",             solenoids, st) { it.index.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 2, "MaxPWM [0 - 255]",  solenoids, st) { it.maxPwm0_255.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 3, "Value of division", solenoids, st) { it.valueOfDivision.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 4, "tenth amplitude",   solenoids, st) { it.tenthAmplitude.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 5, "tenth frequency",   solenoids, st) { it.tenthFrequency.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 6, "MinValue",          solenoids, st) { it.minValue.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 7, "MaxValue",          solenoids, st) { it.maxValue.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 8, "isVisible",         solenoids, st) { it.isVisible.toString() }
+
+    // Row 24: "~"
+    sheet.createRow(L.ROW_S_TILDE).apply {
+        heightInPoints = L.hBody
+        createCell(L.A).apply { setCellValue("~"); cellStyle = st.blueLeft }
+    }
+
+    // ========================= SCENARIO =========================
+    // A27 "Scenario:"
+    sheet.createRow(L.ROW_SC_CAPTION).apply {
+        heightInPoints = L.hHeader
+        createCell(L.A).apply { setCellValue("Scenario:"); cellStyle = st.sectionTitle }
+    }
+
+    // Row 28: header ("step time", then 12 blank channel headers, then misc names)
+    sheet.createRow(L.ROW_SC_HEADER).apply {
+        heightInPoints = L.hHeader
+        createCell(L.A).apply { setCellValue("step time"); cellStyle = st.headerGreenLeft }
+        for (c in L.CH_START..L.CH_END) {
+            createCell(c).apply { setCellValue(""); cellStyle = st.headerGreenCenter }
         }
+        createCell(L.N).apply { setCellValue("Analog1");        cellStyle = st.headerGreenCenter }
+        createCell(L.O).apply { setCellValue("Analog2");        cellStyle = st.headerGreenCenter }
+        createCell(L.P).apply { setCellValue("Gradient Time");  cellStyle = st.headerGreenCenter }
+        createCell(L.Q).apply { setCellValue("text");           cellStyle = st.headerGreenCenter }
     }
 
-    pRow("DisplayName")   { it.displayName }
-    pRow("Index")         { it.index.toString() }
-    pRow("MinValue")      { it.minValue.toString() }
-    pRow("MaxValue")      { it.maxValue.toString() }
-    pRow("Tolerance")     { it.tolerance.toString() }
-    pRow("Unit")          { it.unit }
-    pRow("CommentString") { it.comment }
-    pRow("PreferredColor"){ it.preferredColorHex.uppercase(Locale.US) }
-    pRow("isVisible")     { it.isVisible.toString() }
-    pRow("parameters")    { "" }
-
-    // "~" separator row (single cell like on screenshot)
-    sheet.createRow(row++).apply {
-        heightInPoints = bodyH
-        createCell(0).apply { setCellValue("~"); cellStyle = st.orangeLeft }
-    }
-
-    // Blank spacer row (as in screenshot visual rhythm)
-    row++
-
-    // ================= Solenoids (blue) ======================================
-    // Section title
-    sheet.createRow(row).apply {
-        heightInPoints = headerH
-        createCell(0).apply { setCellValue("Solenoids"); cellStyle = st.sectionTitle }
-    }
-    row++
-
-    val sCols = 1 + solenoids.size
-    sheet.setColumnWidth(0, sLabelColWidth * 256)
-    for (c in 1 until sCols) sheet.setColumnWidth(c, chanColWidth * 256)
-
-    // Preamble row: blue fill with "Main Freq:"  value   "TestVariable:"  value
-    run {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = headerH
-        // Left-most blue filler
-        r.createCell(0).apply { setCellValue(""); cellStyle = st.headerBlue }
-        // Main Freq pair
-        r.createCell(1).apply { setCellValue("Main Freq:"); cellStyle = st.headerBlue }
-        r.createCell(2).apply { setCellValue(mainFreq.toDouble()); cellStyle = st.headerBlueCenter }
-        // TestVariable pair (placed a few cells to the right, matches screenshot vibe)
-        r.createCell(3).apply { setCellValue("TestVariable:"); cellStyle = st.headerBlue }
-        r.createCell(4).apply { setCellValue(testVar.toDouble()); cellStyle = st.headerBlueCenter }
-    }
-
-    // Row writer (blue)
-    fun sRow(label: String, valueOf: (SolenoidChannel) -> String) {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = bodyH
-        r.createCell(0).apply { setCellValue(label); cellStyle = st.blueLeft }
-        solenoids.forEachIndexed { i, ch ->
-            r.createCell(i + 1).apply {
-                setCellValue(valueOf(ch))
-                cellStyle = st.blueCenter
-            }
-        }
-    }
-
-    sRow("DisplayName")          { it.displayName }
-    sRow("Index")                { it.index.toString() }
-    sRow("MaxPWM [0 - 255]")     { it.maxPwm0_255.toString() }
-    sRow("Value of division")    { it.valueOfDivision.toString() }
-    sRow("tenth amplitude")      { it.tenthAmplitude.toString() }
-    sRow("tenth frequency")      { it.tenthFrequency.toString() }
-    sRow("MinValue")             { it.minValue.toString() }
-    sRow("MaxValue")             { it.maxValue.toString() }
-    sRow("isVisible")            { it.isVisible.toString() }
-    // "~" separator
-    sheet.createRow(row++).apply {
-        heightInPoints = bodyH
-        createCell(0).apply { setCellValue("~"); cellStyle = st.blueLeft }
-    }
-
-    // Blank spacer row
-    row++
-
-    // ================= Scenario (green) ======================================
-    // Title
-    sheet.createRow(row).apply {
-        heightInPoints = headerH
-        createCell(0).apply { setCellValue("Scenario:"); cellStyle = st.sectionTitle }
-    }
-    row++
-
-    // Column widths: first (label), 12 channels, then 4 misc columns
-    val scStartCol = 0
-    sheet.setColumnWidth(scStartCol, scLabelColWidth * 256)
-    for (c in 1..12) sheet.setColumnWidth(scStartCol + c, chanColWidth * 256)
-    val miscNames = listOf("Analog1", "Analog2", "Gradient Time", "text")
-    for (i in miscNames.indices) sheet.setColumnWidth(scStartCol + 13 + i, miscColWidth * 256)
-
-    // Header row (like screenshot: "step time" on first column, channel headers empty),
-    // but we do include right-most labels.
-    run {
-        val r = sheet.createRow(row++)
-        r.heightInPoints = headerH
-        r.createCell(scStartCol + 0).apply { setCellValue("step time"); cellStyle = st.headerGreenLeft }
-        for (c in 1..12) {
-            r.createCell(scStartCol + c).apply { setCellValue(""); cellStyle = st.headerGreenCenter }
-        }
-        miscNames.forEachIndexed { idx, name ->
-            r.createCell(scStartCol + 13 + idx).apply { setCellValue(name); cellStyle = st.headerGreenCenter }
-        }
-    }
-
-    // Scenario rows
+    // Rows 29+ : data
+    var r = L.ROW_SC_FIRST
     scenarios.forEach { step ->
-        val r = sheet.createRow(row++)
-        r.heightInPoints = bodyH
+        val row = sheet.createRow(r++)
+        row.heightInPoints = L.hBody
 
-        var col = scStartCol
-        r.createCell(col++).apply { setCellValue(step.stepTimeMs.toDouble()); cellStyle = st.greenCenter }
+        var col = L.A
+        row.createCell(col++).apply { setCellValue(step.stepTimeMs.toDouble()); cellStyle = st.greenCenter }
 
-        // 12 channel values (pad/truncate)
+        // 12 channels (pad/truncate)
         val vals = if (step.channelValues.size >= 12) step.channelValues.take(12)
         else step.channelValues + List(12 - step.channelValues.size) { 0 }
-        vals.forEach { v ->
-            r.createCell(col++).apply { setCellValue(v.toDouble()); cellStyle = st.greenCenter }
+        for (i in 0 until 12) {
+            row.createCell(L.CH_START + i).apply {
+                setCellValue(vals[i].toDouble()); cellStyle = st.greenCenter
+            }
         }
 
-        // Analog1/2 (not provided -> 0), Gradient time, text
-        r.createCell(col++).apply { setCellValue(0.0); cellStyle = st.greenCenter } // Analog1
-        r.createCell(col++).apply { setCellValue(0.0); cellStyle = st.greenCenter } // Analog2
-        r.createCell(col++).apply { setCellValue((step.gradientTimeMs ?: 0).toDouble()); cellStyle = st.greenCenter }
-        r.createCell(col).apply    { setCellValue(step.text ?: ""); cellStyle = st.greenLeft }
+        // N..Q
+        row.createCell(L.N).apply { setCellValue(0.0); cellStyle = st.greenCenter } // Analog1
+        row.createCell(L.O).apply { setCellValue(0.0); cellStyle = st.greenCenter } // Analog2
+        row.createCell(L.P).apply { setCellValue((step.gradientTimeMs ?: 0).toDouble()); cellStyle = st.greenCenter }
+        row.createCell(L.Q).apply { setCellValue(step.text ?: ""); cellStyle = st.greenLeft }
     }
 
-    // --- Save ---
+    // Save
     File(outPath).parentFile?.mkdirs()
     FileOutputStream(File(outPath)).use { wb.write(it) }
     wb.close()
 }
 
-// ===== Styles ================================================================
+// ---------- Row/Column map (EXACT cells from screenshot) ----------
+private object Layout {
+    // 0-based indices for POI
+    const val A = 0
+    const val B = 1
+    const val C = 2
+    const val D = 3
+    const val E = 4
+    const val N = 13
+    const val O = 14
+    const val P = 15
+    const val Q = 16
 
+    const val CH_START = B        // B..M for 12 channels
+    const val CH_END   = B + 11
+
+    // Rows (0-based)
+    const val ROW_TITLE     = 0   // A1
+    const val ROW_P_CAPTION = 1   // A2 "Pressures"
+    const val ROW_P_HEADER  = 2   // row 3
+    const val ROW_P_FIRST   = 3   // rows 4..12 attributes (10 rows)
+    const val ROW_P_TILDE   = 12  // row 13 "~"
+
+    const val ROW_S_CAPTION  = 14 // row 15 "Solenoids"
+    const val ROW_S_PREAMBLE = 15 // row 16 preamble
+    const val ROW_S_FIRST    = 16 // rows 17..23 attributes (9 rows)
+    const val ROW_S_TILDE    = 23 // row 24 "~"
+
+    const val ROW_SC_CAPTION = 26 // row 27 "Scenario:"
+    const val ROW_SC_HEADER  = 27 // row 28 header
+    const val ROW_SC_FIRST   = 28 // row 29 first data row
+
+    // Column widths (Excel chars)
+    const val widthLabel   = 18
+    const val widthChannel = 7
+    const val widthMisc    = 12
+
+    // Row heights
+    const val hHeader = 20f
+    const val hBody   = 18f
+
+    val SC_MISC_COLS = intArrayOf(N, O, P, Q)
+}
+
+// ---------- Writers for blocks ----------
+private fun pRow(
+    sheet: XSSFSheet,
+    rowIndex: Int,
+    label: String,
+    data: List<PressureChannel>,
+    st: Styles,
+    valueOf: (PressureChannel) -> String
+) {
+    val row = sheet.createRow(rowIndex)
+    row.heightInPoints = Layout.hBody
+    row.createCell(Layout.A).apply { setCellValue(label); cellStyle = st.orangeLeft }
+    for (c in Layout.CH_START..Layout.CH_END) {
+        val idx = c - Layout.CH_START
+        val txt = data.getOrNull(idx)?.let(valueOf).orEmpty()
+        row.createCell(c).apply { setCellValue(txt); cellStyle = st.orangeCenter }
+    }
+}
+
+private fun sRow(
+    sheet: XSSFSheet,
+    rowIndex: Int,
+    label: String,
+    data: List<SolenoidChannel>,
+    st: Styles,
+    valueOf: (SolenoidChannel) -> String
+) {
+    val row = sheet.createRow(rowIndex)
+    row.heightInPoints = Layout.hBody
+    row.createCell(Layout.A).apply { setCellValue(label); cellStyle = st.blueLeft }
+    for (c in Layout.CH_START..Layout.CH_END) {
+        val idx = c - Layout.CH_START
+        val txt = data.getOrNull(idx)?.let(valueOf).orEmpty()
+        row.createCell(c).apply { setCellValue(txt); cellStyle = st.blueCenter }
+    }
+}
+
+// ---------- Styles ----------
 private class Styles(private val wb: XSSFWorkbook) {
-    // Colors (close to screenshot)
-    private val orange = XSSFColor(byteArrayOf(0xF9.toByte(), 0x9B.toByte(), 0x6B.toByte()), null) // soft orange
-    private val blue   = XSSFColor(byteArrayOf(0xB3.toByte(), 0xD1.toByte(), 0xF0.toByte()), null) // light blue
-    private val green  = XSSFColor(byteArrayOf(0xC7.toByte(), 0xE5.toByte(), 0xB4.toByte()), null) // light green
+    private val orange = XSSFColor(byteArrayOf(0xF9.toByte(), 0x9B.toByte(), 0x6B.toByte()), null)
+    private val blue   = XSSFColor(byteArrayOf(0xB3.toByte(), 0xD1.toByte(), 0xF0.toByte()), null)
+    private val green  = XSSFColor(byteArrayOf(0xC7.toByte(), 0xE5.toByte(), 0xB4.toByte()), null)
 
     val title: XSSFCellStyle = wb.createCellStyle().apply {
         setBordersNone()
-        val f = wb.createFont().apply { bold = true }
-        setFont(f)
-    }
-
-    val sectionTitle: XSSFCellStyle = wb.createCellStyle().apply {
-        setBordersNone()
-        val f = wb.createFont().apply { bold = true }
-        setFont(f)
+        setFont(wb.createFont().apply { bold = true })
         alignment = HorizontalAlignment.LEFT
         verticalAlignment = VerticalAlignment.CENTER
     }
 
-    // Headers
-    val headerOrange: XSSFCellStyle = wb.createCellStyle().apply {
-        baseHeader()
-        setFillForegroundColor(orange)
-    }
-    val headerBlue: XSSFCellStyle = wb.createCellStyle().apply {
-        baseHeader()
-        setFillForegroundColor(blue)
-    }
-    val headerBlueCenter: XSSFCellStyle = wb.createCellStyle().apply {
-        baseHeader(center = true)
-        setFillForegroundColor(blue)
-    }
-    val headerGreenLeft: XSSFCellStyle = wb.createCellStyle().apply {
-        baseHeader()
-        setFillForegroundColor(green)
-    }
-    val headerGreenCenter: XSSFCellStyle = wb.createCellStyle().apply {
-        baseHeader(center = true)
-        setFillForegroundColor(green)
-    }
-
-    // Body fills
-    val orangeLeft: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(left = true)
-        setFillForegroundColor(orange)
-    }
-    val orangeCenter: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(center = true)
-        setFillForegroundColor(orange)
-    }
-
-    val blueLeft: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(left = true)
-        setFillForegroundColor(blue)
-    }
-    val blueCenter: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(center = true)
-        setFillForegroundColor(blue)
-    }
-
-    val greenLeft: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(left = true)
-        setFillForegroundColor(green)
-    }
-    val greenCenter: XSSFCellStyle = wb.createCellStyle().apply {
-        baseBody(center = true)
-        setFillForegroundColor(green)
-    }
-
-    // --- helpers ---
-    private fun XSSFCellStyle.baseHeader(center: Boolean = false) {
-        setBordersThin()
-        alignment = if (center) HorizontalAlignment.CENTER else HorizontalAlignment.LEFT
+    val sectionTitle: XSSFCellStyle = wb.createCellStyle().apply {
+        setBordersNone()
+        setFont(wb.createFont().apply { bold = true })
+        alignment = HorizontalAlignment.LEFT
         verticalAlignment = VerticalAlignment.CENTER
-        fillPattern = FillPatternType.SOLID_FOREGROUND
-        val f = wb.createFont().apply { bold = true }
-        setFont(f)
-        dataFormat = wb.creationHelper.createDataFormat().getFormat("@")
     }
 
-    private fun XSSFCellStyle.baseBody(left: Boolean = false, center: Boolean = false) {
-        setBordersThin()
-        alignment = when {
-            center -> HorizontalAlignment.CENTER
-            left   -> HorizontalAlignment.LEFT
-            else   -> HorizontalAlignment.GENERAL
+    val headerOrangeLeft: XSSFCellStyle  = headerBase(orange, HorizontalAlignment.LEFT)
+    val headerOrangeCenter: XSSFCellStyle= headerBase(orange, HorizontalAlignment.CENTER)
+    val headerBlueLeft: XSSFCellStyle    = headerBase(blue, HorizontalAlignment.LEFT)
+    val headerBlueCenter: XSSFCellStyle  = headerBase(blue, HorizontalAlignment.CENTER)
+    val headerGreenLeft: XSSFCellStyle   = headerBase(green, HorizontalAlignment.LEFT)
+    val headerGreenCenter: XSSFCellStyle = headerBase(green, HorizontalAlignment.CENTER)
+
+    val orangeLeft: XSSFCellStyle = bodyBase(orange, HorizontalAlignment.LEFT)
+    val orangeCenter: XSSFCellStyle = bodyBase(orange, HorizontalAlignment.CENTER)
+    val blueLeft: XSSFCellStyle = bodyBase(blue, HorizontalAlignment.LEFT)
+    val blueCenter: XSSFCellStyle = bodyBase(blue, HorizontalAlignment.CENTER)
+    val greenLeft: XSSFCellStyle = bodyBase(green, HorizontalAlignment.LEFT)
+    val greenCenter: XSSFCellStyle = bodyBase(green, HorizontalAlignment.CENTER)
+
+    private fun headerBase(fill: XSSFColor, align: HorizontalAlignment): XSSFCellStyle =
+        wb.createCellStyle().apply {
+            setBordersThin()
+            setFont(wb.createFont().apply { bold = true })
+            alignment = align
+            verticalAlignment = VerticalAlignment.CENTER
+            fillPattern = FillPatternType.SOLID_FOREGROUND
+            setFillForegroundColor(fill)
+            dataFormat = wb.creationHelper.createDataFormat().getFormat("@")
         }
-        verticalAlignment = VerticalAlignment.CENTER
-        fillPattern = FillPatternType.SOLID_FOREGROUND
-        dataFormat = wb.creationHelper.createDataFormat().getFormat("@")
-    }
+
+    private fun bodyBase(fill: XSSFColor, align: HorizontalAlignment): XSSFCellStyle =
+        wb.createCellStyle().apply {
+            setBordersThin()
+            alignment = align
+            verticalAlignment = VerticalAlignment.CENTER
+            fillPattern = FillPatternType.SOLID_FOREGROUND
+            setFillForegroundColor(fill)
+            dataFormat = wb.creationHelper.createDataFormat().getFormat("@")
+        }
 
     private fun XSSFCellStyle.setBordersThin() {
         borderTop = BorderStyle.THIN
@@ -333,15 +306,12 @@ private class Styles(private val wb: XSSFWorkbook) {
         borderLeft = BorderStyle.THIN
         borderRight = BorderStyle.THIN
     }
-
     private fun XSSFCellStyle.setBordersNone() {
         borderTop = BorderStyle.NONE
         borderBottom = BorderStyle.NONE
         borderLeft = BorderStyle.NONE
         borderRight = BorderStyle.NONE
     }
-
-    // overload: set XSSFColor as foreground
     private fun XSSFCellStyle.setFillForegroundColor(color: XSSFColor) {
         (this as XSSFCellStyle).setFillForegroundColor(color)
     }
