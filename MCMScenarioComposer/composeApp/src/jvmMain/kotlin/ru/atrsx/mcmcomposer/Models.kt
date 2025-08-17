@@ -1,5 +1,7 @@
 package ru.atrsx.mcmcomposer
 
+import java.util.UUID
+
 // ---------- Domain model (matches your updated Excel) ----------
 
 data class MainExperimentConfig(
@@ -74,11 +76,12 @@ data class SolenoidChannel(
 
 // --- Scenario (green) ---
 data class ScenarioStep(
+    val id: String = UUID.randomUUID().toString(),
     var stepTimeMs: Int,
-    var channelValues: MutableList<Int>,   // size == number of channels
+    var channelValues: MutableList<Int>,
     var analog1: Int? = null,
     var analog2: Int? = null,
-    var gradientTimeMs: Int? = null,       // "Gradient Time"
+    var gradientTimeMs: Int? = null,
     var text: String? = null,
     var isSelected: Boolean = false
 )

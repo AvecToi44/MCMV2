@@ -27,7 +27,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import java.util.UUID
 
-data class ScenarioStep2(
+private data class ScenarioStep2(
     val id: String = UUID.randomUUID().toString(),
     var stepTimeMs: Int,
     var channelValues: MutableList<Int>,
@@ -39,7 +39,7 @@ data class ScenarioStep2(
 )
 
 @Composable
-fun ScenarioStepItem(
+private fun ScenarioStepItem(
     item: ScenarioStep2,
     isEditing: Boolean,
     editingText: String,

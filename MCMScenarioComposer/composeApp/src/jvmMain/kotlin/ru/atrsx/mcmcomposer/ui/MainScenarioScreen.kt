@@ -4,6 +4,7 @@ import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,24 +33,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.atrsx.mcmcomposer.ScenarioStep
-import ru.atrsx.mcmcomposer.ScenarioStepDto
 import ru.atrsx.mcmcomposer.scenarios
 import kotlin.ranges.coerceIn
 
 var ROWS1 = mutableStateListOf(
-    ScenarioStepDto(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
-    ScenarioStepDto(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
-    ScenarioStepDto(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
+    ScenarioStep(
+        stepTimeMs = 1000,
+        channelValues = MutableList(12) { 0 },
+        analog1 = 0,
+        analog2 = 0,
+        gradientTimeMs = 0,
+        text = ""
+    ),
+    ScenarioStep(stepTimeMs = 1000,  channelValues = MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
+    ScenarioStep(stepTimeMs = 1000,  channelValues = MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
 )
 
 // ---------- Screen 1: Main Scenario (multi-row, grid, per-row labels) ----------
@@ -57,83 +67,68 @@ var ROWS1 = mutableStateListOf(
 fun MainScenarioScreen() {
     var selected by remember { mutableStateOf(0) }
 
-    val rowsx = remember {
-        scenarios
+//    val rowsx = remember {
+//        scenarios
+//    }
+
+    val items = remember {
+        mutableStateListOf(
+            ScenarioStep(stepTimeMs = 1000, channelValues = mutableListOf(0, 1, 2), text = "Step 1"),
+            ScenarioStep(stepTimeMs = 2000, channelValues = mutableListOf(1, 2, 3), text = "Step 2"),
+            ScenarioStep(stepTimeMs = 3000, channelValues = mutableListOf(2, 3, 4), text = "Step 3")
+        )
     }
-    LaunchedEffect(rowsx) {
-        println("rows ${rowsx.joinToString()}")
+
+    var editingItemId by remember { mutableStateOf<String?>(null) }
+    var editingText by remember { mutableStateOf("") }
+
+    LaunchedEffect(items) {
+        println("rows ${items.joinToString()}")
     }
 
     Row(Modifier.fillMaxSize()) {
         // Left: table + canvas area
         Column(Modifier.weight(1f).background(Color.White).fillMaxHeight()) {
-            //ScenarioHeader() // header row
-
-            // rows
-            val vScroll = rememberScrollState()
-            val horizontalScrollState = rememberScrollState()
-            HorizontalScrollbar(
-                rememberScrollbarAdapter(horizontalScrollState),
-                Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            LazyColumn(
-                Modifier.fillMaxWidth().horizontalScroll(horizontalScrollState)
-                    //.verticalScroll(vScroll)
-                    .border(1.dp, Color(0xFFFA0C0C))
-            ) {
-                stickyHeader {
-                    Row(
-                        Modifier.fillMaxWidth().background(Color.Gray).height(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(modifier = Modifier, text = "Number", fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+            LazyColumn {
                 items(
-                    items = rowsx,
-                    key = { it.hashCode() }
+                    items = items,
+                    key = { it.id }
                 ) { item ->
-//                    ScenarioRowItem(
-//                        row = item,
-//                        selected = selected == idx,
-//                        onSelect = { selected = idx }
-//                    )
+                    val isEditing = (editingItemId == item.id)
+
+                    val onToggle = rememberUpdatedState { _: Offset ->
+                        val index = items.indexOfFirst { it.id == item.id }
+                        if (index != -1) {
+                            val current = items[index]
+                            items[index] = current.copy(isSelected = !current.isSelected)
+                        }
+                    }
+
+                    val onEdit = rememberUpdatedState { _: Offset ->
+                        editingItemId = item.id
+                        editingText = item.text.orEmpty()
+                    }
+
+                    ScenarioStepItem(
+                        item = item,
+                        isEditing = isEditing,
+                        editingText = editingText,
+                        onTextChange = { editingText = it },
+                        onSave = {
+                            editingItemId?.let { id ->
+                                val index = items.indexOfFirst { it.id == id }
+                                if (index != -1 && editingText.isNotBlank()) {
+                                    items[index] = items[index].copy(text = editingText)
+                                }
+                            }
+                            editingItemId = null
+                            editingText = ""
+                        },
+                        onToggle = onToggle.value,
+                        onEdit = onEdit.value
+                    )
                 }
             }
-
-//            LazyColumn(
-//                Modifier.fillMaxWidth().horizontalScroll(horizontalScrollState)
-//                    //.verticalScroll(vScroll)
-//                    .border(1.dp, Color(0xFFFA0C0C))
-//            ) {
-//                stickyHeader {
-//                    // Fixed item at the top
-//                    Row(
-//                        Modifier.fillMaxWidth().background(Color.Gray).height(20.dp),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                    ) {
-//                        Text(modifier = Modifier, text = "Number", fontSize = 8.sp, fontWeight = FontWeight.Bold)
-//                    }
-//                }
-//                items(
-//                    items = rowsx,
-//                    key = it.hascode()
-//                ) { item ->
-//                    Text(" ${item}")
-//                }
-////                items(
-////                    items = scenarios, //rowsx//rows.value.steps
-////                    key = { it.hashCode() }
-////                ) {  idx, row ->
-////                    ScenarioRowItem(
-////                        index = idx,
-////                        row = row,
-////                        selected = selected == idx,
-////                        onSelect = { selected = idx }
-////                    )
-////                }
-//            }
         }
 
         // Right-side actions
@@ -143,28 +138,28 @@ fun MainScenarioScreen() {
         ) {
             Button(
                 onClick = {
-                    rowsx.add(ScenarioStep(
+                    items.add(ScenarioStep(
                         stepTimeMs = 777,
                         channelValues = mutableListOf(1,2,3),
                         analog1 = 0,
                         analog2 = 1,
                         gradientTimeMs = 123,
-                        text = ""
+                        text = "New"
                     ))
-                    selected = rowsx.lastIndex
+                    selected = items.lastIndex
                 },
                 modifier = Modifier.fillMaxWidth()
             ) { Text(modifier = Modifier,text = "Add Step") }
 
             Button(
                 onClick = {
-                    if (rowsx.isNotEmpty()) {
-                        println(">>> rows:${rowsx.joinToString()}  ${selected} ${rowsx.lastIndex}")
-                        rowsx.removeAt(selected.coerceIn(0, rowsx.lastIndex))
+                    if (items.isNotEmpty()) {
+                        println(">>> rows:${items.joinToString()}  ${selected} ${items.lastIndex}")
+                        items.removeAll { it.isSelected }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = rowsx.isNotEmpty()
+                enabled = items.any { it.isSelected }
             ) { Text("Delete") }
 
             Spacer(Modifier.height(8.dp))
@@ -172,6 +167,55 @@ fun MainScenarioScreen() {
             SideButton("Paste")
         }
     }
+}
+
+
+@Composable
+private fun ScenarioStepItem(
+    item: ScenarioStep,
+    isEditing: Boolean,
+    editingText: String,
+    onTextChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onToggle: (Offset) -> Unit,
+    onEdit: (Offset) -> Unit
+) {
+    TextField(
+        value = editingText,
+        onValueChange = onTextChange,
+        textStyle = TextStyle(fontSize = 16.sp),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+//        trailingIcon = {
+//            Button(onClick = onSave) { Text("Save") }
+//        }
+    )
+//    if (isEditing) {
+//        TextField(
+//            value = editingText,
+//            onValueChange = onTextChange,
+//            textStyle = TextStyle(fontSize = 16.sp),
+//            modifier = Modifier.fillMaxWidth(),
+//            singleLine = true,
+//            trailingIcon = {
+//                Button(onClick = onSave) { Text("Save") }
+//            }
+//        )
+//    } else {
+//        Text(
+//            text = item.text ?: "Step ${item.stepTimeMs}ms",
+//            fontSize = 16.sp,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .background(if (item.isSelected) Color.LightGray else Color.Transparent)
+//                .pointerInput(Unit) {
+//                    detectTapGestures(
+//                        onTap = onToggle,
+//                        onDoubleTap = onEdit
+//                    )
+//                }
+//        )
+//    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -185,7 +229,6 @@ private fun ScenarioRowItem(
     // same widths as header
     val wNumber = 30.dp
     val wName = 140.dp
-    val wPass = 60.dp
 
     val ModifierCellBorder = Modifier.fillMaxHeight()//.border(1.dp, Color.Black.copy(alpha = 0.7f))
     val rowBg = if (selected) Color(0xFFBFE6FF) else Color.White
