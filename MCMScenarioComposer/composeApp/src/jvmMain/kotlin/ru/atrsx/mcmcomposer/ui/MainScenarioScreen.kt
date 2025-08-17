@@ -1,14 +1,13 @@
 package ru.atrsx.mcmcomposer.ui
 
-import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,10 +18,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.TextFieldDefaults.OutlinedTextFieldDecorationBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
@@ -39,28 +39,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.atrsx.mcmcomposer.ScenarioStep
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import ru.atrsx.mcmcomposer.scenarios
-import kotlin.ranges.coerceIn
-
-var ROWS1 = mutableStateListOf(
-    ScenarioStep(
-        stepTimeMs = 1000,
-        channelValues = MutableList(12) { 0 },
-        analog1 = 0,
-        analog2 = 0,
-        gradientTimeMs = 0,
-        text = ""
-    ),
-    ScenarioStep(stepTimeMs = 1000,  channelValues = MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
-    ScenarioStep(stepTimeMs = 1000,  channelValues = MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
-)
 
 // ---------- Screen 1: Main Scenario (multi-row, grid, per-row labels) ----------
 @Composable
@@ -72,15 +60,10 @@ fun MainScenarioScreen() {
 //    }
 
     val items = remember {
-        mutableStateListOf(
-            ScenarioStep(stepTimeMs = 1000, channelValues = mutableListOf(0, 1, 2), text = "Step 1"),
-            ScenarioStep(stepTimeMs = 2000, channelValues = mutableListOf(1, 2, 3), text = "Step 2"),
-            ScenarioStep(stepTimeMs = 3000, channelValues = mutableListOf(2, 3, 4), text = "Step 3")
-        )
+        scenarios
     }
 
     var editingItemId by remember { mutableStateOf<String?>(null) }
-    var editingText by remember { mutableStateOf("") }
 
     LaunchedEffect(items) {
         println("rows ${items.joinToString()}")
@@ -106,26 +89,18 @@ fun MainScenarioScreen() {
 
                     val onEdit = rememberUpdatedState { _: Offset ->
                         editingItemId = item.id
-                        editingText = item.text.orEmpty()
+//                        editingText = item.text.orEmpty()
                     }
 
                     ScenarioStepItem(
+                        index = items.indexOf(item),
                         item = item,
-                        isEditing = isEditing,
-                        editingText = editingText,
-                        onTextChange = { editingText = it },
-                        onSave = {
-                            editingItemId?.let { id ->
-                                val index = items.indexOfFirst { it.id == id }
-                                if (index != -1 && editingText.isNotBlank()) {
-                                    items[index] = items[index].copy(text = editingText)
-                                }
-                            }
-                            editingItemId = null
-                            editingText = ""
+                        onItemChange = { scenarioStep ->
+//                            editingText = it
+//                            items.map { scenarioStep -> if (scenarioStep.id == it.id) it = scenarioStep }
+                            updateScenarioStep(items,scenarioStep)
                         },
-                        onToggle = onToggle.value,
-                        onEdit = onEdit.value
+//                        onToggle = onToggle.value,
                     )
                 }
             }
@@ -140,7 +115,7 @@ fun MainScenarioScreen() {
                 onClick = {
                     items.add(ScenarioStep(
                         stepTimeMs = 777,
-                        channelValues = mutableListOf(1,2,3),
+                        channelValues = MutableList(12) { 44 },
                         analog1 = 0,
                         analog2 = 1,
                         gradientTimeMs = 123,
@@ -170,198 +145,200 @@ fun MainScenarioScreen() {
 }
 
 
-@Composable
-private fun ScenarioStepItem(
-    item: ScenarioStep,
-    isEditing: Boolean,
-    editingText: String,
-    onTextChange: (String) -> Unit,
-    onSave: () -> Unit,
-    onToggle: (Offset) -> Unit,
-    onEdit: (Offset) -> Unit
-) {
-    TextField(
-        value = editingText,
-        onValueChange = onTextChange,
-        textStyle = TextStyle(fontSize = 16.sp),
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-//        trailingIcon = {
-//            Button(onClick = onSave) { Text("Save") }
-//        }
-    )
-//    if (isEditing) {
-//        TextField(
-//            value = editingText,
-//            onValueChange = onTextChange,
-//            textStyle = TextStyle(fontSize = 16.sp),
-//            modifier = Modifier.fillMaxWidth(),
-//            singleLine = true,
-//            trailingIcon = {
-//                Button(onClick = onSave) { Text("Save") }
-//            }
-//        )
-//    } else {
-//        Text(
-//            text = item.text ?: "Step ${item.stepTimeMs}ms",
-//            fontSize = 16.sp,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(if (item.isSelected) Color.LightGray else Color.Transparent)
-//                .pointerInput(Unit) {
-//                    detectTapGestures(
-//                        onTap = onToggle,
-//                        onDoubleTap = onEdit
-//                    )
-//                }
-//        )
-//    }
-}
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun ScenarioRowItem(
-    row: ScenarioStep,
-    selected: Boolean,
-    onSelect: () -> Unit,
-    index: Int
+private fun ScenarioStepItem(
+    index: Int,
+    item: ScenarioStep,
+//    editingText: String,
+    onItemChange: (ScenarioStep) -> Unit,
 ) {
-    // same widths as header
-    val wNumber = 30.dp
-    val wName = 140.dp
-
-    val ModifierCellBorder = Modifier.fillMaxHeight()//.border(1.dp, Color.Black.copy(alpha = 0.7f))
-    val rowBg = if (selected) Color(0xFFBFE6FF) else Color.White
-
     Row(Modifier.fillMaxWidth().height(50.dp).border(1.dp, Color.Black.copy(alpha = 0.7f))
-            .background(rowBg)
-            .clickable { onSelect() },
+            .background(if (item.isSelected) Color.Green else Color.White)
+//            .clickable { onSelect() }
+        ,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Number (read-only)
-        Column(ModifierCellBorder.width(wNumber).height(40.dp).padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
+        val wNumber = 30.dp
+        val wName = 140.dp
+
+        val ModifierCellBorder = Modifier.fillMaxHeight()//.border(1.dp, Color.Black.copy(alpha = 0.7f))
+        //val rowBg = if (selected) Color(0xFFBFE6FF) else Color.White
+
+        Column(ModifierCellBorder.width(wNumber).height(40.dp).clickable {
+            onItemChange(item.copy(isSelected = !item.isSelected))
+        }.padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
             Text("${index}")
         }
-
-        // Name
-        var nm by remember { mutableStateOf(row.text) }
-        TextField("${nm}", {
-                nm = it
-                ROWS1[index].text = it
+        // Comment or text
+        BasicTextField(
+            value = item.text ?: "",
+            onValueChange = { newText ->
+                onItemChange(item.copy(text = newText))
             },
-            modifier = ModifierCellBorder.width(wName),
-            //label = { Text("Name", fontSize = 9.sp) },
-            textStyle = TextStyle(fontSize = 15.sp),
-            singleLine = true
+            modifier = Modifier
+                .width(150.dp)
+                .border(1.dp, Color.Black)
+                .then(ModifierCellBorder),
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = false,
+            decorationBox = { innerTextField ->
+                OutlinedTextFieldDecorationBox(
+                    value = item.text ?: "",
+                    innerTextField = innerTextField,
+                    enabled = true,
+                    singleLine = false,
+                    interactionSource = remember { MutableInteractionSource() },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedLabelColor = Color.Blue,
+                        unfocusedLabelColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Blue,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(0.dp), // Remove internal padding
+                    visualTransformation = VisualTransformation.None
+                )
+            }
         )
+        // Duration
+        var stepTime by remember { mutableStateOf(TextFieldValue("${item.stepTimeMs ?: 0}")) }
+        BasicTextField(
+            value = stepTime,
+            onValueChange = { newText ->
+                stepTime = newText
+                if (newText.text.toIntOrNull() != null && (newText.text.isNotBlank() || newText.text.isNotEmpty())) {
+                    stepTime = newText
+                    onItemChange(item.copy(stepTimeMs = newText.text.toInt()))
+                } else {
+                    stepTime = TextFieldValue("0")
+                    onItemChange(item.copy(stepTimeMs =0))
+                }
+            },
+            modifier = Modifier
+                .width(100.dp)
+                .border(1.dp, Color.Black)
+                .then(ModifierCellBorder),
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = false,
+            decorationBox = { innerTextField ->
+                OutlinedTextFieldDecorationBox(
+                    value = "${item.stepTimeMs ?: 0}",
+                    innerTextField = innerTextField,
+                    enabled = true,
+                    singleLine = false,
+//                            visualDensity = VisualDensity.compact,
+                    interactionSource = remember { MutableInteractionSource() },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedLabelColor = Color.Blue,
+                        unfocusedLabelColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Blue,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(0.dp), // Remove internal padding
+                    visualTransformation = VisualTransformation.None,
+                    label = {
+                        Text(text = "duration", fontSize = 14.sp, modifier =  Modifier.align(Alignment.Top).fillMaxWidth().padding(top = 13.dp), textAlign = TextAlign.Center, color = Color.Gray)
+                    }
 
-        // Pass Through
-//        var pass by remember { mutableStateOf(row.passThrough) }
-//        Row(ModifierCellBorder.width(wPass).height(40.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-//            Checkbox(checked = pass, onCheckedChange = { pass = it; row.passThrough = it })
-//        }
-//
-//        // Duration
-//        var dur by remember { mutableStateOf(row.durationMs) }
-//        TextField(
-//            dur, { dur = it; row.durationMs = it },
-//            modifier = ModifierCellBorder.width(wName),
-//            //label = { Text("Name", fontSize = 9.sp) },
-//            textStyle = TextStyle(fontSize = 15.sp),
-//            singleLine = true
-//        )
-//        Spacer(modifier = Modifier.width(5.dp))
-//        // Message
-//        var msg by remember { mutableStateOf(row.messageText) }
-//        TextField(
-//            msg, { msg = it; row.messageText = it },
-//            modifier = ModifierCellBorder.width(wName),
-//            //label = { Text("Name", fontSize = 9.sp) },
-//            textStyle = TextStyle(fontSize = 15.sp),
-//            singleLine = true
-//        )
+                )
+            }
+        )
+        Spacer(modifier = Modifier.width(5.dp))
+        var gradientTime by remember { mutableStateOf(TextFieldValue("${item.gradientTimeMs ?: 0}")) }
+        BasicTextField(
+            value = gradientTime,
+            onValueChange = { newText ->
+                gradientTime = newText
+                if (newText.text.toIntOrNull() != null && (newText.text.isNotBlank() || newText.text.isNotEmpty())) {
+                    gradientTime = newText
+                    onItemChange(item.copy(gradientTimeMs = newText.text.toInt()))
+                } else {
+                    gradientTime = TextFieldValue("0")
+                    onItemChange(item.copy(gradientTimeMs = 0))
+                }
+            },
+            modifier = Modifier
+                .width(100.dp)
+                .border(1.dp, Color.Black)
+                .then(ModifierCellBorder),
+            textStyle = TextStyle(fontSize = 16.sp),
+            singleLine = false,
+            decorationBox = { innerTextField ->
+                OutlinedTextFieldDecorationBox(
+                    value = "${item.stepTimeMs ?: 0}",
+                    innerTextField = innerTextField,
+                    enabled = true,
+                    singleLine = false,
+//                            visualDensity = VisualDensity.compact,
+                    interactionSource = remember { MutableInteractionSource() },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedLabelColor = Color.Blue,
+                        unfocusedLabelColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Blue,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(0.dp), // Remove internal padding
+                    visualTransformation = VisualTransformation.None,
+                    label = { Text(text = "step time", fontSize = 14.sp, modifier =  Modifier.align(Alignment.Top).padding(start = 9.dp, top = 9.dp), color = Color.Gray) },
+                )
+            }
+        )
+        Spacer(modifier = Modifier.width(1.dp))
+        repeat(12) { channel ->
+            var currencySet by remember { mutableStateOf(TextFieldValue("${item.channelValues[channel]}")) }
 
-        // Analog outputs
-        Column(
-            ModifierCellBorder.fillMaxWidth().height(40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-//            var enabled by remember { mutableStateOf(row.analogSetEnabled) }
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                Checkbox(checked = enabled, onCheckedChange = { enabled = it; row.analogSetEnabled = it })
-//
-//                Spacer(Modifier.width(6.dp))
-//                Button(onClick = { /* SET */ }, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)) {
-//                    Text("SET")
-//                }
-//
-//
-//                repeat(12) {
-//                    var currencySet by remember { mutableStateOf(TextFieldValue("")) }
-//
-//                    BasicTextField(
-//                        value = currencySet,
-//                        onValueChange = { currencySet = it },
-//                        modifier = Modifier
-//                            .width(50.dp)
-//                            .border(1.dp, Color.Black)
-//                            .then(ModifierCellBorder),
-//                        textStyle = TextStyle(fontSize = 16.sp),
-//                        singleLine = false,
-//                        decorationBox = { innerTextField ->
-//                            OutlinedTextFieldDecorationBox(
-//                                value = currencySet.text,
-//                                innerTextField = innerTextField,
-//                                enabled = true,
-//                                singleLine = false,
-////                            visualDensity = VisualDensity.compact,
-//                                interactionSource = remember { MutableInteractionSource() },
-////                            colors = TextFieldDefaults.colors(
-////                                focusedContainerColor = Color.Transparent,
-////                                unfocusedContainerColor = Color.Transparent,
-////                                focusedIndicatorColor = Color.Transparent,
-////                                unfocusedIndicatorColor = Color.Transparent
-////                            ),
-//                                contentPadding = PaddingValues(0.dp), // Remove internal padding
-//                                visualTransformation = VisualTransformation.None
-//                            )
-//                        }
-//                    )
-//                }
-//            }
+            BasicTextField(
+                value = currencySet,
+                onValueChange = { newtText ->
+                    if (newtText.text.toIntOrNull() != null) {
+                        item.channelValues[channel] = newtText.text.toInt()
+                        currencySet = newtText
+                        onItemChange(item.copy(channelValues = item.channelValues))
+                    } else {
+                        item.channelValues[channel] = 0
+                        onItemChange(item.copy(channelValues = item.channelValues))
+                    }
+                },
+                modifier = Modifier.width(50.dp).border(1.dp, Color.Black).then(ModifierCellBorder),
+                textStyle = TextStyle(fontSize = 16.sp),
+                singleLine = false,
+                decorationBox = { innerTextField ->
+                    OutlinedTextFieldDecorationBox(
+                        value = currencySet.text,
+                        innerTextField = innerTextField,
+                        enabled = true,
+                        singleLine = false,
+//                            visualDensity = VisualDensity.compact,
+                        interactionSource = remember { MutableInteractionSource() },
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedLabelColor = Color.Blue,
+                            unfocusedLabelColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Blue,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        contentPadding = PaddingValues(0.dp), // Remove internal padding
+                        visualTransformation = VisualTransformation.None,
+                        label = { Text(text = "ch ${channel}", fontSize = 14.sp, modifier =  Modifier.align(Alignment.Top).padding(start = 9.dp, top = 9.dp), color = Color.Gray) }
+                    )
+                },
+            )
         }
     }
 }
 
-@Composable
-private fun FlagsStrip(flags: MutableList<Boolean>) {
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        flags.forEachIndexed { i, v ->
-            Checkbox(checked = v, onCheckedChange = { flags[i] = it })
-        }
+fun updateScenarioStep(items: MutableList<ScenarioStep>, updatedItem: ScenarioStep) {
+    val index = scenarios.indexOfFirst { it.id == updatedItem.id }
+    if (index != -1) {
+        scenarios[index] = updatedItem
     }
+    println(">>> ${scenarios.joinToString { "${it.text}" }}")
+//    val index = items.indexOfFirst { it.id == updatedItem.id }
+//    if (index != -1) {
+//        items[index] = updatedItem
+//    }
 }
 
-@Composable
-private fun HeaderBox(text: String, width: Dp) {
-    Box(
-        Modifier.width(width),
-        contentAlignment = Alignment.CenterStart
-    ) { Text(text, fontWeight = FontWeight.SemiBold, fontSize = 13.sp) }
-}
-
-@Composable
-private fun ReadOnlyCell(text: String, width: Dp) {
-    Box(
-        Modifier.width(width).height(40.dp)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-            .background(Color.White)
-            .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.CenterStart
-    ) { Text(text) }
-}
 
 @Composable
 private fun SideButton(label: String) {

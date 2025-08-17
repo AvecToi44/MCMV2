@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.File
@@ -66,7 +68,11 @@ data class PWMChannel(
 
 // ---------- App ----------
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, title = "Test Console") {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Test Console",
+        state = WindowState(size = DpSize(1200.dp, 800.dp))
+    ) {
         MaterialTheme {
             Surface(Modifier.fillMaxSize()) {
                 AppRoot()

@@ -8,9 +8,10 @@ var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(MainExperimentConfig())
 
 val waterFall = MutableSharedFlow<ScenarioBlock>()
 
-var scenarios = mutableStateListOf<ScenarioStep>(
-//    ScenarioStep(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
-//    ScenarioStep(1000, MutableList(12){0}, analog1=0, analog2=0, gradientTimeMs=0, text = ""),
+var scenarios = mutableStateListOf(
+    ScenarioStep(stepTimeMs = 1000, channelValues = MutableList(12) { 1 }, text = "Step 1"),
+    ScenarioStep(stepTimeMs = 2000, channelValues = MutableList(12) { 2 }, text = "Step 2"),
+    ScenarioStep(stepTimeMs = 3000, channelValues = MutableList(12) { 3 }, text = "Step 3")
 )
 
 var scenarioBlock = mutableStateOf<ScenarioBlock>(ScenarioBlock())
