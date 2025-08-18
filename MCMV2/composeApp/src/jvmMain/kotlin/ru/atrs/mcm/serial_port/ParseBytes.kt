@@ -12,6 +12,8 @@ import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
+import ru.atrs.mcm.utils.PROTOCOL_TYPE
+import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.byteToInt
@@ -26,6 +28,7 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.logError
+import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
@@ -43,7 +46,7 @@ class PacketListener : SerialPortPacketListener {
     }
 
     override fun getPacketSize(): Int {
-        return 24//if (TWELVE_CHANNELS_MODE) 24 else 16
+        return if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16
     }
 
     override fun serialEvent(event: SerialPortEvent) {
@@ -68,7 +71,7 @@ private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
 suspend fun flowReceiverMachine() {
-    println("bytesReceiverMachine")
+    logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
     dataChunkRAW.collect { updData ->
         var dch: DataChunkG? = null
         var dchCurr: DataChunkCurrent? = null
@@ -80,19 +83,29 @@ suspend fun flowReceiverMachine() {
         //writeToFile(">> ${updData.toHexString()}", MainConfig_LogFile)
 
         when {
-            isStartExperiment(updData)  -> {
+            PROTOCOL_TYPE == ProtocolType.NEW && isStartExperiment(updData)  -> {
                 isExperimentStarts = true
                 STATE_EXPERIMENT.value = StateExperiments.RECORDING
                 println("isStartExperiment ${updData.toHexString()}")
                 logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
 
             }
-            isEndOfExperiment(updData) -> {
+            PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025 && isStartExperimentOLD(updData)  -> {
+                isExperimentStarts = true
+                STATE_EXPERIMENT.value = StateExperiments.RECORDING
+                println("isStartExperiment ${updData.toHexString()}")
+                logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
+
+            }
+            isExperimentStarts && isEndOfExperiment(updData) -> {
                 println("isEndOfExperiment ${updData.toHexString()}")
                 isExperimentStarts = false
                 STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
                 logInfo("End Experiment! all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
+            }
+            !isExperimentStarts && isEndOfExperiment(updData) -> {
+                logError("No way to end not started experiment!")
             }
 
             //pressure
@@ -359,6 +372,18 @@ fun isStartExperiment(updData: ByteArray): Boolean {
             updData[18] == 0xFE.toByte() && updData[19] == 0xFF.toByte() &&
             updData[20] == 0xFE.toByte() && updData[21] == 0xFF.toByte() &&
             updData[22] == 0xFE.toByte() && updData[23] == 0xFF.toByte()
+}
+
+fun isStartExperimentOLD(updData: ByteArray): Boolean {
+    return updData.size >= 16 &&
+            updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
+            updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
+            updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
+            updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
+            updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
+            updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
+            updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte() &&
+            updData[14] == 0xFE.toByte() && updData[15] == 0xFF.toByte()
 }
 
 //fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 24 && updData[3] < 24 && updData[5] < 24 && updData[7] < 24

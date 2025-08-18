@@ -91,6 +91,7 @@ suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: B
             bw.append("$newStroke\n")
         }
     } catch (e: Exception) {
+        logError("addNewLineForChart error: ${e.message}")
         showMeSnackBar("Error! ${e.message}")
         STATE_EXPERIMENT.value = StateExperiments.NONE
     }

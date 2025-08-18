@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,19 +80,19 @@ fun SolenoidControl(
     }
     Column(modifier = Modifier.width(widthOfSolenoidControl).border(width = 2.dp, color = Color.LightGray, shape = RoundedCornerShape(8.dp)).background(color = Color.Gray, shape = RoundedCornerShape(8.dp)), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(Modifier.fillMaxSize().weight(0.5f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            androidx.compose.material3.Text(text = "${displayName}", fontSize = 12.sp)
+            androidx.compose.material3.Text(text = "${displayName}", fontSize = 12.sp, style = TextStyle(fontWeight = FontWeight.Bold))
         }
-        Row(Modifier.fillMaxSize().weight(1f).background(Color.DarkGray)) {
-            Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Column(Modifier.fillMaxSize().weight(1f).background(Color.Gray)) {
+            Row(Modifier.fillMaxSize().weight(1f).padding(start = 6.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.Text(
                     "$current",
-                    fontSize = 10.sp
+                    fontSize = 17.sp, color = Color.Black
                 )
             }
-            Column(Modifier.fillMaxSize().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Row(Modifier.fillMaxSize().weight(1f).padding(start = 6.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.Text(
-                    "${map(PWMremember.value, 0, 255, 0, 100)}\n%",
-                    fontSize = 10.sp
+                    "${PWMremember.value}",//"${map(PWMremember.value, 0, 255, 0, 100)}\n%",
+                    fontSize = 17.sp, color = Color.Black
                 )
             }
         }

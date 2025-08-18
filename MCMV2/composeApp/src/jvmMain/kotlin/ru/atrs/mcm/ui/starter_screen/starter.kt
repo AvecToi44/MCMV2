@@ -45,6 +45,7 @@ import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
+import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.logAct
 
 
@@ -71,7 +72,7 @@ fun StarterScreen() {
 
 
     LaunchedEffect(true) {
-
+        healthCheck()
         while (true) {
             arrayOfComPorts = getComPorts_Array() as Array<SerialPort>
             delay(1000)
@@ -218,7 +219,7 @@ fun StarterScreen() {
 
                             Box(modifier = Modifier.width(150.dp)) {
                                 Text(
-                                    if (arrayOfComPorts.isEmpty()) "‼️NO COM PORTS‼️" else arrayOfComPorts[choosenCOM.value].systemPortName,
+                                    if (arrayOfComPorts.isEmpty()) "‼️NO COM PORTS‼️" else COM_PORT,
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                         expandedCom = !expandedCom
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)

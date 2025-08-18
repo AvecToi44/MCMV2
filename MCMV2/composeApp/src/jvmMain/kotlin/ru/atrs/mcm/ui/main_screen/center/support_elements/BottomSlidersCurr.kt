@@ -300,6 +300,9 @@ var ch10 = 0x00.toByte()
 var ch11 = 0x00.toByte()
 var ch12 = 0x00.toByte()
 
+var analog1 = 0x00.toByte()
+var analog2 = 0x00.toByte()
+
 var isChangedFirstFourth = true
 
 fun selectorForChannels(chIndex: Int, byte: Byte) {

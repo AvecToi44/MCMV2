@@ -1,35 +1,22 @@
 package ru.atrs.mcm// Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
 import kotlinx.coroutines.*
-import mcmv2.composeapp.generated.resources.Res
-import mcmv2.composeapp.generated.resources.ava
-import org.jetbrains.compose.resources.painterResource
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.ui.App
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.storage.initialize
 import ru.atrs.mcm.storage.readParametersJson
-import ru.atrs.mcm.ui.charts.ChartWindowDeprecated
 import ru.atrs.mcm.ui.chartsv3.AppChartV3
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.Dir1Configs
@@ -38,20 +25,15 @@ import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
-import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
-import ru.atrs.mcm.utils.scenario
-import ru.atrs.mcm.utils.txtOfScenario
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.channels.FileLock
-import java.nio.file.Paths
-import kotlin.concurrent.fixedRateTimer
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val APP_NAME = "MCM 1.2.20"
+    val APP_NAME = "MCM 1.2.21"
     // Attempt to acquire a named mutex or file lock
     if (isAnotherInstanceRunning(APP_NAME)) {
         println("Another instance is already running. Exiting.")
@@ -74,7 +56,7 @@ fun main() = application {
 //        icon = Res.drawable.ava, //painterResource("resources/icon1.png"),
         onCloseRequest = {
             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                RouterCommunication.pauseSerialComm()
+                RouterCommunication.stopSerialCommunication()
                 delay(500)
                 exitApplication()
             }

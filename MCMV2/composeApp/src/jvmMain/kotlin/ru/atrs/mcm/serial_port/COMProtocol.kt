@@ -4,7 +4,7 @@ interface COMProtocol {
 
     suspend fun startReceiveFullData()
     suspend fun initSerialCommunication()
-    suspend fun pauseSerialComm()
+    suspend fun resetSerialComm()
     suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean = false, delay: Long = 0L)
     suspend fun comparatorToSolenoid(newIndex: Int)
     suspend fun sendZerosToSolenoid()
@@ -13,4 +13,6 @@ interface COMProtocol {
     fun sendFrequency()
     suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean)
     fun stopSerialCommunication()
+    fun cleanCOMPort()
+    fun getCOMPortInfo(): String
 }

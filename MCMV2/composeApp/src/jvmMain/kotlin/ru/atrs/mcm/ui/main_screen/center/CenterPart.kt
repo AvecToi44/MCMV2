@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,8 +40,8 @@ import kotlinx.coroutines.flow.*
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
-import ru.atrs.mcm.serial_port.RouterCommunication.pauseSerialComm
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
+import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
 import ru.atrs.mcm.serial_port.flowWriterMachine
 import ru.atrs.mcm.serial_port.flowReceiverMachine
 import ru.atrs.mcm.ui.custom.GaugeX
@@ -60,6 +59,7 @@ import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.dataGauges
+import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
@@ -108,6 +108,7 @@ fun CenterPiece(
     var isPayloadComing = remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
+        healthCheck()
         // FLOW
         flowWriterMachine()
     }
@@ -481,7 +482,7 @@ fun CenterPiece(
                                 .clickable {
                                     CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                                         delay(10)
-                                        pauseSerialComm()
+                                        RouterCommunication.stopSerialCommunication()
                                         scenario.clear()
                                     }
                                     screenNav.value = Screens.STARTER
@@ -634,7 +635,7 @@ fun CenterPiece(
                 Box(Modifier.clickable {
                     CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                         delay(10)
-                        pauseSerialComm()
+                        RouterCommunication.stopSerialCommunication()
                         scenario.clear()
                     }
                     screenNav.value = Screens.STARTER

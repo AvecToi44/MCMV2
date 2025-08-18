@@ -1,122 +1,118 @@
 package ru.atrs.mcm.serial_port
 
-import com.fazecast.jSerialComm.SerialPort
-import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import ru.atrs.mcm.utils.BAUD_RATE
-import ru.atrs.mcm.utils.COM_PORT
+import kotlinx.coroutines.launch
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
 import ru.atrs.mcm.utils.ProtocolType
-import ru.atrs.mcm.utils.arrayOfComPorts
-import ru.atrs.mcm.utils.getComPorts_Array
 
 
-object RouterCommunication: COMProtocol {
-    private var serialPort: SerialPort = SerialPort.getCommPort(COM_PORT)
-    private val crtx2 = CoroutineName("main")
+object RouterCommunication {
 
-    override suspend fun initSerialCommunication() {
-        println(">>>serial communication has been started, COM_PORT:${COM_PORT} ${BAUD_RATE}, Protocol: ${PROTOCOL_TYPE.name}")
-        serialPort = SerialPort.getCommPort(COM_PORT)
-        serialPort.setComPortParameters(BAUD_RATE,8,1, SerialPort.NO_PARITY)
-        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0)
-        serialPort.openPort()
-        //serialPort.clearBreak()
-        arrayOfComPorts = getComPorts_Array() as Array<SerialPort>
-
-        delay(2000)
-        println("Run Callbacks::")
-        val listener = PacketListener()
-        serialPort.addDataListener(listener)
-        //showMeSnackBar("baudRate of Port:${speedOfPort.value.text.toInt()} ", Color.White)
+    fun getCOMPortInfo(): String {
+        return if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
+            CommMachineV1.getCOMPortInfo()
+        } else {
+            CommMachineV2.getCOMPortInfo()
+        }
     }
-    override fun stopSerialCommunication() {
-        serialPort.removeDataListener()
-        serialPort.closePort()
-
-        println(">< STOP SERIAL PORT // is Open:${serialPort.isOpen} ${BAUD_RATE}")
+    fun stopSerialCommunication() {
+        CoroutineScope(Dispatchers.IO).launch {
+            println("Router stopSerialCommunication")
+            if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
+                CommMachineV1.resetSerialComm()
+                delay(1000)
+                CommMachineV1.stopSerialCommunication()
+            } else {
+                CommMachineV2.resetSerialComm()
+                delay(1000)
+                CommMachineV2.stopSerialCommunication()
+            }
+        }
     }
 
 
     fun cleanCOMPort() {
-        serialPort.flushIOBuffers()
-    }
-    override suspend fun startReceiveFullData() {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.startReceiveFullData()
+            CommMachineV1.cleanCOMPort()
         } else {
-            CommunicationMachineV2.startReceiveFullData()
+            CommMachineV2.cleanCOMPort()
+        }
+
+    }
+    suspend fun startReceiveFullData() {
+        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
+            CommMachineV1.startReceiveFullData()
+        } else {
+            CommMachineV2.startReceiveFullData()
         }
     }
 
 
-    override suspend fun pauseSerialComm() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.pauseSerialComm()
-        } else {
-            CommunicationMachineV2.startReceiveFullData()
-        }
-    }
+//    suspend fun resetSerialComm() {
+//        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
+//            CommMachineV1.resetSerialComm()
+//        } else {
+//            CommMachineV2.resetSerialComm()
+//        }
+//    }
 
-    override suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean, delay: Long) {
+    suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean, delay: Long = 0L) {
         println("ROUTER writeToSerialPort")
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.writeToSerialPort(sendBytes, withFlush, delay)
+            CommMachineV1.writeToSerialPort(sendBytes, withFlush, delay)
         } else {
-            CommunicationMachineV2.writeToSerialPort(sendBytes, withFlush, delay)
+            CommMachineV2.writeToSerialPort(sendBytes, withFlush, delay)
         }
     }
 
-    override suspend fun comparatorToSolenoid(newIndex: Int) {
+    suspend fun comparatorToSolenoid(newIndex: Int) {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.comparatorToSolenoid(newIndex)
+            CommMachineV1.comparatorToSolenoid(newIndex)
         } else {
-            CommunicationMachineV2.comparatorToSolenoid(newIndex)
+            CommMachineV2.comparatorToSolenoid(newIndex)
         }
     }
 
-    override suspend fun sendZerosToSolenoid() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.sendZerosToSolenoid()
-        } else {
-            CommunicationMachineV2.sendZerosToSolenoid()
-        }
-    }
+//    suspend fun sendZerosToSolenoid() {
+//        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
+//            CommMachineV1.sendZerosToSolenoid()
+//        } else {
+//            CommMachineV2.sendZerosToSolenoid()
+//        }
+//    }
 
-    override suspend fun sendScenarioToController() {
+    suspend fun sendScenarioToController() {
         println("ROUTER sendScenarioToController")
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.sendScenarioToController()
+            CommMachineV1.sendScenarioToController()
         } else {
-            CommunicationMachineV2.sendScenarioToController()
+            CommMachineV2.sendScenarioToController()
         }
     }
 
-    override suspend fun reInitSolenoids() {
+    suspend fun reInitSolenoids() {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.reInitSolenoids()
+            CommMachineV1.reInitSolenoids()
         } else {
-            CommunicationMachineV2.reInitSolenoids()
+            CommMachineV2.reInitSolenoids()
         }
     }
 
-    override fun sendFrequency() {
+    fun sendFrequency() {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.sendFrequency()
+            CommMachineV1.sendFrequency()
         } else {
-            CommunicationMachineV2.sendFrequency()
+            CommMachineV2.sendFrequency()
         }
     }
 
-    override suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean) {
+    suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean) {
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommunicationMachineV1.solenoidControl(isChangedFirstFourthInternal)
+            CommMachineV1.solenoidControl(isChangedFirstFourthInternal)
         } else {
-            CommunicationMachineV2.solenoidControl(isChangedFirstFourthInternal)
+            CommMachineV2.solenoidControl(isChangedFirstFourthInternal)
         }
     }
-
-
-
-
 }
