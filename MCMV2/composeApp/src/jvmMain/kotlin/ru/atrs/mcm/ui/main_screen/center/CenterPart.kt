@@ -41,9 +41,6 @@ import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
 import ru.atrs.mcm.serial_port.RouterCommunication.reInitSolenoids
-import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
-import ru.atrs.mcm.serial_port.flowWriterMachine
-import ru.atrs.mcm.serial_port.flowReceiverMachine
 import ru.atrs.mcm.ui.custom.GaugeX
 import ru.atrs.mcm.ui.main_screen.center.support_elements.SolenoidsPanel
 import ru.atrs.mcm.ui.navigation.Screens
@@ -63,6 +60,7 @@ import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
+import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.test_time
@@ -106,16 +104,23 @@ fun CenterPiece(
         mutableStateOf(0.dp)
     }
     var isPayloadComing = remember { mutableStateOf(false) }
-
-    LaunchedEffect(true) {
-        healthCheck()
-        // FLOW
-        flowWriterMachine()
-    }
-    LaunchedEffect(true) {
-        // FLOW
-        flowReceiverMachine()
-    }
+    healthCheck()
+//    LaunchedEffect(Unit) {
+//        logGarbage("DisposableEffect STARTED")
+//        jobFlowWriter.join()
+//    }
+//    // DisposableEffect: Add/remove listener
+//    DisposableEffect(Unit) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            logGarbage("DisposableEffect ADD")
+//
+//        }
+//
+//        onDispose {
+//            jobFlowWriter.cancel()
+//            logGarbage("DisposableEffect OFF ${jobFlowWriter.isCompleted}  ${jobFlowWriter.isActive} ${jobFlowWriter.isCancelled}")
+//        }
+//    }
     LaunchedEffect(true) {
         RouterCommunication.startReceiveFullData()
         RouterCommunication.comparatorToSolenoid(indexOfScenario.value)
@@ -413,9 +418,6 @@ fun CenterPiece(
                     }
 
                     Row(Modifier.fillMaxWidth().padding(5.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        if (explMode.value == ExplorerMode.AUTO) {
-
-                        }
                         Box(
                             Modifier
                                 .width(80.dp)

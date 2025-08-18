@@ -145,7 +145,7 @@ suspend fun parseChartFile(path: String, countOfChannels: Int, pathEffect: PathE
             }.forEachIndexed { i, p -> if (i < floatSeries.size) floatSeries[i].add(p) }
         }
         println("parseChartFile output size: ${floatSeries.size}")
-        println("parseChartFile output size: ${floatSeries.joinToString()}")
+//        println("parseChartFile output size: ${floatSeries.joinToString()}")
         ChartData(floatSeries, visibility, pathEffect = pathEffect)
     } catch (e: Exception) {
         e.printStackTrace(); null
@@ -446,7 +446,7 @@ fun ToggleSeriesButtons(
     colors: List<Color>,
     onChange: (List<Boolean>) -> Unit
 ) {
-    println("Series list: ${seriesList?.size} Zero array:${seriesList?.getOrNull(0)?.size} ")
+//    println("Series list: ${seriesList?.size} Zero array:${seriesList?.getOrNull(0)?.size} ")
     seriesList?.forEachIndexed { idx, series ->
         if (series.isNotEmpty()) {
             println("${visibility.joinToString()}|| ${colors.size}")

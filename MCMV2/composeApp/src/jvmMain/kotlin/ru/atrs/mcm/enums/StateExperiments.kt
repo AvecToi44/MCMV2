@@ -5,6 +5,8 @@ enum class StateExperiments(var msg: String = "") {
 
     SENDING_SCENARIO,
 
+    REC_REQUEST,
+
     RECORDING, ENDING_OF_EXPERIMENT,
 
     PREPARE_CHART

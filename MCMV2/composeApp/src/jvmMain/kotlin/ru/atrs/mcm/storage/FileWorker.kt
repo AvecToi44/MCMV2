@@ -30,6 +30,7 @@ fun generateNewChartLogFile() {
     }
     chartFileAfterExperiment.value = File(Dir11ForTargetingSaveNewExperiment,"${NAME_OF_NEW_SCENARIO}_${endingOfName}"+".txt")
     chartFileAfterExperiment.value?.createNewFile()
+    addHeaderForChartFile()
 }
 
 data class NewPointerLine(
@@ -48,29 +49,42 @@ data class NewPointerLine(
     val ch12: Float,
 )
 
-suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: Boolean) {
-    if (chartFileAfterExperiment.value == null || chartFileAfterExperiment.value?.exists() == false) {
-        generateNewChartLogFile()
-    }
-
+fun addHeaderForChartFile() {
     val file = chartFileAfterExperiment.value
     val fileIsEmpty = file.length() <= 0
 
+    BufferedWriter(FileWriter(file, true)).use { bw ->
+        println("RECORD! isRecordingExperiment ")
+
+        if (fileIsEmpty) {
+            bw.append("#standard#${chartFileStandard.value?.name}\n")
+            val twelveChannels = if (TWELVE_CHANNELS_MODE) {
+                "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
+            } else ""
+            bw.append(
+                "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}" +
+                        "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}$twelveChannels\n"
+            )
+            bw.append("#\n")
+        }
+    }
+}
+
+suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: Boolean) {
+//    if (chartFileAfterExperiment.value == null || chartFileAfterExperiment.value?.exists() == false) {
+//        generateNewChartLogFile()
+//    }
+
+    val file = chartFileAfterExperiment.value
+//    val fileIsEmpty = file.length() <= 0
+//    val fileFirstLine = file.useLines { it.firstOrNull() }
+    if (file.exists() == false) {
+        logError("File ${chartFileAfterExperiment.value} NOT exist! CANT write payload to file!")
+        return
+    }
     try {
         BufferedWriter(FileWriter(file, true)).use { bw ->
             println("RECORD! isRecordingExperiment $isRecordingExperiment ${newLine.toString()}")
-
-            if (fileIsEmpty) {
-                bw.append("#standard#${chartFileStandard.value?.name}\n")
-                val twelveChannels = if (TWELVE_CHANNELS_MODE) {
-                    "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
-                } else ""
-                bw.append(
-                    "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}" +
-                            "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}$twelveChannels\n"
-                )
-                bw.append("#\n")
-            }
 
             val time = newLine.incrementTime
             var newStroke = "$time;${newLine.ch1.to5Decimals()}|$time;${newLine.ch2.to5Decimals()}|$time;${newLine.ch3.to5Decimals()}|$time;${newLine.ch4.to5Decimals()}|" +

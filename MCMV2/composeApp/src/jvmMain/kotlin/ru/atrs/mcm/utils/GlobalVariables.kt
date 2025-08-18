@@ -70,10 +70,10 @@ var STATE_EXPERIMENT = mutableStateOf(StateExperiments.NONE)
 var EXPLORER_MODE = mutableStateOf(ExplorerMode.AUTO)
 
 
-var dataChunkRAW   =       MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
-var dataChunkGauges   =       MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
-var dataGauges   =       MutableSharedFlow<UIGaugesData>(replay = 0, extraBufferCapacity = 100, onBufferOverflow = BufferOverflow.SUSPEND)
-var dataChunkCurrents = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataChunkRAW          = MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var pressuresChunkGauges  = MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataGauges            = MutableSharedFlow<UIGaugesData>(replay = 0, extraBufferCapacity = 100, onBufferOverflow = BufferOverflow.SUSPEND)
+var dataChunkCurrents     = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 
 val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255

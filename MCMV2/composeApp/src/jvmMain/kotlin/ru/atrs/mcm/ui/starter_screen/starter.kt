@@ -43,10 +43,14 @@ import ru.atrs.mcm.utils.SHOW_FULLSCREEN
 import ru.atrs.mcm.utils.SOUND_ENABLED
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.arrayOfComPorts
+import ru.atrs.mcm.utils.dataChunkCurrents
+import ru.atrs.mcm.utils.dataChunkRAW
+import ru.atrs.mcm.utils.dataGauges
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.logAct
+import ru.atrs.mcm.utils.pressuresChunkGauges
 
 
 @OptIn(ExperimentalTextApi::class)
@@ -77,6 +81,12 @@ fun StarterScreen() {
             arrayOfComPorts = getComPorts_Array() as Array<SerialPort>
             delay(1000)
         }
+    }
+    LaunchedEffect(true) {
+        dataChunkRAW.resetReplayCache()
+        pressuresChunkGauges.resetReplayCache()
+        dataGauges.resetReplayCache()
+        dataChunkCurrents.resetReplayCache()
     }
 
     Column(Modifier.fillMaxSize().background(Color.Black)) {
@@ -232,7 +242,7 @@ fun StarterScreen() {
                                         Text("${arrayOfComPorts[index].descriptivePortName}", fontSize=18.sp, modifier = Modifier.fillMaxSize().padding(10.dp)
                                             .clickable(onClick= {
                                                 choosenCOM.value = index
-                                                COM_PORT = arrayOfComPorts[index].systemPortName
+                                                COM_PORT = arrayOfComPorts.getOrNull(index)?.systemPortName ?: arrayOfComPorts.first().systemPortName
                                                 logAct("DropdownMenu click ${COM_PORT}")
                                                 refreshJsonParameters()
                                             }))

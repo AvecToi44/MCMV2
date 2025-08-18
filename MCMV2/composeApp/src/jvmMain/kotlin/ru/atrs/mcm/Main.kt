@@ -1,6 +1,8 @@
 package ru.atrs.mcm// Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -13,6 +15,7 @@ import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
 import kotlinx.coroutines.*
 import ru.atrs.mcm.serial_port.RouterCommunication
+import ru.atrs.mcm.serial_port.flowWriterMachine
 import ru.atrs.mcm.ui.App
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.storage.initialize
@@ -49,7 +52,10 @@ fun main() = application {
     )
     val windowFloating = rememberWindowState(width = 1000.dp, height = 800.dp)
     println("window: ${SHOW_FULLSCREEN}")
-
+    LaunchedEffect(true) {
+        // FLOW
+        flowWriterMachine()
+    }
 
     Window(
         title = APP_NAME,

@@ -31,8 +31,9 @@ import ru.atrs.mcm.utils.sound_On
 import ru.atrs.mcm.utils.test_time
 
 fun launchPlay() {
-    if (STATE_EXPERIMENT.value != StateExperiments.RECORDING) {
-
+    logGarbage(">>> launchPlay")
+    if (STATE_EXPERIMENT.value == StateExperiments.NONE) {
+        STATE_EXPERIMENT.value = StateExperiments.REC_REQUEST
         CoroutineScope(Dispatchers.IO).launch {
             RouterCommunication.cleanCOMPort()
             delay(2000)
@@ -54,7 +55,6 @@ fun launchPlay() {
                     0x00
                 ), withFlush = false
             )
-            generateNewChartLogFile()
         }
 
         GLOBAL_STATE.value = StateParseBytes.PLAY

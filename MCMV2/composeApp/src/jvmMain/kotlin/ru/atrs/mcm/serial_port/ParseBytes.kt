@@ -7,6 +7,7 @@ import ru.atrs.mcm.enums.ExplorerMode
 import ru.atrs.mcm.serial_port.RouterCommunication.stopSerialCommunication
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
+import ru.atrs.mcm.storage.generateNewChartLogFile
 import ru.atrs.mcm.storage.models.UIGaugesData
 import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG
@@ -16,9 +17,8 @@ import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.byteToInt
-import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.dataChunkCurrents
-import ru.atrs.mcm.utils.dataChunkGauges
+import ru.atrs.mcm.utils.pressuresChunkGauges
 import ru.atrs.mcm.utils.dataChunkRAW
 import ru.atrs.mcm.utils.dataGauges
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
@@ -27,7 +27,6 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.logError
-import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
@@ -49,14 +48,20 @@ class PacketListener : SerialPortPacketListener {
     }
 
     override fun serialEvent(event: SerialPortEvent) {
+        if (isExperimentStarts) {
+            counter++
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             val newData = event.receivedData
-            //println("${newData.toHexString()}")
-            dataChunkRAW.emit(newData)
+            println("${newData.toHexString()}")
+//            dataChunkRAW.emit(newData)
+            flowRawComparatorMachine(updData = newData)
         }
     }
 }
+private var counter = 0
+private var counter2 = 0
 
 private var arrCurrRaw  = arrayListOf<ByteArray>()
 private var arrPressRaw = arrayListOf<ByteArray>()
@@ -69,9 +74,9 @@ var incrementExperiment = 0
 private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
-suspend fun flowReceiverMachine() {
-    logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
-    dataChunkRAW.collect { updData ->
+suspend fun flowRawComparatorMachine(updData: ByteArray) {
+    //logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
+    //dataChunkRAW.collect { updData ->
         var dch: DataChunkG? = null
         var dchCurr: DataChunkCurrent? = null
 
@@ -83,25 +88,30 @@ suspend fun flowReceiverMachine() {
 
         when {
             PROTOCOL_TYPE == ProtocolType.NEW && isStartExperiment(updData)  -> {
+                generateNewChartLogFile()
                 isExperimentStarts = true
                 STATE_EXPERIMENT.value = StateExperiments.RECORDING
                 println("isStartExperiment ${updData.toHexString()}")
-                logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
+                logInfo("Start Experiment! ${counter} ${isExperimentStarts}__${incrementExperiment}")
 
             }
             PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025 && isStartExperimentOLD(updData)  -> {
+                generateNewChartLogFile()
                 isExperimentStarts = true
                 STATE_EXPERIMENT.value = StateExperiments.RECORDING
                 println("isStartExperiment ${updData.toHexString()}")
-                logInfo("Start Experiment! ${isExperimentStarts}__${incrementExperiment}")
-
+                logInfo("Start Experiment! ${counter} ${isExperimentStarts}__${incrementExperiment}")
+                counter = 0
             }
-            isExperimentStarts && isEndOfExperiment(updData) -> {
+            isEndOfExperiment(updData) -> {
                 println("isEndOfExperiment ${updData.toHexString()}")
                 isExperimentStarts = false
                 STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
-                logInfo("End Experiment! all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
+                logInfo("End Experiment! ${counter} ; ${counter2}| all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
+                counter = 0
+                incrementExperiment = 0
+                COUNTER = 0
             }
             !isExperimentStarts && isEndOfExperiment(updData) -> {
                 logError("No way to end not started experiment!")
@@ -135,23 +145,8 @@ suspend fun flowReceiverMachine() {
                 //logGarbage(">>> ${dch.toString()}")
                 //println("PRES ${dch.toString()}")
 
-                dataChunkGauges.emit(dch)
+                pressuresChunkGauges.emit(dch)
                 lastGauge = dch
-
-                if (DEBUG_PARSING) {
-                    arrPressRaw.add(updData)
-
-                    arrPress.add(arrayListOf(
-                        dch.firstGaugeData,
-                        dch.secondGaugeData,
-                        dch.thirdGaugeData,
-                        dch.fourthGaugeData,
-                        dch.fifthGaugeData,
-                        dch.sixthGaugeData,
-                        dch.seventhGaugeData,
-                        dch.eighthGaugeData
-                    ))
-                }
             }
 
             //currency
@@ -178,22 +173,8 @@ suspend fun flowReceiverMachine() {
                 )
                 //println("CURR  ${updData.joinToString()}||${dchCurr.toString()}")
                 dataChunkCurrents.emit(dchCurr)
-                lastGauge?.let { dataChunkGauges.emit(it) }
+                lastGauge?.let { pressuresChunkGauges.emit(it) }
 
-                if (DEBUG_PARSING) {
-                    arrCurrRaw.add(updData)
-
-                    arrCurr.add(arrayListOf(
-                        dchCurr.firstCurrentData,
-                        dchCurr.secondCurrentData,
-                        dchCurr.thirdCurrentData,
-                        dchCurr.fourthCurrentData,
-                        dchCurr.fifthCurrentData,
-                        dchCurr.sixthCurrentData,
-                        dchCurr.seventhCurrentData,
-                        dchCurr.eighthCurrentData,
-                    ))
-                }
             }
             else -> {
                 // if not valid numbers - refresh connection
@@ -208,35 +189,10 @@ suspend fun flowReceiverMachine() {
         if (isExperimentStarts) {
             COUNTER++
         }
-        if (DEBUG_PARSING) {
-            // print clear results:
-            if (arrPressRaw.size > 9) {
-                stopSerialCommunication()
-                println("_______current:")
-                repeat(arrCurrRaw.size) {
-                    println(arrCurrRaw[it].toHexString())
-                }
-                println("_______pressure:")
-                repeat(arrPressRaw.size) {
-                    println(arrPressRaw[it].toHexString())
-                }
-                ///
-                println("********************************")
-
-                repeat(arrCurr.size) {
-                    println(arrCurr[it])
-                }
-                repeat(arrPress.size) {
-                    println(arrPress[it])
-                }
-            }
-            arrCurr.clear()
-            arrPress.clear()
-            arrCurrRaw.clear()
-            arrPressRaw.clear()
-        }
-    }
+    //}
 }
+
+//var jobFlowWriter =
 
 var limiterForUI = 0
 fun flowWriterMachine() {
@@ -261,15 +217,13 @@ fun flowWriterMachine() {
         //sound_On()
 
 //        scenario.clear()
-        dataChunkGauges.collect {
+        pressuresChunkGauges.collect {
+//            println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${pressuresChunkGauges.subscriptionCount.value} ]")
+            if (pressures.isEmpty() || pressures.size < 7) {
+                return@collect
+            }
 
-            //delay(DELAY_FOR_GET_DATA)
-            //logGarbage(">>>> ${it.toString()}")
-
-            //logGarbage("dataChunkGauges> ${it.toString()} ||sizes:${arr1Measure.size} ${dataChunkGauges.replayCache.size} ${solenoids.size} ${pressures.size} ${scenario.size}")
-
-            //println("|<<<<<<<<<<<<<<<<<<<${it.isExperiment} [${it.firstGaugeData}]")
-            // in_max 65535 instead of 4095
+            // FILLING PRESSURES
             mapFloat(it.firstGaugeData, 0f, 4095f,   (pressures[0].minValue), (pressures[0].maxValue)).let { it1 -> pressure1X = it1 }//.takeIf { pressures.size >= 1 }
             mapFloat(it.secondGaugeData, 0f, 4095f, (pressures[1].minValue), (pressures[1].maxValue )).let { it1 -> pressure2X = it1 }//.takeIf { pressures.size >= 2 }
             mapFloat(it.thirdGaugeData, 0f, 4095f, (pressures[2].minValue), (pressures[2].maxValue  )).let { it1 -> pressure3X = it1 }//.takeIf { pressures.size >= 3 }
@@ -285,6 +239,7 @@ fun flowWriterMachine() {
                 if (pressures.getOrNull(10) != null && it.eleventhGaugeData!= null) {(mapFloat(it.eleventhGaugeData!!, 0f, 4095f, (pressures[10].minValue), (pressures[10].maxValue)).let { pressure11X = it })}
                 if (pressures.getOrNull(11) != null && it.twelfthGaugeData != null) {(mapFloat(it.twelfthGaugeData !! , 0f, 4095f, (pressures[11].minValue), (pressures[11].maxValue)).let { pressure12X = it })}
             }
+
             limiterForUI++
             if (limiterForUI%5L == 0L) {
                 dataGauges.emit(
@@ -310,7 +265,7 @@ fun flowWriterMachine() {
                 ExplorerMode.AUTO -> {
                     //logGarbage("konec ${}")
                     if (it.isExperiment) {
-
+                        counter2++
                         addNewLineForChart(
                             newLine = NewPointerLine(
                                 incrementTime = incrementTime,
@@ -345,6 +300,7 @@ fun flowWriterMachine() {
                             STATE_EXPERIMENT.value = StateExperiments.NONE
 //                            chartFileAfterExperiment.value = null
                             incrementTime = 0
+                            counter2 = 0
                         }
                     }
                 }

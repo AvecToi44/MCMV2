@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
 import ru.atrs.mcm.utils.ProtocolType
+import ru.atrs.mcm.utils.healthCheck
 
 
 object RouterCommunication {
@@ -29,6 +30,7 @@ object RouterCommunication {
                 delay(1000)
                 CommMachineV2.stopSerialCommunication()
             }
+            healthCheck()
         }
     }
 
