@@ -110,9 +110,9 @@ fun openLastScenario() {
     CoroutineScope(Dispatchers.Default).launch {
         if (targetParseScenario(LAST_SCENARIO)) {
             screenNav.value = Screens.MAIN
+        } else {
+            showMeSnackBar("Last scenario NO DEFINED!", color = Color.Red)
         }
-
-
     }
 }
 

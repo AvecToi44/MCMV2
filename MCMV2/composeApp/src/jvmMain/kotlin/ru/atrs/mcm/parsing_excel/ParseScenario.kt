@@ -28,7 +28,7 @@ var wholeSheet = mutableListOf<MutableList<String>>()
 suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
     logGarbage("targetParseScenario ${inputScenarioFile?.absolutePath}")
 
-    if (inputScenarioFile == null)
+    if (inputScenarioFile == null || !inputScenarioFile.exists())
         return false
 
     LAST_SCENARIO = inputScenarioFile

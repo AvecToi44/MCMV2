@@ -49,7 +49,7 @@ var COM_PORT = "COM0"
 var BAUD_RATE = 500000
 var COMMENT_OF_EXPERIMENT = "no name"
 var SOUND_ENABLED = 1
-var LAST_SCENARIO = Dir9Scenario
+var LAST_SCENARIO: File? = null
 var DELAY_BEFORE_CHART = 2000
 var LOG_LEVEL : LogLevel= LogLevel.ERRORS // from 0 NO logs, and 2 is super detailed logs
 enum class LogLevel { ERRORS, DEBUG }

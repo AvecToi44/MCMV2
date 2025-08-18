@@ -73,15 +73,15 @@ fun main() = application {
             println("Dir1 ${Dir1Configs.absolutePath}")
 
 
-            var isHaveConn = false
-            getComPorts_Array()?.forEach {
-                if (it.systemPortName == COM_PORT) {
-                    isHaveConn = true
-                }
-            }
-            if (!isHaveConn) {
-                showMeSnackBar("NO Connect to ${COM_PORT} !!", Color.Red)
-            }
+//            var isHaveConn = false
+//            getComPorts_Array()?.forEach {
+//                if (it.systemPortName == COM_PORT) {
+//                    isHaveConn = true
+//                }
+//            }
+//            if (!isHaveConn) {
+//                showMeSnackBar("NO Connect to ${COM_PORT} !!", Color.Red)
+//            }
 
             App()
 

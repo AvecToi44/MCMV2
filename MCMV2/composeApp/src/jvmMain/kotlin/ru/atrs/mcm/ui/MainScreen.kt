@@ -74,7 +74,7 @@ fun App() {
     //showMeSnackBar("Приветствую!",Color.White)
 }
 
-fun showMeSnackBar(msg : String,color: Color = Color.White) {
+fun showMeSnackBar(msg : String,color: Color = Color.Black) {
     textForSnackBar.value = msg
     showmeSnackBar.value = true
     textForSnackBarColor.value = color
@@ -89,11 +89,10 @@ fun snackBarShow() {
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.Black.copy(alpha = 0.6f))
+        Row(
+            modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.White.copy(alpha = 0.9f)), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.fillMaxSize().padding(30.dp).align(
-                Alignment.Center), color =textForSnackBarColor.value)
+            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.padding(30.dp), color = textForSnackBarColor.value)
         }
         GlobalScope.launch {
             delay(5000)

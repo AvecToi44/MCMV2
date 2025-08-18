@@ -86,7 +86,7 @@ fun refreshJsonParameters() {
         ParameterCommon("baudrate", BAUD_RATE.toString()),
         ParameterCommon("last_operator_id", COMMENT_OF_EXPERIMENT),
         ParameterCommon("sound_enabled", SOUND_ENABLED.toString()),
-        ParameterCommon("last_scenario", LAST_SCENARIO.absolutePath),
+        ParameterCommon("last_scenario", LAST_SCENARIO?.absolutePath ?: ""),
         ParameterCommon("delay_before_chart", DELAY_BEFORE_CHART.toString()),
         ParameterCommon("LOG_LEVEL", LOG_LEVEL.name.toString()),
         ParameterCommon("isFullscreenEnabled", SHOW_FULLSCREEN.toString()),

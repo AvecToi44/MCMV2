@@ -389,7 +389,7 @@ fun CenterPiece(
                     }
                     item {
                         Box(Modifier.aspectRatio(1f)) {
-                            Text("${LAST_SCENARIO.absolutePath}", color = colorDarkForDashboardText)
+                            Text("${LAST_SCENARIO?.absolutePath?.let {"last scenario NO defined"}}", color = colorDarkForDashboardText)
                         }
                     }
                     //item { Box(Modifier.size(50.dp).background(Color.Red)) { Text(modifier = Modifier.align(Alignment.Center),textAlign = TextAlign.Center, text = "Pressure NOT Defined") } }
