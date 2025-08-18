@@ -11,7 +11,6 @@ import ru.atrs.mcm.storage.models.UIGaugesData
 import ru.atrs.mcm.utils.DataChunkCurrent
 import ru.atrs.mcm.utils.DataChunkG
 import ru.atrs.mcm.utils.EXPLORER_MODE
-import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
 import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
@@ -342,10 +341,9 @@ fun flowWriterMachine() {
 
                             //createMeasureExperiment()
                             delay(1200)
-                            chartFileAfterExperiment.value = NAME_OF_NEW_CHART_LOG_FILE!!
                             doOpen_First_ChartWindow.value = true
                             STATE_EXPERIMENT.value = StateExperiments.NONE
-                            NAME_OF_NEW_CHART_LOG_FILE = null
+//                            chartFileAfterExperiment.value = null
                             incrementTime = 0
                         }
                     }

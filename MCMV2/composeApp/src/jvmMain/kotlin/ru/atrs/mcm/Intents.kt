@@ -12,6 +12,7 @@ import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.ui.screenNav
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.storage.PickTarget
+import ru.atrs.mcm.storage.generateNewChartLogFile
 import ru.atrs.mcm.storage.openPicker
 import ru.atrs.mcm.storage.refreshJsonParameters
 import ru.atrs.mcm.ui.navigation.Screens
@@ -53,6 +54,7 @@ fun launchPlay() {
                     0x00
                 ), withFlush = false
             )
+            generateNewChartLogFile()
         }
 
         GLOBAL_STATE.value = StateParseBytes.PLAY
@@ -71,44 +73,21 @@ fun launchPlay() {
 }
 
 
-fun openNewScenario(isRefreshForChart: Boolean = false) {
+fun openNewScenario() {
     CoroutineScope(Dispatchers.Default).launch {
-        if (isRefreshForChart) {
-            //open just viewer
-
-            showMeSnackBar("Нужно выбрать сценарий для отметки степов")
-            if (!targetParseScenario(
-                    openPicker(
-                        Dir3Scenarios
-                    )
-                )
-            ) {
-                showMeSnackBar("Ошибка при парсинге xls", Color.Red)
-            }else {
-
-                //doOpen_First_ChartWindow.value = true
-                //isAlreadyReceivedBytesForChart.value = true
-                //screenNav.value = Screens.MAIN
-            }
-        } else {
-            // open new scenario
-            isAlreadyReceivedBytesForChart.value = false
-            refreshJsonParameters()
-            if (!targetParseScenario(openPicker(Dir3Scenarios))) {
-                showMeSnackBar("Ошибка при парсинге xls", Color.Red)
-            }else {
-
-                //doOpen_First_ChartWindow.value = true
-                //isAlreadyReceivedBytesForChart.value = true
-                screenNav.value = Screens.MAIN
-            }
+        isAlreadyReceivedBytesForChart.value = false
+        refreshJsonParameters()
+        if (!targetParseScenario(openPicker(Dir3Scenarios))) {
+            //showMeSnackBar("Ошибка при парсинге xls", Color.Red)
+        }else {
+            screenNav.value = Screens.MAIN
         }
     }
 }
 
 fun openLastScenario() {
     CoroutineScope(Dispatchers.Default).launch {
-        if (targetParseScenario(LAST_SCENARIO)) {
+        if (targetParseScenario(LAST_SCENARIO.value)) {
             screenNav.value = Screens.MAIN
         } else {
             showMeSnackBar("Last scenario NO DEFINED!", color = Color.Red)

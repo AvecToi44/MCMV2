@@ -60,7 +60,7 @@ fun initialize(params: List<ParameterCommon>) {
             "baudrate" -> BAUD_RATE = param.value.toIntOrNull() ?: 115200
             "last_operator_id" -> COMMENT_OF_EXPERIMENT = param.value
             "sound_enabled" -> SOUND_ENABLED = param.value.toIntOrNull() ?: 1
-            "last_scenario" -> LAST_SCENARIO = File(param.value)
+            "last_scenario" -> LAST_SCENARIO.value = File(param.value)
             "delay_before_chart" -> DELAY_BEFORE_CHART = param.value.toIntOrNull() ?: 0
             "LOG_LEVEL" -> LOG_LEVEL = if (param.value.contains("DEBUG", ignoreCase = true)) LogLevel.DEBUG else LogLevel.ERRORS
             "isFullscreenEnabled" -> SHOW_FULLSCREEN = param.value.toBoolean()
@@ -86,7 +86,7 @@ fun refreshJsonParameters() {
         ParameterCommon("baudrate", BAUD_RATE.toString()),
         ParameterCommon("last_operator_id", COMMENT_OF_EXPERIMENT),
         ParameterCommon("sound_enabled", SOUND_ENABLED.toString()),
-        ParameterCommon("last_scenario", LAST_SCENARIO?.absolutePath ?: ""),
+        ParameterCommon("last_scenario", LAST_SCENARIO.value?.absolutePath ?: ""),
         ParameterCommon("delay_before_chart", DELAY_BEFORE_CHART.toString()),
         ParameterCommon("LOG_LEVEL", LOG_LEVEL.name.toString()),
         ParameterCommon("isFullscreenEnabled", SHOW_FULLSCREEN.toString()),

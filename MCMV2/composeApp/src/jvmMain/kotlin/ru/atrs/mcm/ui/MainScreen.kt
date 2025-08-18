@@ -92,7 +92,7 @@ fun snackBarShow() {
         Row(
             modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.White.copy(alpha = 0.9f)), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.padding(30.dp), color = textForSnackBarColor.value)
+            Text("${textForSnackBar.value}", fontSize = 40.sp,modifier = Modifier.padding(3.dp), color = textForSnackBarColor.value, maxLines = 3)
         }
         GlobalScope.launch {
             delay(5000)

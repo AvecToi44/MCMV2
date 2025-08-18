@@ -26,6 +26,7 @@ import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
+import ru.atrs.mcm.utils.logError
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.channels.FileLock
@@ -89,25 +90,11 @@ fun main() = application {
                 if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
                     AppChartV3().WindowChartsV3(analysisAfterExperiment = true)
                 }
-//                if (doOpenNewWindowInternal.value && isAlreadyReceivedBytesForChart.value) {
-//                    ChartWindowDeprecated(withStandard = true).chartWindow()
-//                }
             }
 
             if (doOpenNewWindowInternal2.value) {
                 AppChartV3().WindowChartsV3(analysisAfterExperiment = false)
             }
-//            if (doOpenSettingsWindowInternal2.value) {
-//                Window(
-//                    title = "Settings",
-//                    state = WindowState(size = DpSize(1000.dp, 800.dp)),
-//                    onCloseRequest = {  }
-//                ) {
-//                    Column {
-//
-//                    }
-//                }
-//            }
         }
     }
 }
@@ -132,7 +119,9 @@ private fun isAnotherInstanceRunning(appName: String): Boolean {
             return false // This instance acquired the lock
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        logError("isAnotherInstanceRunning: ${e.message}")
+        showMeSnackBar("isAnotherInstanceRunning: ${e.message}", color = Color.Red)
+
         return true // Assume another instance is running on error
     }
 }

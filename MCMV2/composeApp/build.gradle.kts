@@ -64,7 +64,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageVersion = "1.2.21"
-            packageName = "MCM (${packageVersion})"
+            packageName = "MCM (${packageVersion}) HOTFIX"
 //            windows {
 //                iconFile.set(project.file("favicon.ico"))
 //            }

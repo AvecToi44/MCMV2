@@ -1,26 +1,18 @@
 package ru.atrs.mcm.storage
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.CHART_FILE_NAME_ENDING
 import ru.atrs.mcm.utils.ChartFileNameEnding
 import ru.atrs.mcm.utils.chartFileAfterExperiment
 import ru.atrs.mcm.utils.chartFileStandard
-import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.generateTimestampLastUpdate
 import ru.atrs.mcm.utils.logError
-import ru.atrs.mcm.utils.logGarbage
-import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
-import ru.atrs.mcm.utils.NAME_OF_NEW_CHART_LOG_FILE
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.to5Decimals
@@ -29,15 +21,15 @@ import java.io.*
 
 //
 
-fun generateNewChartLogName() {
+fun generateNewChartLogFile() {
     println("Generate new chart file")
     val endingOfName = when(CHART_FILE_NAME_ENDING) {
         ChartFileNameEnding.COMMENT_AND_TIMESTAMP -> "${generateTimestampLastUpdate()}_${COMMENT_OF_EXPERIMENT}"
         ChartFileNameEnding.TIMESTAMP -> "${generateTimestampLastUpdate()}"
         ChartFileNameEnding.COMMENT -> "${COMMENT_OF_EXPERIMENT}"
     }
-    NAME_OF_NEW_CHART_LOG_FILE = File(Dir11ForTargetingSaveNewExperiment,"${NAME_OF_NEW_SCENARIO}_${endingOfName}"+".txt")
-    NAME_OF_NEW_CHART_LOG_FILE?.createNewFile()
+    chartFileAfterExperiment.value = File(Dir11ForTargetingSaveNewExperiment,"${NAME_OF_NEW_SCENARIO}_${endingOfName}"+".txt")
+    chartFileAfterExperiment.value?.createNewFile()
 }
 
 data class NewPointerLine(
@@ -57,11 +49,11 @@ data class NewPointerLine(
 )
 
 suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: Boolean) {
-    if (NAME_OF_NEW_CHART_LOG_FILE == null || !NAME_OF_NEW_CHART_LOG_FILE!!.exists()) {
-        generateNewChartLogName()
+    if (chartFileAfterExperiment.value == null || chartFileAfterExperiment.value?.exists() == false) {
+        generateNewChartLogFile()
     }
 
-    val file = NAME_OF_NEW_CHART_LOG_FILE!!
+    val file = chartFileAfterExperiment.value
     val fileIsEmpty = file.length() <= 0
 
     try {

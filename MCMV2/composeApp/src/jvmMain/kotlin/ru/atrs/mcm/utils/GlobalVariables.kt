@@ -11,7 +11,6 @@ import ru.atrs.mcm.parsing_excel.models.PressuresHolder
 import ru.atrs.mcm.parsing_excel.models.ScenarioStep
 import ru.atrs.mcm.parsing_excel.models.SolenoidHolder
 import ru.atrs.mcm.storage.models.UIGaugesData
-import ru.atrs.mcm.ui.charts.Pointer
 import java.io.File
 import javax.swing.JFileChooser
 
@@ -20,7 +19,7 @@ import javax.swing.JFileChooser
 var DELAY_FOR_GET_DATA = 0L
 var arrayOfComPorts = arrayOf<SerialPort>()
 
-val MAINFOLDER = "mcm"
+const val MAINFOLDER = "mcm"
 
 val Dir0Configs_Analysis = File("${JFileChooser().fileSystemView.defaultDirectory.toString()}\\${MAINFOLDER}\\config","inner_marker.wav")
 val Dir0Configs_End = File("${JFileChooser().fileSystemView.defaultDirectory.toString()}\\${MAINFOLDER}\\config","auto_click.wav")
@@ -49,7 +48,7 @@ var COM_PORT = "COM0"
 var BAUD_RATE = 500000
 var COMMENT_OF_EXPERIMENT = "no name"
 var SOUND_ENABLED = 1
-var LAST_SCENARIO: File? = null
+var LAST_SCENARIO = mutableStateOf<File?>(null)
 var DELAY_BEFORE_CHART = 2000
 var LOG_LEVEL : LogLevel= LogLevel.ERRORS // from 0 NO logs, and 2 is super detailed logs
 enum class LogLevel { ERRORS, DEBUG }
@@ -115,7 +114,7 @@ var doOpen_Second_ChartWindow = mutableStateOf(false)
 var chartFileAfterExperiment = mutableStateOf( File(Dir2Reports,"demo2.txt") )
 var chartFileStandard = mutableStateOf<File?>( null ) // File(Dir7ReportsStandard,"17_02_2023X12_04_04_chart.txt")
 //var chartFileStandard = mutableStateOf<File?>( File("C:\\Users\\Agregatka\\Documents\\mcm\\reports\\тестирование переделанных МИЛ","07_08_2025 16_56_55_2300_chart.txt"))
-var NAME_OF_NEW_CHART_LOG_FILE: File? = null
+//var NAME_OF_NEW_CHART_LOG_FILE: File? = null
 
 var isExperimentStarts = false
 var incrementTime = 0L

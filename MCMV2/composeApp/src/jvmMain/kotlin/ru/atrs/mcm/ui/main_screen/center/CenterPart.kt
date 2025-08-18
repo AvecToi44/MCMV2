@@ -389,7 +389,7 @@ fun CenterPiece(
                     }
                     item {
                         Box(Modifier.aspectRatio(1f)) {
-                            Text("${LAST_SCENARIO?.absolutePath?.let {"last scenario NO defined"}}", color = colorDarkForDashboardText)
+                            Text("${LAST_SCENARIO.value} \n\n (Step #${indexOfScenario.value}) Analog1:${scenario.getOrNull(indexOfScenario.value)?.analog1} Analog2:${scenario.getOrNull(indexOfScenario.value)?.analog2}}", color = colorDarkForDashboardText)
                         }
                     }
                     //item { Box(Modifier.size(50.dp).background(Color.Red)) { Text(modifier = Modifier.align(Alignment.Center),textAlign = TextAlign.Center, text = "Pressure NOT Defined") } }
@@ -581,10 +581,7 @@ fun CenterPiece(
                             launchPlay()
                         } else if (explMode.value == ExplorerMode.MANUAL) {
                             indexOfScenario.value--
-                            ctxScope.launch {
-
-                                comparatorToSolenoid(indexOfScenario.value)
-                            }
+                            ctxScope.launch { comparatorToSolenoid(indexOfScenario.value) }
                             scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
                             //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
                             //txtOfScenario.value = scenario[indexOfScenario.value].text
@@ -667,3 +664,4 @@ fun CenterPiece(
         }
     }
 }
+
