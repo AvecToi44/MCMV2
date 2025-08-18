@@ -1,8 +1,8 @@
 package ru.atrsx.mcmcomposer
 
+import ExportExcelButton
 import PressuresScreen
 import SolenoidsScreen
-import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,17 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.File
-import compose.icons.feathericons.Home
-import compose.icons.feathericons.PlusSquare
 import compose.icons.feathericons.Save
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrsx.mcmcomposer.ui.MainScenarioScreen
-import saveExperimentExcelWithDialogExact
 
 // ---------- Models ----------
 data class ScenarioRow(
@@ -99,15 +94,24 @@ fun AppRoot() {
                     .clickable {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                             delay(10)
-                            saveExperimentExcelWithDialogExact(
-                                config    = MainExperimentConfig(standardPath = "/Users/you/Desktop", sheetName = "test"),
-                                pressures = pressures,
-                                solenoids = solenoids,
-                                scenarios = scenarios,
-                                titleText = "0b5_combi_13_08_2025_16_05_50.txt", // or null
-                                mainFreq  = null,   // null → auto-derive from solenoids.tenthFrequency/10
-                                testVar   = 0
+                            //
+                            val cfg = MainExperimentConfig(
+                                pressures = PressuresBlockDto(channels = pressures),
+                                solenoids = SolenoidsBlock(channels = solenoids),
+                                scenario  = ScenarioBlockDto(steps = scenarios.toDtoList()),
+                                standardPath = "C:\\Users\\...\\0b5_combi_18_08_2025 11_31_32_arstest5.txt",
+                                sheetName = "0b5_combi"
                             )
+                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(cfg, it) }
+//                            saveExperimentExcelWithDialogExact(
+//                                config    = MainExperimentConfig(standardPath = "/Users/you/Desktop", sheetName = "test"),
+//                                pressures = pressures,
+//                                solenoids = solenoids,
+//                                scenarios = scenarios,
+//                                titleText = "0b5_combi_13_08_2025_16_05_50.txt", // or null
+//                                mainFreq  = null,   // null → auto-derive from solenoids.tenthFrequency/10
+//                                testVar   = 0
+//                            )
                         }
                     },
                 contentAlignment = Alignment.Center

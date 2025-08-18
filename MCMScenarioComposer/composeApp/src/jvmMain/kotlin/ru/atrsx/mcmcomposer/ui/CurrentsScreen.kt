@@ -40,8 +40,8 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
             nameText   = ch.displayName
             pwmText    = ch.maxPwm0_255.toString()
             divText    = ch.valueOfDivision.toString()
-            amp10Text  = ch.tenthAmplitude.toString()
-            freq10Text = ch.tenthFrequency.toString()
+            amp10Text  = ch.DitherAmplitude.toString()
+            freq10Text = ch.DitherFrequency.toString()
             minText    = ch.minValue.toString()
             maxText    = ch.maxValue.toString()
         } else {
@@ -76,22 +76,28 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                 value = mainFrequency.toString(),
                 onValueChange = { txt ->
                     mainFrequency = txt.toIntOrNull() ?: mainFrequency
+
+                    val f10 = mainFrequency * 10
+                    for (i in solenoids.indices) {
+                        solenoids[i] = solenoids[i].copy(DitherFrequency = f10)
+                    }
+                    if (selectedIndex != null) freq10Text = f10.toString()
                 },
                 label = { Text("Main Frequency (Integer)") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {
-                        val f10 = mainFrequency * 10
-                        for (i in solenoids.indices) {
-                            solenoids[i] = solenoids[i].copy(tenthFrequency = f10)
-                        }
-                        if (selectedIndex != null) freq10Text = f10.toString()
-                    }
-                ) { Text("Apply to all") }
-            }
+//            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+//                Button(
+//                    onClick = {
+//                        val f10 = mainFrequency * 10
+//                        for (i in solenoids.indices) {
+//                            solenoids[i] = solenoids[i].copy(tenthFrequency = f10)
+//                        }
+//                        if (selectedIndex != null) freq10Text = f10.toString()
+//                    }
+//                ) { Text("Apply to all") }
+//            }
 
             Divider()
 
@@ -147,7 +153,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                     amp10Text = txt
                     if (!enabled) return@OutlinedTextField
                     txt.toIntOrNull()?.let { newAmp10 ->
-                        updateSelected { ch -> ch.copy(tenthAmplitude = newAmp10) }
+                        updateSelected { ch -> ch.copy(DitherAmplitude = newAmp10) }
                     }
                 },
                 label = { Text("Tenth amplitude") },
@@ -162,7 +168,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                     freq10Text = txt
                     if (!enabled) return@OutlinedTextField
                     txt.toIntOrNull()?.let { newFreq10 ->
-                        updateSelected { ch -> ch.copy(tenthFrequency = newFreq10) }
+                        updateSelected { ch -> ch.copy(DitherFrequency = newFreq10) }
                     }
                 },
                 label = { Text("Tenth frequency") },
@@ -271,7 +277,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(ch.displayName, style = MaterialTheme.typography.titleMedium)
                                 Text(
-                                    "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp10: ${ch.tenthAmplitude}  •  Freq10: ${ch.tenthFrequency}\n" +
+                                    "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp10: ${ch.DitherAmplitude}  •  Freq10: ${ch.DitherFrequency}\n" +
                                             "Range: ${ch.minValue}…${ch.maxValue}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,

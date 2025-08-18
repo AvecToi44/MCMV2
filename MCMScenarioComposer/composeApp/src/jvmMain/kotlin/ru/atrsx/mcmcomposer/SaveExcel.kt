@@ -44,7 +44,7 @@ private fun avoidOverwrite(path: String): String {
 
 // Heuristic: if you don’t pass mainFreq, derive from solenoids (most common tenthFrequency / 10)
 private fun deriveMainFreq(solenoids: List<SolenoidChannel>): Int {
-    val list = solenoids.map { it.tenthFrequency }.filter { it > 0 }
+    val list = solenoids.map { it.DitherFrequency }.filter { it > 0 }
     if (list.isEmpty()) return 0
     val mode = list.groupingBy { it }.eachCount().maxBy { it.value }.key
     return mode / 10
@@ -70,16 +70,16 @@ fun saveExperimentExcelWithDialogExact(
     val picked = chooseExcelSavePath(config.standardPath, suggestedName) ?: return
 
     runCatching {
-        exportExperimentToExcelExactCells(
-            outPath   = picked,
-            titleText = titleText,
-            sheetName = config.sheetName.ifBlank { "test" },
-            pressures = pressures,
-            solenoids = solenoids,
-            scenarios = scenarios,
-            mainFreq  = mainFreq ?: deriveMainFreq(solenoids),
-            testVar   = testVar
-        )
+//        exportOb5Exact(
+//            outPath   = picked,
+//            titleText = titleText,
+//            sheetName = config.sheetName.ifBlank { "test" },
+//            pressures = pressures,
+//            solenoids = solenoids,
+//            scenarios = scenarios,
+//            mainFreq  = mainFreq ?: deriveMainFreq(solenoids),
+//            testVar   = testVar
+//        )
         config.standardPath = picked
         JOptionPane.showMessageDialog(null, "Excel сохранён:\n$picked", "Успех", JOptionPane.INFORMATION_MESSAGE)
     }.onFailure { e ->

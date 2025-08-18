@@ -2,7 +2,6 @@ package ru.atrsx.mcmcomposer
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.flow.MutableSharedFlow
 
 //var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(
 //    MainExperimentConfig(
@@ -13,8 +12,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 //        sheetName = TODO()
 //    )
 //)
-
-val waterFall = MutableSharedFlow<ScenarioBlockDto>()
 
 var scenarios = mutableStateListOf(
     ScenarioStep(stepTimeMs = 1000, channelValues = MutableList(12) { 1 }, text = "Step 1", gradientTimeMs = 0),
@@ -38,20 +35,17 @@ var pressures = mutableStateListOf(
 )
 
 var solenoids = mutableStateListOf(
-    SolenoidChannel(displayName = "Соленоид без имени", index = 0, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 1, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 2, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 3, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 4, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 5, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 6, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 7, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 8, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 9, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 10, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
-    SolenoidChannel(displayName = "Соленоид без имени", index = 11, maxPwm0_255 = 0, valueOfDivision = 0, tenthAmplitude = 0, tenthFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 0, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 1, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 2, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 3, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 4, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 5, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 6, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 7, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 8, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 9, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 10, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
+    SolenoidChannel(displayName = "Соленоид без имени", index = 11, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
 )
 
-var scenarioBlock = mutableStateOf<ScenarioBlockDto>(ScenarioBlockDto())
-var pressuresBlock = mutableStateOf<PressuresBlockDto>(PressuresBlockDto())
-var solenoidsBlock = mutableStateOf<SolenoidsBlock>(SolenoidsBlock())

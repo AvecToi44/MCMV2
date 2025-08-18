@@ -101,8 +101,8 @@ fun exportExperimentToExcelExactCells(
     sRow(sheet, L.ROW_S_FIRST + 1, "Index",             solenoids, st) { it.index.toString() }
     sRow(sheet, L.ROW_S_FIRST + 2, "MaxPWM [0 - 255]",  solenoids, st) { it.maxPwm0_255.toString() }
     sRow(sheet, L.ROW_S_FIRST + 3, "Value of division", solenoids, st) { it.valueOfDivision.toString() }
-    sRow(sheet, L.ROW_S_FIRST + 4, "tenth amplitude",   solenoids, st) { it.tenthAmplitude.toString() }
-    sRow(sheet, L.ROW_S_FIRST + 5, "tenth frequency",   solenoids, st) { it.tenthFrequency.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 4, "tenth amplitude",   solenoids, st) { it.DitherAmplitude.toString() }
+    sRow(sheet, L.ROW_S_FIRST + 5, "tenth frequency",   solenoids, st) { it.DitherFrequency.toString() }
     sRow(sheet, L.ROW_S_FIRST + 6, "MinValue",          solenoids, st) { it.minValue.toString() }
     sRow(sheet, L.ROW_S_FIRST + 7, "MaxValue",          solenoids, st) { it.maxValue.toString() }
     sRow(sheet, L.ROW_S_FIRST + 8, "isVisible",         solenoids, st) { it.isVisible.toString() }
