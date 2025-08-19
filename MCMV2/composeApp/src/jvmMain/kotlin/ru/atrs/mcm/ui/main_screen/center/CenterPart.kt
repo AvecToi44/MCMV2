@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import com.fazecast.jSerialComm.SerialPort
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeftCircle
 import compose.icons.feathericons.ArrowRightCircle
@@ -37,6 +38,7 @@ import ru.atrs.mcm.enums.ExplorerMode
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
 import ru.atrs.mcm.serial_port.RouterCommunication.comparatorToSolenoid
@@ -55,11 +57,15 @@ import ru.atrs.mcm.utils.LAST_SCENARIO
 import ru.atrs.mcm.utils.SHOW_BOTTOM_PANEL
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
+import ru.atrs.mcm.utils.allowManipulationWithUI
+import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.dataGauges
+import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
+import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
@@ -92,6 +98,7 @@ fun CenterPiece(
     val explMode = remember { EXPLORER_MODE }
     val expandedCom = remember { mutableStateOf(false) }
     val showBottomPanel = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
+    val allowManipulationWithUIInternal by remember { allowManipulationWithUI }
 
     val txt = remember { txtOfScenario }
 
@@ -121,6 +128,24 @@ fun CenterPiece(
 //            logGarbage("DisposableEffect OFF ${jobFlowWriter.isCompleted}  ${jobFlowWriter.isActive} ${jobFlowWriter.isCancelled}")
 //        }
 //    }
+//    LaunchedEffect(STATE_EXPERIMENT.value) {
+//        if (STATE_EXPERIMENT.value == StateExperiments.NONE) {
+//            allowManipulationWithUI.value = true
+//        }
+//    }
+    var counterAllowManipulationWithUI = 0
+    LaunchedEffect(Unit) {
+        while (true) {
+            logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
+            if (allowManipulationWithUI.value == false && counterAllowManipulationWithUI >=5) {
+                allowManipulationWithUI.value = true
+            } else {
+                counterAllowManipulationWithUI++
+            }
+            delay(1000)
+        }
+    }
+
     LaunchedEffect(true) {
         RouterCommunication.startReceiveFullData()
         RouterCommunication.comparatorToSolenoid(indexOfScenario.value)
@@ -401,7 +426,7 @@ fun CenterPiece(
                 }
             )
         }
-        if(showBottomPanel.value) {
+        if (showBottomPanel.value) {
             Row(Modifier.fillMaxSize().weight(1.3f), horizontalArrangement = Arrangement.SpaceAround) {
                 Column(
                     Modifier
@@ -425,14 +450,16 @@ fun CenterPiece(
                                 .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
                                 .background(Color(0xFF444444), RoundedCornerShape(4.dp))
                                 .clickable {
-                                    ctxScope.launch {
-                                        if (explMode.value == ExplorerMode.AUTO) {
-                                            launchPlay()
-                                        } else if (explMode.value == ExplorerMode.MANUAL) {
-                                            indexOfScenario.value--
-                                            comparatorToSolenoid(indexOfScenario.value)
-                                            scenario.getOrNull(indexOfScenario.value)
-                                                ?.let { txtOfScenario.value = it.comment }
+                                    if (allowManipulationWithUIInternal) {
+                                        ctxScope.launch {
+                                            if (explMode.value == ExplorerMode.AUTO) {
+                                                launchPlay()
+                                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                                indexOfScenario.value--
+                                                comparatorToSolenoid(indexOfScenario.value)
+                                                scenario.getOrNull(indexOfScenario.value)
+                                                    ?.let { txtOfScenario.value = it.comment }
+                                            }
                                         }
                                     }
                                 },
@@ -453,14 +480,17 @@ fun CenterPiece(
                                 .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
                                 .background(Color(0xFF444444), RoundedCornerShape(4.dp))
                                 .clickable {
-                                    ctxScope.launch {
-                                        if (explMode.value == ExplorerMode.AUTO) {
-                                            reInitSolenoids()
-                                            GLOBAL_STATE.value = StateParseBytes.WAIT
-                                        } else if (explMode.value == ExplorerMode.MANUAL) {
-                                            indexOfScenario.value++
-                                            comparatorToSolenoid(indexOfScenario.value)
-                                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
+                                    if (allowManipulationWithUIInternal) {
+                                        ctxScope.launch {
+                                            if (explMode.value == ExplorerMode.AUTO) {
+                                                reInitSolenoids()
+                                                GLOBAL_STATE.value = StateParseBytes.WAIT
+                                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                                indexOfScenario.value++
+                                                comparatorToSolenoid(indexOfScenario.value)
+                                                scenario.getOrNull(indexOfScenario.value)
+                                                    ?.let { txtOfScenario.value = it.comment }
+                                            }
                                         }
                                     }
                                 },
@@ -482,12 +512,14 @@ fun CenterPiece(
                                 .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
                                 .background(Color(0xFF444444), RoundedCornerShape(4.dp))
                                 .clickable {
-                                    CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                                        delay(10)
-                                        RouterCommunication.stopSerialCommunication()
-                                        scenario.clear()
+                                    if (allowManipulationWithUIInternal) {
+                                        CoroutineScope(Dispatchers.IO + CoroutineName("onCloseRequest")).launch {
+                                            delay(10)
+                                            RouterCommunication.stopSerialCommunication()
+                                            scenario.clear()
+                                        }
+                                        screenNav.value = Screens.STARTER
                                     }
-                                    screenNav.value = Screens.STARTER
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -577,18 +609,19 @@ fun CenterPiece(
 
                 AnimatedVisibility(isPayloadComing.value) {
                     Box(Modifier.clickable {
-                        test_time = 0
-                        // launch
-                        if (explMode.value == ExplorerMode.AUTO) {
-                            launchPlay()
-                        } else if (explMode.value == ExplorerMode.MANUAL) {
-                            indexOfScenario.value--
-                            ctxScope.launch { comparatorToSolenoid(indexOfScenario.value) }
-                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                            //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
-                            //txtOfScenario.value = scenario[indexOfScenario.value].text
+                        if (allowManipulationWithUIInternal) {
+                            test_time = 0
+                            // launch
+                            if (explMode.value == ExplorerMode.AUTO) {
+                                launchPlay()
+                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                indexOfScenario.value--
+                                ctxScope.launch { comparatorToSolenoid(indexOfScenario.value) }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
+                                //txtOfScenario.value = scenario.getOrNull(indexOfScenario.value)?.text
+                                //txtOfScenario.value = scenario[indexOfScenario.value].text
+                            }
                         }
-
 
                     }) {
                         Text(
@@ -604,22 +637,24 @@ fun CenterPiece(
 
                 Box(Modifier.clickable {
                     //stop scenario
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (explMode.value == ExplorerMode.AUTO) {
-                            reInitSolenoids()
-                            GLOBAL_STATE.value = StateParseBytes.WAIT
+                    if (allowManipulationWithUIInternal) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if (explMode.value == ExplorerMode.AUTO) {
+                                reInitSolenoids()
+                                GLOBAL_STATE.value = StateParseBytes.WAIT
 //                            initSerialCommunication()
 //                            startReceiveFullData()
-                        } else if (explMode.value == ExplorerMode.MANUAL) {
-                            indexOfScenario.value++
-                            comparatorToSolenoid(indexOfScenario.value)
+                            } else if (explMode.value == ExplorerMode.MANUAL) {
+                                indexOfScenario.value++
+                                comparatorToSolenoid(indexOfScenario.value)
 
-                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
-                            scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
-                            //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { 0 }
+                                scenario.getOrNull(indexOfScenario.value)?.let { txtOfScenario.value = it.comment }
+                                //txtOfScenario.value = scenario.getOrElse(indexOfScenario.value) { scenario[0] }.text
+                            }
                         }
                     }
+
                 }) {
                     Text(
                         if (explMode.value == ExplorerMode.AUTO) "⏸" else "⏩",
@@ -632,12 +667,17 @@ fun CenterPiece(
                 }
 
                 Box(Modifier.clickable {
-                    CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                        delay(10)
-                        RouterCommunication.stopSerialCommunication()
-                        scenario.clear()
+                    if (allowManipulationWithUIInternal) {
+                        CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                            delay(10)
+                            RouterCommunication.stopSerialCommunication()
+                            scenario.clear()
+                        }
+                        screenNav.value = Screens.STARTER
+                    } else {
+                        logError("dont allowManipulationWithUI in CenterPart")
                     }
-                    screenNav.value = Screens.STARTER
+
                 }) {
                     Text(
                         "Home↩️",

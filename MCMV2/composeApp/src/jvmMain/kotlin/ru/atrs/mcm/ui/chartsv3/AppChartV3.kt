@@ -183,7 +183,7 @@ class AppChartV3 {
     @Composable
     fun WindowChartsV3(analysisAfterExperiment: Boolean = false) {
         Window(
-            title = "ChartViewer V3",
+            title = "ChartViewer V3 [Для зума зажми: Ctrl + Колесо мыши, для горизонтальной прокрутки: Shift + Колесо мыши]",
             state = WindowState(size = DpSize(1200.dp, 800.dp)),
             onCloseRequest = {
                 if (doOpen_First_ChartWindow.value && analysisAfterExperiment) {
@@ -345,7 +345,6 @@ fun App(analysisAfterExperiment: Boolean = false) {
             if (datasets.isNotEmpty()) {
                 ChartView(datasets = datasets, visibilityStates = vis, colors = seriesColors)
             }
-            StickyHint()
         }
     }
 }

@@ -3,10 +3,8 @@ package ru.atrs.mcm.ui.starter_screen
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -50,6 +48,8 @@ import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.logAct
+import ru.atrs.mcm.utils.allowManipulationWithUI
+import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.pressuresChunkGauges
 
 
@@ -70,15 +70,22 @@ fun StarterScreen() {
     var choosenCOM = remember { mutableStateOf(0) }
     var choosenBaud = remember { mutableStateOf(BAUD_RATE) }
     val textState = remember { mutableStateOf(COMMENT_OF_EXPERIMENT) }
+    val openForManipulationWithCOMPortInternal by remember { allowManipulationWithUI }
     var listOfOperators = mutableListOf<String>()//loadOperators()
 
     var crtxscp = rememberCoroutineScope().coroutineContext
 
-
+    var counterAllowManipulationWithUI = 0
     LaunchedEffect(true) {
         healthCheck()
         while (true) {
             arrayOfComPorts = getComPorts_Array() as Array<SerialPort>
+            logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
+            if (allowManipulationWithUI.value == false && counterAllowManipulationWithUI >=5) {
+                allowManipulationWithUI.value = true
+            } else {
+                counterAllowManipulationWithUI++
+            }
             delay(1000)
         }
     }
@@ -139,22 +146,25 @@ fun StarterScreen() {
             }
         }
         Row(modifier = Modifier.fillMaxSize().weight(3f).padding(10.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
-                .clickable {
-                    openNewScenario()
+            if (openForManipulationWithCOMPortInternal) {
+                Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
+                    .clickable {
+                        openNewScenario()
 
-                }) {
-                Text("Open Scenario",
-                    modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                    }) {
+                    Text("Open Scenario",
+                        modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                }
+
+                Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
+                    .clickable {
+                        openLastScenario()
+                    }) {
+                    Text("Open last scenario",
+                        modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+                }
             }
 
-            Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
-                .clickable {
-                    openLastScenario()
-                }) {
-                Text("Open last scenario",
-                    modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
-            }
 
             Box(Modifier.fillMaxSize().weight(1f).border(BorderStroke(2.dp, Color.DarkGray))
                 .clickable {

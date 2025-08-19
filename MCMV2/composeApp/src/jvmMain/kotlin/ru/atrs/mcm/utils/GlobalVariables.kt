@@ -115,7 +115,7 @@ var chartFileAfterExperiment = mutableStateOf( File(Dir2Reports,"demo2.txt") )
 var chartFileStandard = mutableStateOf<File?>( null ) // File(Dir7ReportsStandard,"17_02_2023X12_04_04_chart.txt")
 //var chartFileStandard = mutableStateOf<File?>( File("C:\\Users\\Agregatka\\Documents\\mcm\\reports\\тестирование переделанных МИЛ","07_08_2025 16_56_55_2300_chart.txt"))
 //var NAME_OF_NEW_CHART_LOG_FILE: File? = null
-
+var allowManipulationWithUI = mutableStateOf(true)
 var isExperimentStarts = false
 var incrementTime = 0L
 

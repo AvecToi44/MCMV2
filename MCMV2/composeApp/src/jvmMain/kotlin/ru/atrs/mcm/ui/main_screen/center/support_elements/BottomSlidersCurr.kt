@@ -60,10 +60,10 @@ fun SolenoidsPanel(
                 current7 = it.seventhCurrentData
                 current8 = it.eighthCurrentData
 
-                it.fifthCurrentData?.let { current9 = it  }
-                it.sixthCurrentData?.let { current10 = it  }
-                it.seventhCurrentData?.let { current11 = it  }
-                it.eighthCurrentData?.let { current12 = it  }
+                it.ninthCurrentData?.let { current9 = it  }
+                it.tenthCurrentData?.let { current10 = it  }
+                it.eleventhCurrentData?.let { current11 = it  }
+                it.twelfthCurrentData?.let { current12 = it  }
             }
         }
     }

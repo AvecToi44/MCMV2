@@ -15,6 +15,7 @@ import androidx.compose.ui.window.rememberWindowState
 import ru.atrs.mcm.enums.ExplorerMode
 import kotlinx.coroutines.*
 import ru.atrs.mcm.serial_port.RouterCommunication
+import ru.atrs.mcm.serial_port.flowRawComparatorMachine
 import ru.atrs.mcm.serial_port.flowWriterMachine
 import ru.atrs.mcm.ui.App
 import ru.atrs.mcm.ui.showMeSnackBar
@@ -37,7 +38,7 @@ import java.nio.channels.FileLock
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val APP_NAME = "MCM 1.2.21"
+    val APP_NAME = "MCM 1.2.23"
     // Attempt to acquire a named mutex or file lock
     if (isAnotherInstanceRunning(APP_NAME)) {
         println("Another instance is already running. Exiting.")
@@ -52,7 +53,10 @@ fun main() = application {
     )
     val windowFloating = rememberWindowState(width = 1000.dp, height = 800.dp)
     println("window: ${SHOW_FULLSCREEN}")
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
+        flowRawComparatorMachine()
+    }
+    LaunchedEffect(Unit) {
         // FLOW
         flowWriterMachine()
     }
@@ -64,7 +68,7 @@ fun main() = application {
         onCloseRequest = {
             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                 RouterCommunication.stopSerialCommunication()
-                delay(500)
+                delay(2000)
                 exitApplication()
             }
         },

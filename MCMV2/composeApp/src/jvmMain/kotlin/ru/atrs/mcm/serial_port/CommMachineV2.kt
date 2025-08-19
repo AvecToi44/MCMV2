@@ -22,6 +22,7 @@ import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
+import ru.atrs.mcm.utils.allowManipulationWithUI
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.checkIntervalScenarios
 import ru.atrs.mcm.utils.getComPorts_Array

@@ -54,29 +54,22 @@ class PacketListener : SerialPortPacketListener {
 
         CoroutineScope(Dispatchers.IO).launch {
             val newData = event.receivedData
-            println("${newData.toHexString()}")
-//            dataChunkRAW.emit(newData)
-            flowRawComparatorMachine(updData = newData)
+//            println("${newData.toHexString()}")
+            dataChunkRAW.emit(newData)
+//            flowRawComparatorMachine(updData = newData)
         }
     }
 }
 private var counter = 0
 private var counter2 = 0
 
-private var arrCurrRaw  = arrayListOf<ByteArray>()
-private var arrPressRaw = arrayListOf<ByteArray>()
-
-private var arrCurr =  arrayListOf<ArrayList<Int>>()
-private var arrPress = arrayListOf<ArrayList<Float>>()
-private var start_time = 0L
-private var incr = 0
 var incrementExperiment = 0
 private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
-suspend fun flowRawComparatorMachine(updData: ByteArray) {
+suspend fun flowRawComparatorMachine() {
     //logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
-    //dataChunkRAW.collect { updData ->
+    dataChunkRAW.collect { updData ->
         var dch: DataChunkG? = null
         var dchCurr: DataChunkCurrent? = null
 
@@ -189,7 +182,7 @@ suspend fun flowRawComparatorMachine(updData: ByteArray) {
         if (isExperimentStarts) {
             COUNTER++
         }
-    //}
+    }
 }
 
 //var jobFlowWriter =

@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
 import ru.atrs.mcm.utils.ProtocolType
 import ru.atrs.mcm.utils.healthCheck
+import ru.atrs.mcm.utils.allowManipulationWithUI
 
 
 object RouterCommunication {
@@ -19,6 +20,7 @@ object RouterCommunication {
         }
     }
     fun stopSerialCommunication() {
+        allowManipulationWithUI.value = false
         CoroutineScope(Dispatchers.IO).launch {
             println("Router stopSerialCommunication")
             if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
@@ -30,7 +32,9 @@ object RouterCommunication {
                 delay(1000)
                 CommMachineV2.stopSerialCommunication()
             }
+            delay(1000)
             healthCheck()
+            allowManipulationWithUI.value = true
         }
     }
 
@@ -86,12 +90,14 @@ object RouterCommunication {
 //    }
 
     suspend fun sendScenarioToController() {
+        allowManipulationWithUI.value = false
         println("ROUTER sendScenarioToController")
         if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
             CommMachineV1.sendScenarioToController()
         } else {
             CommMachineV2.sendScenarioToController()
         }
+        allowManipulationWithUI.value = true
     }
 
     suspend fun reInitSolenoids() {
