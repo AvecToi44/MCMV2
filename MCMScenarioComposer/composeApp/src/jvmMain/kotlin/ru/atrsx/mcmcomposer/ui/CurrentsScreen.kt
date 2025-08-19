@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import ru.atrsx.mcmcomposer.MAIN_CONFIG
 import ru.atrsx.mcmcomposer.SolenoidChannel
 import ru.atrsx.mcmcomposer.solenoids
 
@@ -23,7 +24,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
     var selectedIndex by remember { mutableStateOf(solenoids.firstOrNull()?.index) }
 
     // --- Left editor state (mirrors selected item) ---
-    var mainFrequency by remember { mutableStateOf(0) } // global integer
+    var mainFrequency by remember { mutableStateOf(MAIN_CONFIG.value.solenoids.mainFrequencyHz) } // global integer
 
     var nameText by remember { mutableStateOf("") }
     var pwmText by remember { mutableStateOf("") }
@@ -76,12 +77,12 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                 value = mainFrequency.toString(),
                 onValueChange = { txt ->
                     mainFrequency = txt.toIntOrNull() ?: mainFrequency
-
-                    val f10 = mainFrequency * 10
-                    for (i in solenoids.indices) {
-                        solenoids[i] = solenoids[i].copy(DitherFrequency = f10)
-                    }
-                    if (selectedIndex != null) freq10Text = f10.toString()
+                    MAIN_CONFIG.value.solenoids.mainFrequencyHz = mainFrequency
+//                    val f10 = mainFrequency * 10
+//                    for (i in solenoids.indices) {
+//                        solenoids[i] = solenoids[i].copy(DitherFrequency = f10)
+//                    }
+//                    if (selectedIndex != null) freq10Text = f10.toString()
                 },
                 label = { Text("Main Frequency (Integer)") },
                 singleLine = true,
@@ -156,7 +157,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(DitherAmplitude = newAmp10) }
                     }
                 },
-                label = { Text("Tenth amplitude") },
+                label = { Text("Dither Amplitude") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -171,7 +172,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(DitherFrequency = newFreq10) }
                     }
                 },
-                label = { Text("Tenth frequency") },
+                label = { Text("Dither Frequency") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()

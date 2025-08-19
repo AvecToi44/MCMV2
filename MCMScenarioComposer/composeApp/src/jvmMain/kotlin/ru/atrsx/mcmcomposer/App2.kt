@@ -26,36 +26,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrsx.mcmcomposer.ui.MainScenarioScreen
 
-// ---------- Models ----------
-data class ScenarioRow(
-    var number: Int = 0,
-    var name: String = "",
-    var passThrough: Boolean = true,
-    var durationMs: String = "0",
-    var messageText: String = "",
-    var interpolationFlags: MutableList<Boolean> = MutableList(16) { false },
-    var pressureHighlightFlags: MutableList<Boolean> = MutableList(16) { false },
-    var analogSetEnabled: Boolean = false
-)
-
-
-data class PWMChannel(
-    val index: Int,
-    var used: Boolean = true,
-    var color: Color,
-    var displayName: String = "",
-    var maxPwm: String = "",
-    var tolerance: String = "",
-    var frequency: String = "",
-    var isDC: Boolean = false,
-    var expectedTestValue: String = ""
-)
 
 // ---------- App ----------
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Test Console",
+        title = "Scenarios Wizard MCM [1.0.0]",
         state = WindowState(size = DpSize(1200.dp, 800.dp))
     ) {
         MaterialTheme {
@@ -69,24 +45,33 @@ fun main() = application {
 @Composable
 fun AppRoot() {
     var tab by remember { mutableStateOf(0) }
+    var mainConfig by remember { mutableStateOf(MAIN_CONFIG) }
 
     val tabs = listOf("Main Scenario", "Pressures", "Currents")
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
-            var text by remember { mutableStateOf("") }
+            var scenarioFileName by remember { mutableStateOf(MAIN_CONFIG.value.sheetName) }
+            var standardName by remember { mutableStateOf(MAIN_CONFIG.value.standardPath) }
+
+            LaunchedEffect(mainConfig.value) {
+                println("!!!!!!!")
+                scenarioFileName = mainConfig.value.sheetName
+                standardName = mainConfig.value.standardPath
+            }
+
             TextField(
-                value = text,
+                value = scenarioFileName,
                 onValueChange = { newText ->
-                    text = newText
+                    scenarioFileName = newText
                     MAIN_CONFIG.value.sheetName = newText
                 },
                 label = { Text("Future scenario name") }
             )
-            var text2 by remember { mutableStateOf("") }
+
             TextField(
-                value = text2,
+                value = standardName,
                 onValueChange = { newText ->
-                    text2 = newText
+                    standardName = newText
                     MAIN_CONFIG.value.standardPath = newText
                 },
                 label = { Text("Path to Standard") }

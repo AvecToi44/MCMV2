@@ -116,7 +116,7 @@ data class ScenarioStepDto(
 data class ScenarioBlockDto(
     var mainFrequency: Int = 1500,
     var steps: MutableList<ScenarioStepDto> = mutableListOf(
-        ScenarioStepDto(1000, MutableList(12) { 0 }, analog1 = 0, analog2 = 0, gradientTimeMs = 0, text = "")
+        //ScenarioStepDto(1000, MutableList(12) { 0 }, analog1 = 0, analog2 = 0, gradientTimeMs = 0, text = "")
     )
 )
 
@@ -308,6 +308,7 @@ object ExcelExporter {
         cell(R_SCEN_COLS, C_TEXT).setCellValue("text")
 
         config.scenario.steps.forEachIndexed { idx, step ->
+            println("scenario ${idx}>>> ${step}")
             val r = R_SCEN_FIRST + idx
             cell(r, C_LABEL).setCellValue(step.stepTimeMs.toDouble())
             for (i in 0 until 12) {
@@ -328,7 +329,7 @@ object ExcelExporter {
     }
 
     // Native "Save as…" (Compose Desktop/JVM)
-    fun saveWithDialog(parent: Frame? = null, suggestedName: String = "0b5_combi.xls"): File? {
+    fun saveWithDialog(parent: Frame? = null, suggestedName: String = "${MAIN_CONFIG.value.sheetName}.xls"): File? {
         val dlg = FileDialog(parent, "Save Excel", FileDialog.SAVE).apply {
             file = suggestedName
             isVisible = true
