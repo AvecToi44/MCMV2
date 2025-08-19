@@ -114,7 +114,7 @@ data class ScenarioStepDto(
 )
 
 data class ScenarioBlockDto(
-    var mainFrequency: Int = 1500,
+    var mainFrequency: Int = 700,
     var steps: MutableList<ScenarioStepDto> = mutableListOf(
         //ScenarioStepDto(1000, MutableList(12) { 0 }, analog1 = 0, analog2 = 0, gradientTimeMs = 0, text = "")
     )
@@ -326,15 +326,18 @@ object ExcelExporter {
 
         FileOutputStream(ensureXls(outFile)).use { wb.write(it) }
         wb.close()
+        LAST_CHANGES_SAVED.value = generateTimestampLastUpdate()
     }
 
     // Native "Save as…" (Compose Desktop/JVM)
     fun saveWithDialog(parent: Frame? = null, suggestedName: String = "${MAIN_CONFIG.value.sheetName}.xls"): File? {
+        LAST_FILE_SAVED = "${MAIN_CONFIG.value.sheetName}.xls"
         val dlg = FileDialog(parent, "Save Excel", FileDialog.SAVE).apply {
             file = suggestedName
             isVisible = true
         }
         val chosen = dlg.file ?: return null
+
         return ensureXls(File(dlg.directory, chosen))
     }
 

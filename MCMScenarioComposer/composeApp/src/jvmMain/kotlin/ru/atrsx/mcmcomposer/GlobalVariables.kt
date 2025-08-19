@@ -49,3 +49,6 @@ var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(
         sheetName = ""//"scenario_with_${pressures.count { it.isVisible }}_pressures_${generateTimestampLastUpdate()}"
     )
 )
+
+var LAST_CHANGES_SAVED = mutableStateOf("")
+var LAST_FILE_SAVED = ""

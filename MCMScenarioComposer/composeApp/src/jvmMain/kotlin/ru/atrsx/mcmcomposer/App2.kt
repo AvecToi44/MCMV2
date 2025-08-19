@@ -13,18 +13,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.File
 import compose.icons.feathericons.Save
+import compose.icons.feathericons.Star
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrsx.mcmcomposer.ui.MainScenarioScreen
+import java.awt.FileDialog
+import java.io.File
 
 
 // ---------- App ----------
@@ -46,12 +50,21 @@ fun main() = application {
 fun AppRoot() {
     var tab by remember { mutableStateOf(0) }
     var mainConfig by remember { mutableStateOf(MAIN_CONFIG) }
+    var lastChangesSaved by remember { LAST_CHANGES_SAVED }
+
+    var scenarioFileName by remember { mutableStateOf(MAIN_CONFIG.value.sheetName) }
+    var standardName by remember { mutableStateOf(MAIN_CONFIG.value.standardPath) }
 
     val tabs = listOf("Main Scenario", "Pressures", "Currents")
     Column(Modifier.fillMaxSize()) {
+        if (lastChangesSaved.isNotEmpty()) {
+            Row {
+                Text("Сохранение (${LAST_FILE_SAVED}) было крайний раз в ${lastChangesSaved}", color = Color.LightGray, fontSize = 8.sp)
+            }
+        }
+
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
-            var scenarioFileName by remember { mutableStateOf(MAIN_CONFIG.value.sheetName) }
-            var standardName by remember { mutableStateOf(MAIN_CONFIG.value.standardPath) }
+
 
             LaunchedEffect(mainConfig.value) {
                 println("!!!!!!!")
@@ -67,41 +80,63 @@ fun AppRoot() {
                 },
                 label = { Text("Future scenario name") }
             )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                        .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                        .clickable {
+                            CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                                delay(10)
+                                val dialog = FileDialog(null as java.awt.Frame?, "Select File", FileDialog.LOAD)
+                                dialog.isVisible = true
+                                val file = dialog.file
 
-            TextField(
-                value = standardName,
-                onValueChange = { newText ->
-                    standardName = newText
-                    MAIN_CONFIG.value.standardPath = newText
-                },
-                label = { Text("Path to Standard") }
-            )
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                    .background(Color(0xFF444444), RoundedCornerShape(4.dp))
-                    .clickable {
-                        CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                            delay(10)
-
-                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(
-                                MAIN_CONFIG.value.copy(
-                                    pressures = PressuresBlockDto(pressures),
-                                    solenoids = SolenoidsBlock(channels = solenoids),
-                                    scenario = ScenarioBlockDto(steps = scenarios.toDtoList())
-                                ), it) }
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    imageVector = FeatherIcons.Save,
-                    contentDescription = "Save",
-                    colorFilter = ColorFilter.tint(Color.White),
-                    modifier = Modifier.size(24.dp)
-                )
+                                standardName = File(dialog.directory, file).absolutePath
+                                MAIN_CONFIG.value.standardPath = standardName
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        imageVector = FeatherIcons.Star,
+                        contentDescription = "Star",
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Text("${standardName}")
             }
+            if (scenarioFileName.isNotEmpty()) {
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                        .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                        .clickable {
+                            CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
+                                delay(10)
+
+                                ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(
+                                    MAIN_CONFIG.value.copy(
+                                        pressures = PressuresBlockDto(pressures),
+                                        solenoids = SolenoidsBlock(channels = solenoids),
+                                        scenario = ScenarioBlockDto(steps = scenarios.toDtoList())
+                                    ), it) }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        imageVector = FeatherIcons.Save,
+                        contentDescription = "Save",
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
             Box(
                 Modifier
                     .size(40.dp)

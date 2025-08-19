@@ -110,7 +110,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                     nameText = it
                     if (enabled) updateSelected { ch -> ch.copy(displayName = it) }
                 },
-                label = { Text("DisplayName") },
+                label = { Text("Display Name") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -127,7 +127,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(maxPwm0_255 = clamped) }
                     }
                 },
-                label = { Text("MaxPWM [0 - 255]") },
+                label = { Text("Max Value [0 - 255]") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -191,7 +191,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("MinValue") },
+                label = { Text("Min Current Value") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -210,7 +210,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("MaxValue") },
+                label = { Text("Max Current Value") },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -278,7 +278,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(ch.displayName, style = MaterialTheme.typography.titleMedium)
                                 Text(
-                                    "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp10: ${ch.DitherAmplitude}  •  Freq10: ${ch.DitherFrequency}\n" +
+                                    "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp: ${ch.DitherAmplitude}  •  Freq: ${ch.DitherFrequency}\n" +
                                             "Range: ${ch.minValue}…${ch.maxValue}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
