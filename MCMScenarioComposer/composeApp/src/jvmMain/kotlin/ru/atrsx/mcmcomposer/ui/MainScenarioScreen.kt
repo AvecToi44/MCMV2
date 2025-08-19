@@ -95,7 +95,7 @@ fun MainScenarioScreen() {
         ) {
             Button(
                 onClick = {
-                    items.add(ScenarioStep(
+                    scenarios.add(ScenarioStep(
                         stepTimeMs = 1000,
                         channelValues = MutableList(12) { 0 },
                         analog1 = 0,

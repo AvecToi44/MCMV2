@@ -85,7 +85,12 @@ fun AppRoot() {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                             delay(10)
 
-                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(MAIN_CONFIG.value, it) }
+                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(
+                                MAIN_CONFIG.value.copy(
+                                    pressures = PressuresBlockDto(pressures),
+                                    solenoids = SolenoidsBlock(channels = solenoids),
+                                    scenario = ScenarioBlockDto(steps = scenarios.toDtoList())
+                                ), it) }
                         }
                     },
                 contentAlignment = Alignment.Center
