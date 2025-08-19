@@ -3,15 +3,6 @@ package ru.atrsx.mcmcomposer
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 
-//var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(
-//    MainExperimentConfig(
-//        pressures = PressuresBlockDto(channels = pressures),
-//        solenoids = TODO(),
-//        scenario = TODO(),
-//        standardPath = TODO(),
-//        sheetName = TODO()
-//    )
-//)
 
 var scenarios = mutableStateListOf(
     ScenarioStep(stepTimeMs = 1000, channelValues = MutableList(12) { 1 }, text = "Step 1", gradientTimeMs = 0),
@@ -49,3 +40,12 @@ var solenoids = mutableStateListOf(
     SolenoidChannel(displayName = "Соленоид без имени", index = 11, maxPwm0_255 = 0, valueOfDivision = 0, DitherAmplitude = 0, DitherFrequency = 0, minValue = 0, maxValue = 0, isVisible = true),
 )
 
+var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(
+    MainExperimentConfig(
+        pressures = PressuresBlockDto(channels = pressures),
+        solenoids = SolenoidsBlock(channels = solenoids),
+        scenario  = ScenarioBlockDto(steps = scenarios.toDtoList()),
+        standardPath = "C:\\Users\\...\\0b5_combi_18_08_2025 11_31_32_arstest5.txt",
+        sheetName = "scenario_with_${pressures.count { it.isVisible }}_pressures_${generateTimestampLastUpdate()}"
+    )
+)

@@ -1,6 +1,5 @@
 package ru.atrsx.mcmcomposer
 
-import ExportExcelButton
 import PressuresScreen
 import SolenoidsScreen
 import androidx.compose.foundation.*
@@ -77,13 +76,19 @@ fun AppRoot() {
             var text by remember { mutableStateOf("") }
             TextField(
                 value = text,
-                onValueChange = { newText -> text = newText },
+                onValueChange = { newText ->
+                    text = newText
+                    MAIN_CONFIG.value.sheetName = newText
+                },
                 label = { Text("Future scenario name") }
             )
             var text2 by remember { mutableStateOf("") }
             TextField(
                 value = text2,
-                onValueChange = { newText -> text2 = newText },
+                onValueChange = { newText ->
+                    text2 = newText
+                    MAIN_CONFIG.value.standardPath = newText
+                },
                 label = { Text("Path to Standard") }
             )
             Box(
@@ -94,24 +99,8 @@ fun AppRoot() {
                     .clickable {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                             delay(10)
-                            //
-                            val cfg = MainExperimentConfig(
-                                pressures = PressuresBlockDto(channels = pressures),
-                                solenoids = SolenoidsBlock(channels = solenoids),
-                                scenario  = ScenarioBlockDto(steps = scenarios.toDtoList()),
-                                standardPath = "C:\\Users\\...\\0b5_combi_18_08_2025 11_31_32_arstest5.txt",
-                                sheetName = "0b5_combi"
-                            )
-                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(cfg, it) }
-//                            saveExperimentExcelWithDialogExact(
-//                                config    = MainExperimentConfig(standardPath = "/Users/you/Desktop", sheetName = "test"),
-//                                pressures = pressures,
-//                                solenoids = solenoids,
-//                                scenarios = scenarios,
-//                                titleText = "0b5_combi_13_08_2025_16_05_50.txt", // or null
-//                                mainFreq  = null,   // null → auto-derive from solenoids.tenthFrequency/10
-//                                testVar   = 0
-//                            )
+
+                            ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(MAIN_CONFIG.value, it) }
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -131,6 +120,14 @@ fun AppRoot() {
                     .clickable {
                         CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                             delay(10)
+                            val ok = ExcelImporter.openAndImportIntoState(
+                                parent = null, // or your Window.frame
+                                pressuresState = pressures,
+                                solenoidsState = solenoids,
+                                scenariosState = scenarios,
+                                mainConfigState = MAIN_CONFIG
+                            )
+
                         }
                     },
                 contentAlignment = Alignment.Center

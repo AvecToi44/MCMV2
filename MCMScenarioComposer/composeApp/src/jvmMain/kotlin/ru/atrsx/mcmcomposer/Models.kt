@@ -20,7 +20,7 @@ data class MainExperimentConfig(
     val solenoids: SolenoidsBlock = SolenoidsBlock(),
     val scenario: ScenarioBlockDto = ScenarioBlockDto(),
     var standardPath: String,
-    val sheetName: String = "test"
+    var sheetName: String = "test"
 )
 
 // --- Pressures (orange) ---
@@ -189,46 +189,46 @@ fun SnapshotStateList<ScenarioStep>.toDtoList(channelCount: Int = DEFAULT_CHANNE
 object ExcelExporter {
 
     // Column anchors (0-based)
-    private const val C_LABEL = 0         // A
-    private const val C_CH_FIRST = 1      // B..M (12 channels)
-    private const val C_ANALOG1 = 13      // N
-    private const val C_ANALOG2 = 14      // O
-    private const val C_GRADIENT = 15     // P
-    private const val C_TEXT = 16         // Q
+    const val C_LABEL = 0         // A
+    const val C_CH_FIRST = 1      // B..M (12 channels)
+    const val C_ANALOG1 = 13      // N
+    const val C_ANALOG2 = 14      // O
+    const val C_GRADIENT = 15     // P
+    const val C_TEXT = 16         // Q
 
     // Row anchors (0-based)
-    private const val R_PATH = 0
-    private const val R_PRESS_HDR = 1      // "Pressures"
-    private const val R_P_Display = 2
-    private const val R_P_Index = 3
-    private const val R_P_Min = 4
-    private const val R_P_Max = 5
-    private const val R_P_Tol = 6
-    private const val R_P_Unit = 7
-    private const val R_P_Comment = 8
-    private const val R_P_Color = 9
-    private const val R_P_Visible = 10
-    private const val R_P_Params = 11
-    private const val R_P_Tilda = 12
+    const val R_PATH = 0
+    const val R_PRESS_HDR = 1      // "Pressures"
+    const val R_P_Display = 2
+    const val R_P_Index = 3
+    const val R_P_Min = 4
+    const val R_P_Max = 5
+    const val R_P_Tol = 6
+    const val R_P_Unit = 7
+    const val R_P_Comment = 8
+    const val R_P_Color = 9
+    const val R_P_Visible = 10
+    const val R_P_Params = 11
+    const val R_P_Tilda = 12
 
-    private const val R_S_HDR = 13         // "Solenoids"
-    private const val C_S_MainFreq_L = 1   // B
-    private const val C_S_MainFreq_V = 2   // C
-    private const val R_S_Display = 14
-    private const val R_S_Index = 15
-    private const val R_S_MaxPWM = 16
-    private const val R_S_ValueDiv = 17
-    private const val R_S_DitherAmp = 18
-    private const val R_S_DitherFreq = 19
-    private const val R_S_Min = 20
-    private const val R_S_Max = 21
-    private const val R_S_Visible = 22
-    private const val R_S_Tilda1 = 23
-    private const val R_S_Tilda2 = 24
+    const val R_S_HDR = 13         // "Solenoids"
+    const val C_S_MainFreq_L = 1   // B
+    const val C_S_MainFreq_V = 2   // C
+    const val R_S_Display = 14
+    const val R_S_Index = 15
+    const val R_S_MaxPWM = 16
+    const val R_S_ValueDiv = 17
+    const val R_S_DitherAmp = 18
+    const val R_S_DitherFreq = 19
+    const val R_S_Min = 20
+    const val R_S_Max = 21
+    const val R_S_Visible = 22
+    const val R_S_Tilda1 = 23
+    const val R_S_Tilda2 = 24
 
-    private const val R_SCEN_HDR = 25      // "Scenario:"
-    private const val R_SCEN_COLS = 26     // headings
-    private const val R_SCEN_FIRST = 27   // first step row
+    const val R_SCEN_HDR = 25      // "Scenario:"
+    const val R_SCEN_COLS = 26     // headings
+    const val R_SCEN_FIRST = 27   // first step row
 
     fun export(config: MainExperimentConfig, outFile: File) {
         val wb = HSSFWorkbook()
