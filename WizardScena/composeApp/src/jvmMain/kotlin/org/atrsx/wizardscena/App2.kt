@@ -1,7 +1,5 @@
-package ru.atrsx.mcmcomposer
+package org.atrsx.wizardscena
 
-import PressuresScreen
-import SolenoidsScreen
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.File
 import compose.icons.feathericons.Save
@@ -26,8 +20,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.atrsx.mcmcomposer.ui.MainScenarioScreen
+import org.atrsx.wizardscena.ui.MainScenarioScreen
+import org.atrsx.wizardscena.ui.PressuresScreen
+import org.atrsx.wizardscena.ui.SolenoidsScreen
 import java.awt.FileDialog
+import java.awt.Frame
 import java.io.File
 
 
@@ -89,7 +86,7 @@ fun AppRoot() {
                         .clickable {
                             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                                 delay(10)
-                                val dialog = FileDialog(null as java.awt.Frame?, "Select File", FileDialog.LOAD)
+                                val dialog = FileDialog(null as Frame?, "Select File", FileDialog.LOAD)
                                 dialog.isVisible = true
                                 val file = dialog.file
 

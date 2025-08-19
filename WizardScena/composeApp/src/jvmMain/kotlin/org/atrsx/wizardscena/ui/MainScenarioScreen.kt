@@ -1,4 +1,4 @@
-package ru.atrsx.mcmcomposer.ui
+package org.atrsx.wizardscena.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -25,13 +25,14 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import java.util.UUID
-import ru.atrsx.mcmcomposer.ScenarioStep
-import ru.atrsx.mcmcomposer.scenarios
-import ru.atrsx.mcmcomposer.solenoids
+import org.atrsx.wizardscena.ScenarioStep
+import org.atrsx.wizardscena.scenarios
+import org.atrsx.wizardscena.solenoids
 
 /* ==================== Keyboard grid helpers ==================== */
 
@@ -390,7 +391,7 @@ private fun GridCell(
     setPendingFocus: (CellId?) -> Unit,
     totalRows: Int,
     value: TextFieldValue,
-    width: androidx.compose.ui.unit.Dp,
+    width: Dp,
     label: String,
     listScrollTo: (Int) -> Unit,
     numberOnly: Boolean,
