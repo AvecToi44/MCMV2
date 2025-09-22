@@ -1,5 +1,7 @@
 package ru.atrs.mcm.ui.chartsv3
 
+import ToggleSpec
+import TogglesPlate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -323,15 +325,25 @@ fun App(analysisAfterExperiment: Boolean = false) {
 //            }
             }
         }
-
-        // NEW: top-right plate for toggles
         TogglesPlate(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(10.dp),
-            overlapHalves = overlapHalves,
-            onOverlapChanged = { overlapHalves = it }
+            modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
+            toggles = listOf(
+                ToggleSpec(
+                    label = "Наложение половин",
+                    checked = overlapHalves,
+                    onCheckedChange = { overlapHalves = it },
+                    info = "В первой половине используется ваш обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и эффект пунктирной траектории, смещенный по оси X так, чтобы его начало совпадало с первой половиной."
+                )
+            )
         )
+        // NEW: top-right plate for toggles
+//        TogglesPlate(
+//            modifier = Modifier
+//                .align(Alignment.TopEnd)
+//                .padding(10.dp),
+//            overlapHalves = overlapHalves,
+//            onOverlapChanged = { overlapHalves = it }
+//        )
     }
 
 }
