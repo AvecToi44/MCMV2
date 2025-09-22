@@ -256,97 +256,84 @@ fun App(analysisAfterExperiment: Boolean = false) {
         )
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // --- Compact header (put this inside Column, instead of 3 FilePickerRow calls) ---
-        HeaderBar(
-            slots = listOf(
-                HeaderSlot(
-                    label = "File 1",
-                    path = path1,
-                    result = data1,
-                    visibility = vis1,
-                    onPick = { path1 = it },
-                    onClear = { path1 = null },
-                    onToggleAll = { vis1 = toggleAll(vis1) },
-                    onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
+    var overlapHalves by remember { mutableStateOf(false) } // <— NEW
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // --- Compact header (put this inside Column, instead of 3 FilePickerRow calls) ---
+            HeaderBar(
+                slots = listOf(
+                    HeaderSlot(
+                        label = "File 1",
+                        path = path1,
+                        result = data1,
+                        visibility = vis1,
+                        onPick = { path1 = it },
+                        onClear = { path1 = null },
+                        onToggleAll = { vis1 = toggleAll(vis1) },
+                        onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
+                    ),
+                    HeaderSlot(
+                        label = "File 2",
+                        path = path2,
+                        result = data2,
+                        visibility = vis2,
+                        onPick = { path2 = it },
+                        onClear = { path2 = null },
+                        onToggleAll = { vis2 = toggleAll(vis2) },
+                        onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
+                    ),
+                    HeaderSlot(
+                        label = "File 3",
+                        path = path3,
+                        result = data3,
+                        visibility = vis3,
+                        onPick = { path3 = it },
+                        onClear = { path3 = null },
+                        onToggleAll = { vis3 = toggleAll(vis3) },
+                        onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
+                    ),
                 ),
-                HeaderSlot(
-                    label = "File 2",
-                    path = path2,
-                    result = data2,
-                    visibility = vis2,
-                    onPick = { path2 = it },
-                    onClear = { path2 = null },
-                    onToggleAll = { vis2 = toggleAll(vis2) },
-                    onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
-                ),
-                HeaderSlot(
-                    label = "File 3",
-                    path = path3,
-                    result = data3,
-                    visibility = vis3,
-                    onPick = { path3 = it },
-                    onClear = { path3 = null },
-                    onToggleAll = { vis3 = toggleAll(vis3) },
-                    onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
-                ),
-            ),
-            colors = seriesColors
-        )
-        // Top: 3 file rows (DRY: same component)
-//        FilePickerRow(
-//            label = "File 1",
-//            path = path1,
-//            result = data1,
-//            visibility = vis1,
-//            onToggleAll = { vis1 = toggleAll(vis1) },
-//            onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) },
-//            onClear = { path1 = null },
-//            onPick = { chosen -> path1 = chosen }
-//        )
-//
-//        FilePickerRow(
-//            label = "File 2",
-//            path = path2,
-//            result = data2,
-//            visibility = vis2,
-//            onToggleAll = { vis2 = toggleAll(vis2) },
-//            onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) },
-//            onClear = { path2 = null },
-//            onPick = { chosen -> path2 = chosen }
-//        )
-//
-//        FilePickerRow(
-//            label = "File 3",
-//            path = path3,
-//            result = data3,
-//            visibility = vis3,
-//            onToggleAll = { vis3 = toggleAll(vis3) },
-//            onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) },
-//            onClear = { path3 = null },
-//            onPick = { chosen -> path3 = chosen }
-//        )
-
-        // Chart area
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            val ds1 = (data1 as? ResultOrNull.Success)?.chartData
-            val ds2 = (data2 as? ResultOrNull.Success)?.chartData
-            val ds3 = (data3 as? ResultOrNull.Success)?.chartData
-
-            val datasets = listOfNotNull(ds1, ds2, ds3)
-            val vis = listOfNotNull(
-                ds1?.let { vis1 },
-                ds2?.let { vis2 },
-                ds3?.let { vis3 }
+                colors = seriesColors
             )
-            if (datasets.isNotEmpty()) {
-                ChartView(datasets = datasets, visibilityStates = vis, colors = seriesColors)
+
+
+            // Chart area
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                val ds1 = (data1 as? ResultOrNull.Success)?.chartData
+                val ds2 = (data2 as? ResultOrNull.Success)?.chartData
+                val ds3 = (data3 as? ResultOrNull.Success)?.chartData
+
+                val datasets = listOfNotNull(ds1, ds2, ds3)
+                val vis = listOfNotNull(
+                    ds1?.let { vis1 },
+                    ds2?.let { vis2 },
+                    ds3?.let { vis3 }
+                )
+                if (datasets.isNotEmpty()) {
+                    ChartView(datasets = datasets, visibilityStates = vis, colors = seriesColors, overlapHalves = overlapHalves)
+                }
+
+
+
+//            Box(Modifier.align(Alignment.TopStart).padding(10.dp)) {
+//                StickyHint()
+//            }
             }
         }
+
+        // NEW: top-right plate for toggles
+        TogglesPlate(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(10.dp),
+            overlapHalves = overlapHalves,
+            onOverlapChanged = { overlapHalves = it }
+        )
     }
+
 }
 
 // Helper sealed for produceState
@@ -484,26 +471,42 @@ private fun FileButton(
 // Chart view
 // ==============================
 
-@OptIn(ExperimentalKoalaPlotApi::class)
+@OptIn(ru.atrsx.chartviewer.koala.ExperimentalKoalaPlotApi::class)
 @Composable
 fun ChartView(
     datasets: List<ChartData>,
     visibilityStates: List<List<Boolean>>,
-    colors: List<Color>
+    colors: List<Color>,
+    overlapHalves: Boolean
 ) {
     val maxPoints = 6000
     val minPoints = 200
 
-    // Flatten all *visible* series for axis scaling
-    val downsampledAll by remember(datasets, visibilityStates) {
+    fun splitAndShift(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
+        if (series.size < 2) return series to emptyList()
+        val mid = series.size / 2
+        val first = series.subList(0, mid)
+        val second = series.subList(mid, series.size)
+        if (first.isEmpty() || second.isEmpty()) return first to emptyList()
+        val dx = second.first().x - first.first().x
+        val shiftedSecond = second.map { Point(it.x - dx, it.y) }
+        return first to shiftedSecond
+    }
+
+    val downsampledAll by remember(datasets, visibilityStates, overlapHalves) {
         derivedStateOf {
             datasets.flatMapIndexed { di, cd ->
                 cd.series.flatMapIndexed { si, series ->
                     if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) emptyList()
                     else {
-                        val step = (series.size / minPoints).coerceAtLeast(1)
-                        if (series.size > maxPoints) series.filterIndexed { idx, _ -> idx % step == 0 }
-                        else series
+                        val seqs = if (!overlapHalves) listOf(series) else {
+                            val (first, secondShifted) = splitAndShift(series)
+                            listOf(first, secondShifted)
+                        }
+                        seqs.flatMap { seq ->
+                            val step = (seq.size / minPoints).coerceAtLeast(1)
+                            if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
+                        }
                     }
                 }
             }
@@ -547,33 +550,47 @@ fun ChartView(
                 cd.series.forEachIndexed { si, series ->
                     if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
 
-                    val step = (series.size / minPoints).coerceAtLeast(1)
-                    val plotData =
-                        if (series.size > maxPoints) series.filterIndexed { idx, _ -> idx % step == 0 } else series
-
                     val baseColor = colors[si % colors.size]
-                    val style = LineStyle(
-                        brush = SolidColor(baseColor),
-                        strokeWidth = 2.dp,
-                        pathEffect = cd.pathEffect // per-file style
-                    )
 
-                    LinePlot(
-                        data = plotData,
-                        lineStyle = style,
-                        symbol = if (di == 2) { _ ->
-                            Box(
-                                Modifier
-                                    .size(4.dp)
-                                    .background(baseColor, CircleShape)
-                            )
-                        } else null
-                    )
+                    @Composable
+                    fun plot(seq: List<Point<Float, Float>>, isSecondHalf: Boolean) {
+                        val step = (seq.size / minPoints).coerceAtLeast(1)
+                        val plotData =
+                            if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
+
+                        val dotted = if (isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
+                        val combinedEffect = when {
+                            cd.pathEffect != null && dotted != null -> dotted
+                            else -> cd.pathEffect ?: dotted
+                        }
+
+                        val style = LineStyle(
+                            brush = SolidColor(if (isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
+                            strokeWidth = 2.dp,
+                            pathEffect = combinedEffect
+                        )
+
+                        LinePlot(
+                            data = plotData,
+                            lineStyle = style,
+                            symbol = null
+                        )
+                    }
+
+                    if (!overlapHalves) {
+                        plot(series, isSecondHalf = false)
+                    } else {
+                        val (first, secondShifted) = splitAndShift(series)
+                        if (first.isNotEmpty()) plot(first, isSecondHalf = false)
+                        if (secondShifted.isNotEmpty()) plot(secondShifted, isSecondHalf = true)
+                    }
                 }
             }
         }
     }
 }
+
+
 
 // ==============================
 // Small helpers
