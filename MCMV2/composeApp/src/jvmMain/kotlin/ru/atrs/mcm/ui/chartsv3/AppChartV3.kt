@@ -8,9 +8,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,10 +29,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.atrs.mcm.ui.snackBarShow
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.chartFileAfterExperiment
+import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.doOpen_First_ChartWindow
 import ru.atrs.mcm.utils.doOpen_Second_ChartWindow
@@ -206,6 +213,8 @@ class AppChartV3 {
 
 @Composable
 fun App(analysisAfterExperiment: Boolean = false) {
+    val scope = rememberCoroutineScope()
+    
     // Initial paths (if provided by your external state)
     var path1 by remember { mutableStateOf(chartFileAfterExperiment.value?.absolutePath?.takeIf { analysisAfterExperiment }) }
     var path2 by remember { mutableStateOf(chartFileStandard.value?.absolutePath?.takeIf { analysisAfterExperiment }) }
@@ -258,7 +267,69 @@ fun App(analysisAfterExperiment: Boolean = false) {
         )
     }
 
-    var overlapHalves by remember { mutableStateOf(false) } // <— NEW
+    var overlapHalves by remember { mutableStateOf(false) }
+    var isExporting by remember { mutableStateOf(false) }
+    var exportProgress by remember { mutableStateOf(0f) }
+    var isExportingTo1C by remember { mutableStateOf(false) }
+
+    val ds1 = (data1 as? ResultOrNull.Success)?.chartData
+    val ds2 = (data2 as? ResultOrNull.Success)?.chartData
+    val ds3 = (data3 as? ResultOrNull.Success)?.chartData
+    val datasets = listOfNotNull(ds1, ds2, ds3)
+    val vis = listOfNotNull(
+        ds1?.let { vis1 },
+        ds2?.let { vis2 },
+        ds3?.let { vis3 }
+    )
+
+    fun exportPdf() {
+        if (datasets.isEmpty()) {
+            showMeSnackBar("Нет данных для экспорта", Color.Red)
+            return
+        }
+        
+        val chartPaths = listOfNotNull(path1, path2, path3)
+        val pdfPath = PdfExporter.getPdfPathFromChartPaths(chartPaths)
+        
+        scope.launch {
+            isExporting = true
+            exportProgress = 0.1f
+            
+            val config = PdfExportConfig(
+                datasets = datasets,
+                visibilityStates = vis,
+                seriesColors = seriesColors,
+                chartFilePaths = chartPaths
+            )
+            
+            exportProgress = 0.3f
+            delay(50)
+            
+            val result = PdfExporter.exportToPdf(config, pdfPath)
+            
+            exportProgress = 1f
+            delay(100)
+            isExporting = false
+            
+            if (result.success) {
+                showMeSnackBar("PDF сохранён: ${result.filePath}", Color(0xFF4CAF50))
+            } else if (result.errorMessage != null && result.errorMessage != "Export cancelled") {
+                logError("PDF export failed: ${result.errorMessage}")
+                showMeSnackBar("Ошибка экспорта: ${result.errorMessage}", Color.Red)
+            }
+        }
+    }
+
+    fun exportPdfTo1C() {
+        if (datasets.isEmpty()) {
+            showMeSnackBar("Нет данных для экспорта", Color.Red)
+            return
+        }
+        // TODO: Implement 1C server integration
+        // Placeholder: Show message that function will be added later
+        showMeSnackBar("Функция 'Экспорт PDF в 1С' будет добавлена позже", Color(0xFF6A3281))
+    }
+
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -304,16 +375,6 @@ fun App(analysisAfterExperiment: Boolean = false) {
 
             // Chart area
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                val ds1 = (data1 as? ResultOrNull.Success)?.chartData
-                val ds2 = (data2 as? ResultOrNull.Success)?.chartData
-                val ds3 = (data3 as? ResultOrNull.Success)?.chartData
-
-                val datasets = listOfNotNull(ds1, ds2, ds3)
-                val vis = listOfNotNull(
-                    ds1?.let { vis1 },
-                    ds2?.let { vis2 },
-                    ds3?.let { vis3 }
-                )
                 if (datasets.isNotEmpty()) {
                     ChartView(datasets = datasets, visibilityStates = vis, colors = seriesColors, overlapHalves = overlapHalves)
                 }
@@ -334,16 +395,19 @@ fun App(analysisAfterExperiment: Boolean = false) {
                     onCheckedChange = { overlapHalves = it },
                     info = "В первой половине используется ваш обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и эффект пунктирной траектории, смещенный по оси X так, чтобы его начало совпадало с первой половиной."
                 )
-            )
+            ),
+            onExportPdf = { exportPdf() },
+            onExportPdfTo1C = { exportPdfTo1C() },
+            isExporting = isExporting,
+            isExportingTo1C = isExportingTo1C
         )
-        // NEW: top-right plate for toggles
-//        TogglesPlate(
-//            modifier = Modifier
-//                .align(Alignment.TopEnd)
-//                .padding(10.dp),
-//            overlapHalves = overlapHalves,
-//            onOverlapChanged = { overlapHalves = it }
-//        )
+        
+        if (isExporting) {
+            PdfExportProgressDialog(
+                progress = exportProgress,
+                onDismiss = { }
+            )
+        }
     }
 
 }
@@ -616,3 +680,43 @@ private fun toggleAll(current: List<Boolean>): List<Boolean> {
 
 private fun List<Boolean>.updateIndex(i: Int): List<Boolean> =
     mapIndexed { idx, v -> if (idx == i) !v else v }
+
+@Composable
+fun PdfExportProgressDialog(
+    progress: Float,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        title = {
+            Text("Экспорт в PDF")
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.size(64.dp),
+                    color = Color(0xFF1976D2),
+                )
+                Text(
+                    text = when {
+                        progress < 0.3f -> "Подготовка данных..."
+                        progress < 0.6f -> "Создание PDF..."
+                        progress < 0.9f -> "Запись файла..."
+                        else -> "Завершение..."
+                    },
+                    fontSize = 14.sp
+                )
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().height(8.dp),
+                    color = Color(0xFF1976D2),
+                )
+            }
+        }
+    )
+}

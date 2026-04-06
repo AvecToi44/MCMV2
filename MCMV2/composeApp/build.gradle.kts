@@ -33,6 +33,7 @@ kotlin {
             implementation("com.fazecast:jSerialComm:2.9.3")
 
             implementation("org.apache.poi:poi:5.0.0")
+            implementation("org.apache.pdfbox:pdfbox:2.0.30")
 
             implementation("org.jfree:jcommon:1.0.24")
             implementation("org.jfree:jfreechart:1.5.3")
