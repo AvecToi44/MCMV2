@@ -589,8 +589,8 @@ fun ChartView(
         }
     }
 
-    val xRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleXRange() ?: (0f..1f)
-    val yRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleYRange() ?: (0f..1f)
+    val xRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleXRange(useNiceRange = false) ?: (0f..1f)
+    val yRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleYRange(useNiceRange = false) ?: (0f..1f)
 
     val xModel = rememberFloatLinearAxisModel(
         range = xRange,

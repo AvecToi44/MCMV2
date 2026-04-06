@@ -43,7 +43,7 @@ fun TogglesPlate(
             .background(Color(0xE6000000), RoundedCornerShape(10.dp))
             .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(10.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
 
         Text("View options", color = Color.White, fontSize = 11.sp)
@@ -53,8 +53,8 @@ fun TogglesPlate(
         }
 
         if (onExportPdf != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            
+            Spacer(modifier = Modifier.height(4.dp))
+
             Button(
                 onClick = onExportPdf,
                 enabled = !isExporting,
@@ -84,8 +84,8 @@ fun TogglesPlate(
         }
 
         if (onExportPdfTo1C != null) {
-            Spacer(modifier = Modifier.height(4.dp))
-            
+            Spacer(modifier = Modifier.height(2.dp))
+
             Button(
                 onClick = onExportPdfTo1C,
                 enabled = false,

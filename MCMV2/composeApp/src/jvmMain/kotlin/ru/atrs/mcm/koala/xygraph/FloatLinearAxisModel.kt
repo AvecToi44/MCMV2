@@ -296,14 +296,29 @@ public fun rememberFloatLinearAxisModel(
 /**
  * Calculates an [ClosedFloatingPointRange] that can be used with a [FloatLinearAxisModel] based on the
  * min/max values of the provided list of Floats. If the list is empty, returns a range of 0..1.
+ *
+ * @param useNiceRange If true, rounds to "nice" tick values for cleaner labels. If false, returns raw min..max.
  */
 @JvmName("autoScaleFloatRange")
-public fun List<Float>.autoScaleRange(): ClosedFloatingPointRange<Float> {
+public fun List<Float>.autoScaleRange(useNiceRange: Boolean = true): ClosedFloatingPointRange<Float> {
     if (isEmpty()) {
         return 0f..1f
     }
     val max = this.max()
     val min = this.min()
+
+    if (!useNiceRange) {
+        return if (max - min == 0f) {
+            if (min != 0f) {
+                0f..(min * 2f)
+            } else {
+                0f..1f
+            }
+        } else {
+            min..max
+        }
+    }
+
     val range = if (max - min == 0f) {
         if (min != 0f) {
             (max * 2f) - (min / 2f)
@@ -342,11 +357,17 @@ public fun List<Float>.autoScaleRange(): ClosedFloatingPointRange<Float> {
 /**
  * Calculates a [ClosedFloatingPointRange] that can be used with a [LinearAxisModel] based on the
  * min/max X values of the provided list of [ru.atrsx.chartviewer.koala.xygraph.Point]s.
+ *
+ * @param useNiceRange If true, rounds to "nice" tick values. If false, returns raw min..max range.
  */
-public fun <Y> List<Point<Float, Y>>.autoScaleXRange(): ClosedFloatingPointRange<Float> = toXList().autoScaleRange()
+public fun <Y> List<Point<Float, Y>>.autoScaleXRange(useNiceRange: Boolean = true): ClosedFloatingPointRange<Float> =
+    toXList().autoScaleRange(useNiceRange)
 
 /**
  * Calculates a [ClosedFloatingPointRange] that can be used with a [LinearAxisModel] based on the
  * min/max Y values of the provided list of [Point]s.
+ *
+ * @param useNiceRange If true, rounds to "nice" tick values. If false, returns raw min..max range.
  */
-public fun <X> List<Point<X, Float>>.autoScaleYRange(): ClosedFloatingPointRange<Float> = toYList().autoScaleRange()
+public fun <X> List<Point<X, Float>>.autoScaleYRange(useNiceRange: Boolean = true): ClosedFloatingPointRange<Float> =
+    toYList().autoScaleRange(useNiceRange)

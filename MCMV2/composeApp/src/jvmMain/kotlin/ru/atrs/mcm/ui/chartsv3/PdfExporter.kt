@@ -39,9 +39,9 @@ object PdfExporter {
     private const val MARGIN = 25f
     private const val HEADER_HEIGHT = 20f
     private const val CHANNEL_CHIP_WIDTH = 30f
-    private const val CHANNEL_CHIP_HEIGHT = 14f
+    private const val CHANNEL_CHIP_HEIGHT = 10f
     private const val CHIP_SPACING = 2f
-    private const val ROW_SPACING = 18f
+    private const val ROW_SPACING = 14f
 
     private val AWtColor = java.awt.Color::class.java
 
@@ -392,25 +392,26 @@ object PdfExporter {
                 (datasetColor.blue * 255).toInt()
             )
 
-            // Draw file name
+            // Draw file name (bold)
             contentStream.beginText()
-            contentStream.setFont(regularFont, 8f)
+            contentStream.setFont(boldFont, 8f)
             contentStream.newLineAtOffset(MARGIN, yCursor)
             val displayName = if (dataset.fileName.length > 35) dataset.fileName.take(32) + "..." else dataset.fileName
             contentStream.showText("File ${datasetIdx + 1}: $displayName")
             contentStream.endText()
 
-            // Draw separator line in dataset color with dataset line style
-            val lineY = yCursor + 2f
+            // Short line style indicator under filename
+            val indicatorWidth = 50f
+            val indicatorY = yCursor - 3f
             contentStream.setStrokingColor(dashColor)
-            contentStream.setLineWidth(lineStyle.width)
+            contentStream.setLineWidth(1.5f)
             if (lineStyle.dashArray != null) {
                 contentStream.setLineDashPattern(lineStyle.dashArray, 0f)
             } else {
                 contentStream.setLineDashPattern(floatArrayOf(), 0f)
             }
-            contentStream.moveTo(MARGIN + 110f, lineY)
-            contentStream.lineTo(MARGIN + 500f, lineY)
+            contentStream.moveTo(MARGIN, indicatorY)
+            contentStream.lineTo(MARGIN + indicatorWidth, indicatorY)
             contentStream.stroke()
             contentStream.setLineDashPattern(floatArrayOf(), 0f)
 
@@ -461,6 +462,139 @@ object PdfExporter {
 
         val chartTop = yCursor - 10f
         contentStream.drawImage(pdImage, MARGIN, MARGIN, chartAreaWidth, chartTop - MARGIN)
+    }
+
+    private fun drawPageWithScreenshot(
+        contentStream: PDPageContentStream,
+        document: PDDocument,
+        config: PdfExportConfig,
+        screenshot: BufferedImage
+    ) {
+        val boldFont: PDFont = loadCyrillicBoldFont(document)
+        val regularFont: PDFont = loadCyrillicFont(document)
+
+        val timestamp = extractTimestampFromPaths(config.chartFilePaths)
+
+        val chartAreaWidth = A4_WIDTH - MARGIN * 2
+
+        var yCursor = A4_HEIGHT - MARGIN
+
+        // Title
+        contentStream.beginText()
+        contentStream.setFont(boldFont, 12f)
+        contentStream.newLineAtOffset(MARGIN, yCursor)
+        contentStream.showText("MCMV2 Measurement from $timestamp")
+        contentStream.endText()
+
+        yCursor -= ROW_SPACING
+        contentStream.setFont(regularFont, 8f)
+
+        for ((datasetIdx, dataset) in config.datasets.withIndex()) {
+            if (datasetIdx >= 3) break
+
+            val vis = config.visibilityStates.getOrNull(datasetIdx) ?: continue
+            val datasetColor = config.seriesColors.getOrElse(0) { androidx.compose.ui.graphics.Color.Gray }
+            val dashColor = java.awt.Color(
+                (datasetColor.red * 255).toInt(),
+                (datasetColor.green * 255).toInt(),
+                (datasetColor.blue * 255).toInt()
+            )
+
+            val lineStyles = listOf(
+                LineStyleInfo(1f, null),
+                LineStyleInfo(1f, floatArrayOf(8f, 4f)),
+                LineStyleInfo(1f, floatArrayOf(2f, 3f))
+            )
+            val lineStyle = lineStyles.getOrElse(datasetIdx) { lineStyles[0] }
+
+            // Draw file name (bold)
+            contentStream.beginText()
+            contentStream.setFont(boldFont, 8f)
+            contentStream.newLineAtOffset(MARGIN, yCursor)
+            val displayName = if (dataset.fileName.length > 35) dataset.fileName.take(32) + "..." else dataset.fileName
+            contentStream.showText("File ${datasetIdx + 1}: $displayName")
+            contentStream.endText()
+
+            // Short line style indicator under filename
+            val indicatorWidth = 50f
+            val indicatorY = yCursor - 3f
+            contentStream.setStrokingColor(dashColor)
+            contentStream.setLineWidth(1.5f)
+            if (lineStyle.dashArray != null) {
+                contentStream.setLineDashPattern(lineStyle.dashArray, 0f)
+            } else {
+                contentStream.setLineDashPattern(floatArrayOf(), 0f)
+            }
+            contentStream.moveTo(MARGIN, indicatorY)
+            contentStream.lineTo(MARGIN + indicatorWidth, indicatorY)
+            contentStream.stroke()
+            contentStream.setLineDashPattern(floatArrayOf(), 0f)
+
+            // Draw channel chips inline
+            var xCursor = MARGIN + 510f
+            contentStream.setFont(regularFont, 6f)
+
+            for ((channelIdx, isVisible) in vis.withIndex()) {
+                val chipWidth = CHANNEL_CHIP_WIDTH
+                if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
+
+                val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
+                val awtColor = java.awt.Color(
+                    (color.red * 255).toInt(),
+                    (color.green * 255).toInt(),
+                    (color.blue * 255).toInt()
+                )
+                val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
+                val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
+
+                contentStream.setNonStrokingColor(fillColor)
+                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+                contentStream.fill()
+
+                contentStream.setStrokingColor(borderColor)
+                contentStream.setLineWidth(0.5f)
+                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+                contentStream.stroke()
+
+                contentStream.setNonStrokingColor(if (isVisible) java.awt.Color.BLACK else java.awt.Color.GRAY)
+                contentStream.beginText()
+                contentStream.setFont(regularFont, 5.5f)
+                contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
+                contentStream.showText("Ch${channelIdx + 1}")
+                contentStream.endText()
+
+                xCursor += chipWidth + CHIP_SPACING
+            }
+
+            yCursor -= ROW_SPACING
+        }
+
+        // Embed screenshot as chart image
+        val screenshotPdImage = PDImageXObject.createFromByteArray(
+            document,
+            bufferedImageToByteArray(screenshot),
+            "chart"
+        )
+
+        // Calculate scaling to fit in available space
+        val availableHeight = yCursor - MARGIN - 10f
+        val availableWidth = chartAreaWidth
+
+        val screenshotAspect = screenshot.width.toFloat() / screenshot.height.toFloat()
+        val availableAspect = availableWidth / availableHeight
+
+        val (drawWidth, drawHeight) = if (screenshotAspect > availableAspect) {
+            // Screenshot is wider - fit to width
+            availableWidth to (availableWidth / screenshotAspect)
+        } else {
+            // Screenshot is taller - fit to height
+            (availableHeight * screenshotAspect) to availableHeight
+        }
+
+        val xOffset = MARGIN + (availableWidth - drawWidth) / 2
+        val yOffset = MARGIN + (availableHeight - drawHeight) / 2
+
+        contentStream.drawImage(screenshotPdImage, xOffset, yOffset, drawWidth, drawHeight)
     }
 
     private data class LineStyleInfo(val width: Float, val dashArray: FloatArray?) {
