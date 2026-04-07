@@ -79,7 +79,7 @@ val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255
 
 var TWELVE_CHANNELS_MODE = false
-var PROTOCOL_TYPE : ProtocolType = ProtocolType.OLD_AUG_2025
+var PROTOCOL_TYPE : ProtocolType = ProtocolType.NEW
 
 enum class ProtocolType(val id: Int) { OLD_AUG_2025(0), NEW(1) }
 

@@ -22,8 +22,6 @@ import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.READY_FOR_LISTENING_OF_PAYLOAD
 import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
-import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
-import ru.atrs.mcm.utils.allowManipulationWithUI
 import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.checkIntervalScenarios
 import ru.atrs.mcm.utils.getComPorts_Array
@@ -162,9 +160,15 @@ object CommMachineV2: COMProtocol {
             ch11 = pwm11SeekBar.value.toByte() //(rawPreByte7).toByte()
             ch12 = pwm12SeekBar.value.toByte() //(rawPreByte7).toByte()
 
-            writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 100L)
+            writeToSerialPort(
+                byteArrayOf(0x71, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, ch9, ch10, ch11, ch12, 0x00),
+                delay = 100L
+            )
 
-            writeToSerialPort(byteArrayOf(0x51, ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 0L)
+            writeToSerialPort(
+                byteArrayOf(0x51, analog1.toByte(), analog2.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
+                delay = 0L
+            )
 
             txtOfScenario.value = scenario.getOrElse(idx){
                 indexOfScenario.value = 0
@@ -186,9 +190,9 @@ object CommMachineV2: COMProtocol {
         ch11 = 0x00.toByte()
         ch12 = 0x00.toByte()
 
-        writeToSerialPort(byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00,0x00, 0x00,0x00, 0x00,0x00), delay = 100L)
+        writeToSerialPort(byteArrayOf(0x71, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, ch9, ch10, ch11, ch12, 0x00), delay = 100L)
 
-        writeToSerialPort(byteArrayOf(0x51, ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00,0x00, 0x00,0x00, 0x00,0x00),delay = 0L)
+        writeToSerialPort(byteArrayOf(0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00), delay = 0L)
     }
 
     override suspend fun sendScenarioToController() {
@@ -255,21 +259,7 @@ object CommMachineV2: COMProtocol {
 
     // making solenoids zero
     override suspend fun reInitSolenoids() {
-        if (TWELVE_CHANNELS_MODE) {
-
-        } else {
-            comparatorToSolenoid(indexOfScenario.value)
-
-            writeToSerialPort(
-                byteArrayOf(0x71, ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
-                delay = 100L
-            )
-
-            writeToSerialPort(
-                byteArrayOf(0x51, ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
-                delay = 0L
-            )
-        }
+        sendZerosToSolenoid()
     }
 
     override fun sendFrequency() {

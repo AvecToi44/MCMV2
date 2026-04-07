@@ -456,7 +456,7 @@ fun StarterScreen() {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
                             Box {
-                                Text("${PROTOCOL_TYPE.name}",
+                                Text("${ProtocolType.NEW.name}",
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                         expandedProtocolChooser = !expandedProtocolChooser
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
@@ -466,11 +466,6 @@ fun StarterScreen() {
                                     expanded = expandedProtocolChooser,
                                     onDismissRequest = { expandedProtocolChooser = false },
                                 ) {
-                                    Text("OLD_AUG_2025",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
-                                        PROTOCOL_TYPE = ProtocolType.OLD_AUG_2025
-                                        refreshJsonParameters()
-                                        expandedProtocolChooser = false
-                                    })  .fillMaxSize().padding(10.dp))
                                     Text("NEW",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         PROTOCOL_TYPE = ProtocolType.NEW
                                         refreshJsonParameters()

@@ -67,7 +67,7 @@ fun initialize(params: List<ParameterCommon>) {
             "isBottomPanelShow" -> SHOW_BOTTOM_PANEL = param.value.toBoolean()
             "is12ChannelsMode" -> TWELVE_CHANNELS_MODE = param.value.toBoolean()
             "GAUGES_IN_THE_ROW" -> GAUGES_IN_THE_ROW = param.value.toInt()
-            "protocolType" -> PROTOCOL_TYPE = if(param.value.contains("old",ignoreCase = true)) ProtocolType.OLD_AUG_2025 else ProtocolType.NEW
+            "protocolType" -> PROTOCOL_TYPE = ProtocolType.NEW
             "CHART_FILE_NAME_ENDING" -> CHART_FILE_NAME_ENDING =
                 if (param.value.contains("${ChartFileNameEnding.COMMENT_AND_TIMESTAMP.name}",ignoreCase = true))
                     ChartFileNameEnding.COMMENT_AND_TIMESTAMP

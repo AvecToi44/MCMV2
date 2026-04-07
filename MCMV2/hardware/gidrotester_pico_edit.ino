@@ -114,10 +114,10 @@ Serial.write(currents[8]); Serial.write(currents[9]);
 Serial.write(currents[10]); Serial.write(currents[11]);
 Serial.write(currents[12]); Serial.write(currents[13]);
 Serial.write(currents[14]); Serial.write(currents[15]); //////////////////
- Serial.write(pressures[16]); Serial.write(pressures[17]);
-Serial.write(pressures[18]); Serial.write(pressures[19]);
-Serial.write(pressures[20]); Serial.write(pressures[21]);
-Serial.write(pressures[22]); Serial.write(pressures[23]); 
+ Serial.write(currents[16]); Serial.write(currents[17]);
+Serial.write(currents[18]); Serial.write(currents[19]);
+Serial.write(currents[20]); Serial.write(currents[21]);
+Serial.write(currents[22]); Serial.write(currents[23]); 
 }
 
 
@@ -340,6 +340,10 @@ pwms[4]=indata[5];
 pwms[5]=indata[6];
 pwms[6]=indata[7];
 pwms[7]=indata[8];
+pwms[8]=indata[9];
+pwms[9]=indata[10];
+pwms[10]=indata[11];
+pwms[11]=indata[12];
   pwmflag=1;
   recievedflag=0;
 }
@@ -485,7 +489,7 @@ void initial() {
   pinMode(SS1, OUTPUT);
   pinMode(SS2, OUTPUT);
   pinMode(SS3, OUTPUT);
-  pinMode(MISO, OUTPUT);
+  //pinMode(MISO, OUTPUT);
   pinMode(SCK, OUTPUT);
 
 pinMode(25, OUTPUT);
@@ -540,10 +544,21 @@ void conversionPulse(uint8_t port) {
 }
 //-----------------------------------------
 
+bool waitBusyLow(uint8_t pin, uint32_t timeoutUs = 3000) {
+  uint32_t t0 = micros();
+  while (digitalRead(pin) == HIGH) {
+    if ((uint32_t)(micros() - t0) >= timeoutUs) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void readData() {
   //////////////////////////////////////////////////////////1
   conversionPulse(START_CONVERSION);
-  while (digitalRead(BUSY1) == HIGH) { 
+  if (!waitBusyLow(BUSY1)) {
+    return;
   }
   SPI1.beginTransaction(SPISettings(26000000, MSBFIRST, SPI_MODE2));   
   digitalWrite(SS1, LOW);
@@ -556,7 +571,8 @@ void readData() {
   bytesToRead = TOTAL_RAW_BYTES;
  ////////////////////////////////////////////////////////////2 
 conversionPulse(START_CONVERSION);
-  while (digitalRead(BUSY2) == HIGH) {
+  if (!waitBusyLow(BUSY2)) {
+    return;
   }
   SPI1.beginTransaction(SPISettings(26000000, MSBFIRST, SPI_MODE2));   
   digitalWrite(SS2, LOW);
@@ -569,7 +585,8 @@ conversionPulse(START_CONVERSION);
   bytesToRead = TOTAL_RAW_BYTES;
 //////////////////////////////////////////////////////////////
 conversionPulse(START_CONVERSION);
-  while (digitalRead(BUSY3) == HIGH) {
+  if (!waitBusyLow(BUSY3)) {
+    return;
   }
   SPI1.beginTransaction(SPISettings(26000000, MSBFIRST, SPI_MODE2));   
   digitalWrite(SS3, LOW);
@@ -642,18 +659,4 @@ if (pwmflag==1){
  pwmflag=0;  
 }
 
-  
-/*   unsigned long currentMillis = millis();
-if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis; 
-  Serial.print("time=");
-  Serial.println(totaltime);
-//analogWrite(3,arr1[1]);
-   /* for (byte i = 0; i < inbits; i++) { // выводим элементы массива
-      Serial.print(indata[i]); Serial.print(" ");
-    } Serial.println();
- for (byte i = 0; i < 8; i++) { // выводим элементы массива
-      Serial.print(pwms[i]); Serial.print(" ");
-    }Serial.println();
-    }*/
 }

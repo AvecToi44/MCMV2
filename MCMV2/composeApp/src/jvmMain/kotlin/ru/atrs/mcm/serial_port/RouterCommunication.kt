@@ -12,26 +12,24 @@ import ru.atrs.mcm.utils.allowManipulationWithUI
 
 object RouterCommunication {
 
-    fun getCOMPortInfo(): String {
-        return if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.getCOMPortInfo()
-        } else {
-            CommMachineV2.getCOMPortInfo()
+    private fun enforceV2() {
+        if (PROTOCOL_TYPE != ProtocolType.NEW) {
+            PROTOCOL_TYPE = ProtocolType.NEW
         }
     }
+
+    fun getCOMPortInfo(): String {
+        enforceV2()
+        return CommMachineV2.getCOMPortInfo()
+    }
     fun stopSerialCommunication() {
+        enforceV2()
         allowManipulationWithUI.value = false
         CoroutineScope(Dispatchers.IO).launch {
             println("Router stopSerialCommunication")
-            if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-                CommMachineV1.resetSerialComm()
-                delay(1000)
-                CommMachineV1.stopSerialCommunication()
-            } else {
-                CommMachineV2.resetSerialComm()
-                delay(1000)
-                CommMachineV2.stopSerialCommunication()
-            }
+            CommMachineV2.resetSerialComm()
+            delay(1000)
+            CommMachineV2.stopSerialCommunication()
             delay(1000)
             healthCheck()
             allowManipulationWithUI.value = true
@@ -40,19 +38,13 @@ object RouterCommunication {
 
 
     fun cleanCOMPort() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.cleanCOMPort()
-        } else {
-            CommMachineV2.cleanCOMPort()
-        }
+        enforceV2()
+        CommMachineV2.cleanCOMPort()
 
     }
     suspend fun startReceiveFullData() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.startReceiveFullData()
-        } else {
-            CommMachineV2.startReceiveFullData()
-        }
+        enforceV2()
+        CommMachineV2.startReceiveFullData()
     }
 
 
@@ -65,20 +57,14 @@ object RouterCommunication {
 //    }
 
     suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean, delay: Long = 0L) {
+        enforceV2()
         println("ROUTER writeToSerialPort")
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.writeToSerialPort(sendBytes, withFlush, delay)
-        } else {
-            CommMachineV2.writeToSerialPort(sendBytes, withFlush, delay)
-        }
+        CommMachineV2.writeToSerialPort(sendBytes, withFlush, delay)
     }
 
     suspend fun comparatorToSolenoid(newIndex: Int) {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.comparatorToSolenoid(newIndex)
-        } else {
-            CommMachineV2.comparatorToSolenoid(newIndex)
-        }
+        enforceV2()
+        CommMachineV2.comparatorToSolenoid(newIndex)
     }
 
 //    suspend fun sendZerosToSolenoid() {
@@ -90,37 +76,25 @@ object RouterCommunication {
 //    }
 
     suspend fun sendScenarioToController() {
+        enforceV2()
         allowManipulationWithUI.value = false
         println("ROUTER sendScenarioToController")
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.sendScenarioToController()
-        } else {
-            CommMachineV2.sendScenarioToController()
-        }
+        CommMachineV2.sendScenarioToController()
         allowManipulationWithUI.value = true
     }
 
     suspend fun reInitSolenoids() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.reInitSolenoids()
-        } else {
-            CommMachineV2.reInitSolenoids()
-        }
+        enforceV2()
+        CommMachineV2.reInitSolenoids()
     }
 
     fun sendFrequency() {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.sendFrequency()
-        } else {
-            CommMachineV2.sendFrequency()
-        }
+        enforceV2()
+        CommMachineV2.sendFrequency()
     }
 
     suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean) {
-        if (PROTOCOL_TYPE == ProtocolType.OLD_AUG_2025) {
-            CommMachineV1.solenoidControl(isChangedFirstFourthInternal)
-        } else {
-            CommMachineV2.solenoidControl(isChangedFirstFourthInternal)
-        }
+        enforceV2()
+        CommMachineV2.solenoidControl(isChangedFirstFourthInternal)
     }
 }
