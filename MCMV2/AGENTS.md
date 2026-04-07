@@ -49,7 +49,7 @@ All global state is in `utils/GlobalVariables.kt`. Key variables:
 var COM_PORT = "COM0"
 var BAUD_RATE = 500000
 var TWELVE_CHANNELS_MODE = false
-var PROTOCOL_TYPE: ProtocolType = ProtocolType.OLD_AUG_2025
+var PROTOCOL_TYPE: ProtocolType = ProtocolType.NEW
 var SHOW_FULLSCREEN = false
 var SHOW_BOTTOM_PANEL = true
 var GAUGES_IN_THE_ROW = 6
@@ -95,28 +95,21 @@ interface COMProtocol {
 ```
 
 ### Protocol Router
-`serial_port/RouterCommunication.kt` - Routes to V1 or V2 based on `PROTOCOL_TYPE`:
-```kotlin
-object RouterCommunication {
-    // All functions delegate to CommMachineV1 or CommMachineV2
-}
-```
-
-### Protocol V1 (Legacy)
-`serial_port/CommMachineV1.kt` - Old August 2025 protocol implementation
+`serial_port/RouterCommunication.kt` - Routes all calls to `CommMachineV2`.
 
 ### Protocol V2 (New)
 `serial_port/CommMachineV2.kt` - Current protocol implementation with:
 - 12-channel support
-- Separate byte commands for channels 1-4 (0x71) and 5-8 (0x51)
+- Compact `0x71` command for channels 1-12
+- `0x51` command for analog values
 - Scenario transfer with gradient time support
 
 ### Serial Commands Reference
 
 | Byte | Purpose | Payload |
 |------|---------|---------|
-| `0x71` | Channels 1-4 | ch1, 0x00, ch2, 0x00, ch3, 0x00, ch4, 0x00... |
-| `0x51` | Channels 5-8 | ch5, 0x00, ch6, 0x00, ch7, 0x00, ch8, 0x00... |
+| `0x71` | Channels 1-12 | ch1..ch12 |
+| `0x51` | Analog values | analog1, analog2 |
 | `0x73` | Scenario part 1 | index, ch1-4, time |
 | `0x72` | Scenario part 2 | index, ch5-12, analog1, analog2, gradientTime |
 | `0x68` | Set frequency | mainFreq bytes |

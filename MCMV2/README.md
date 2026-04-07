@@ -34,7 +34,7 @@ MCMV2 enables precise control of up to 12 solenoid channels with PWM modulation,
 - **Real-time Monitoring:** Live pressure and current gauges with configurable thresholds
 - **Data Recording:** Export experiment data to timestamped .txt files
 - **Chart Analysis:** Compare up to 3 chart files with interactive zoom/pan
-- **Protocol Support:** Dual protocol support (Legacy Aug 2025 and New)
+- **Protocol Support:** V2 protocol (NEW)
 - **Sound Alerts:** Audio notifications for experiment state changes
 - **Flexible Display:** Configurable gauge layouts (1-12 per row)
 
@@ -48,9 +48,8 @@ MCMV2/
 │           ├── Main.kt                    # Application entry point
 │           ├── Intents.kt                 # User action handlers
 │           ├── serial_port/                # Serial communication
-│           │   ├── CommMachineV1.kt       # Legacy protocol implementation
 │           │   ├── CommMachineV2.kt       # New protocol implementation
-│           │   ├── RouterCommunication.kt  # Protocol router
+│           │   ├── RouterCommunication.kt  # V2 communication router
 │           │   ├── COMProtocol.kt         # Communication interface
 │           │   └── ParseBytes.kt          # Byte stream parsing
 │           ├── ui/                        # Compose UI components
@@ -110,8 +109,8 @@ The application communicates with hardware via binary serial commands:
 
 | Command | Description |
 |---------|-------------|
-| `0x71` | Set channels 1-4 |
-| `0x51` | Set channels 5-8 |
+| `0x71` | Set channels 1-12 |
+| `0x51` | Set analog1/analog2 |
 | `0x73` | Send scenario step (part 1) |
 | `0x72` | Send scenario step (part 2) |
 | `0x68` | Set main frequency |

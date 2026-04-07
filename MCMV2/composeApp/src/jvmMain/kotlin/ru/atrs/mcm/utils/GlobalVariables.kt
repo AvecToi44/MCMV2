@@ -81,7 +81,7 @@ val CURRENT_MAX_RAW = 255
 var TWELVE_CHANNELS_MODE = false
 var PROTOCOL_TYPE : ProtocolType = ProtocolType.NEW
 
-enum class ProtocolType(val id: Int) { OLD_AUG_2025(0), NEW(1) }
+enum class ProtocolType { NEW }
 
 ////////////////////////////////////////////////////
 var pwm1SeekBar = mutableStateOf<Int>(-1)

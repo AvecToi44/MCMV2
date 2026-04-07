@@ -70,7 +70,7 @@ private var COUNTER = 0L
 private var GARBAGECOUNTER = 0L
 
 suspend fun flowRawComparatorMachine() {
-    //logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
+    //logInfo("Flow Receiver Machine, packet size: 24, protocol type: NEW")
     dataChunkRAW.collect { updData ->
         var dch: DataChunkG? = null
         var dchCurr: DataChunkCurrent? = null
@@ -109,7 +109,7 @@ suspend fun flowRawComparatorMachine() {
             }
 
             //pressure
-            isPressureTypeOld(updData) -> { // 24???
+            isPressureType(updData) -> {
                 //logGarbage("Pressure: ${updData.toHexString()} size:${updData.size}")
                 //println("> ${updData.toHexString()} [size:${updData.size}]")
                 if (isExperimentStarts) {
@@ -141,7 +141,7 @@ suspend fun flowRawComparatorMachine() {
             }
 
             //currency
-            isCurrencyTypeOld(updData) -> {
+            isCurrentType(updData) -> {
                 //logGarbage("Currency: ${updData.toHexString()} size:${updData.size}")
                 if (isExperimentStarts) {
                     incrementExperiment++
@@ -329,8 +329,8 @@ fun isStartExperiment(updData: ByteArray): Boolean {
 /////////////////////////////////////////////////////////////////////////
 
 
-fun isPressureTypeOld(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
+fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
 
-fun isCurrencyTypeOld(updData: ByteArray): Boolean  =
+fun isCurrentType(updData: ByteArray): Boolean  =
     updData[1] in 16..31 && updData[3] in 16..31 &&
             updData[5] in 16..31 && updData[7] in 16..31

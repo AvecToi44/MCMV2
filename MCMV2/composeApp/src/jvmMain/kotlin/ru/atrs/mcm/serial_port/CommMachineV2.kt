@@ -320,7 +320,7 @@ object CommMachineV2: COMProtocol {
     override suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean) {
         //s.analog1.toByte(),
         //                s.analog2.toByte(),
-        writeToSerialPort(byteArrayOf(0x71,ch1, ch2,ch3, ch4,ch5, ch6,ch7, ch8,ch9, ch10,ch11, ch12, 0x00),false, delay = 10L)
+        writeToSerialPort(byteArrayOf(0x71, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, ch9, ch10, ch11, ch12, 0x00),false, delay = 10L)
         delay(10)
         writeToSerialPort(byteArrayOf(0x51, analog1.toByte(), analog2.toByte(), 0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00),false, delay = 0L)
 //        if (TWELVE_CHANNELS_MODE) {
