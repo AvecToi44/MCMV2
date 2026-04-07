@@ -19,6 +19,7 @@ import ru.atrs.mcm.ui.main_screen.center.support_elements.ch8
 import ru.atrs.mcm.ui.main_screen.center.support_elements.ch9
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
+import ru.atrs.mcm.utils.READY_FOR_LISTENING_OF_PAYLOAD
 import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
@@ -320,6 +321,7 @@ object CommMachineV2: COMProtocol {
 //            ))
         }
 
+        READY_FOR_LISTENING_OF_PAYLOAD = true
     }
 
     data class Frequence(val units: Byte, val dozens: Byte)

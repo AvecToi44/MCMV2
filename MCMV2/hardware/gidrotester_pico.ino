@@ -21,9 +21,9 @@
 //uint8_t adcn;
  
 int bytesToRead = TOTAL_RAW_BYTES;
-byte raw1[TOTAL_RAW_BYTES];
-byte raw2[TOTAL_RAW_BYTES];
-byte raw3[TOTAL_RAW_BYTES];
+int16_t raw1[TOTAL_RAW_BYTES];
+int16_t raw2[TOTAL_RAW_BYTES];
+int16_t raw3[TOTAL_RAW_BYTES];
 int16_t parsed1[8];
 int16_t parsed2[8];
 int16_t parsed3[8];
@@ -50,9 +50,9 @@ bool curmode;
 
 
 uint8_t indata[inbits]; // входящие данные
-byte pressures[16]; // массив давлений на отправку
-byte currents[16];  // массив токов на отправку
-byte pwms [8];
+byte pressures[24]; // массив давлений на отправку
+byte currents[24];  // массив токов на отправку
+byte pwms [12];
 
 uint16_t freq;
 uint16_t hz;
@@ -122,9 +122,9 @@ Serial.write(pressures[22]); Serial.write(pressures[23]);
 
 
 
-void pressuretransform(byte index, unsigned int val, byte type){ // преобразование давлений для отправки
- byte ext;
- byte a;
+void pressuretransform(uint8_t index, uint16_t val, uint8_t type){ // преобразование давлений для отправки
+ uint8_t ext;
+ uint8_t a;
  index=index << 1;
  index=constrain(index, 0, 23);
  if(type==0){
@@ -171,9 +171,9 @@ index++;
 pressures[index]= a;
 }
 
-void currtransform(byte index1, unsigned int val1, byte type1){ // преобразование curr для отправки
- byte ext1;
- byte a1;
+void currtransform(uint8_t index1, uint16_t val1, uint8_t type1){ // преобразование curr для отправки
+ uint8_t ext1;
+ uint8_t a1;
  uint8_t num=index1;
  index1=index1 << 1;
  index1=constrain(index1, 0, 23);
@@ -248,7 +248,8 @@ void sensread(){ //чтение аналоговых входов и отпра�
 indexsend++;
  if (indexsend==4){
   indexsend=0;
- currtransform(0,test,1);/////test parsed1[0]
+ //currtransform(0,test,1);/////test parsed1[0]
+ currtransform(0,parsed1[0],0);
  currtransform(1,parsed1[1],0);
  currtransform(2,parsed1[2],0);
  currtransform(3,parsed1[3],0);
@@ -343,6 +344,10 @@ pwms[7]=indata[8];
   recievedflag=0;
 }
 if (recievedflag==1&&indata[0]==81){
+ //pwms[8]=indata[1];
+//pwms[9]=indata[2];
+//pwms[10]=indata[3];
+//pwms[11]=indata[4];
 analog1=indata[1];
 analog2=indata[2];
 //pwms[6]=indata[5];
@@ -428,6 +433,10 @@ analogWrite(21, map((pwms[4]),0,100,0,255));
 analogWrite(20, map((pwms[5]),0,100,0,255));
 analogWrite(6,  map((pwms[6]),0,100,0,255));
 analogWrite(19, map((pwms[7]),0,100,0,255));
+analogWrite(7, map((pwms[8]),0,100,0,255));
+analogWrite(18, map((pwms[9]),0,100,0,255));
+analogWrite(8,  map((pwms[10]),0,100,0,255));
+analogWrite(17, map((pwms[11]),0,100,0,255));
 
 }
 
@@ -603,6 +612,11 @@ analogWrite(21,out[stepscounter][4]);
 analogWrite(20,out[stepscounter][5]);
 analogWrite (6,out[stepscounter][6]);
 analogWrite(19,out[stepscounter][7]);
+analogWrite(7, out[stepscounter][8]);
+analogWrite(18,out[stepscounter][9]);
+analogWrite(8, out[stepscounter][10]);
+analogWrite(17, out[stepscounter][11]);
+
 
 previousstarttimersteps= millis();
 if(zeroflag==1){

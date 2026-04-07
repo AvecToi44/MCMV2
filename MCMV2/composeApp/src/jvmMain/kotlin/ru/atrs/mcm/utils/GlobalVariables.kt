@@ -68,7 +68,7 @@ var scenario  = mutableListOf<ScenarioStep>()
 var GLOBAL_STATE = mutableStateOf(StateParseBytes.INIT)
 var STATE_EXPERIMENT = mutableStateOf(StateExperiments.NONE)
 var EXPLORER_MODE = mutableStateOf(ExplorerMode.AUTO)
-
+var READY_FOR_LISTENING_OF_PAYLOAD = false
 
 var dataChunkRAW          = MutableSharedFlow<ByteArray>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 var pressuresChunkGauges  = MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)

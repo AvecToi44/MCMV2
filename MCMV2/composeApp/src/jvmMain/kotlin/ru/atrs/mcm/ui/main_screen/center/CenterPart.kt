@@ -158,6 +158,7 @@ fun CenterPiece(
     LaunchedEffect(true) {
         println("12 mode: ${TWELVE_CHANNELS_MODE.toString()}")
         dataGauges.collect {
+           // logGarbage("${it.toString()}<<<")
             isPayloadComing.value = true
             pressure1X = it.pressure1
             pressure2X = it.pressure2

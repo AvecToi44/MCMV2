@@ -14,6 +14,7 @@ import ru.atrs.mcm.utils.DataChunkG
 import ru.atrs.mcm.utils.EXPLORER_MODE
 import ru.atrs.mcm.utils.PROTOCOL_TYPE
 import ru.atrs.mcm.utils.ProtocolType
+import ru.atrs.mcm.utils.READY_FOR_LISTENING_OF_PAYLOAD
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
 import ru.atrs.mcm.utils.byteToInt
@@ -27,6 +28,7 @@ import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.logError
+import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
@@ -67,6 +69,8 @@ var incrementExperiment = 0
 private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
+private var GARBAGECOUNTER = 0L
+
 suspend fun flowRawComparatorMachine() {
     //logInfo("Flow Receiver Machine, with packet size: ${if (PROTOCOL_TYPE == ProtocolType.NEW) 24 else 16}, protocol type: ${PROTOCOL_TYPE.name}")
     dataChunkRAW.collect { updData ->
@@ -76,7 +80,11 @@ suspend fun flowRawComparatorMachine() {
 //        if (incrementTime >= 100_000 && !isExperimentStarts) {
 //            incrementTime = 0
 //        }
-//        logGarbage("bytesReceiverMachine ${updData.toHexString()}")
+        if (GARBAGECOUNTER <= 10 && READY_FOR_LISTENING_OF_PAYLOAD) {
+            logGarbage("bytesReceiverMachine ${updData.toHexString()}")
+            GARBAGECOUNTER++
+        }
+
         //writeToFile(">> ${updData.toHexString()}", MainConfig_LogFile)
 
         when {
