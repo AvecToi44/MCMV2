@@ -11,7 +11,7 @@ plugins {
 
 buildConfig {
 //    buildConfigField("APP_NAME", project.name)
-    buildConfigField("APP_VERSION", provider { "1.2.25" })
+    buildConfigField("APP_VERSION", provider { "1.2.26" })
 }
 
 kotlin {
@@ -64,7 +64,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageVersion = "1.2.25"
+            packageVersion = "1.2.26"
             packageName = "MCM (${packageVersion})"
 //            windows {
 //                iconFile.set(project.file("favicon.ico"))

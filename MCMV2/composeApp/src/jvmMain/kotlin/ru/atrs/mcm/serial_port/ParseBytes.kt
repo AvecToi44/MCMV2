@@ -34,17 +34,13 @@ import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.toHexString
 
 
-private val DEBUG_PARSING = false
-
-
-
 class PacketListener : SerialPortPacketListener {
     override fun getListeningEvents(): Int {
         return SerialPort.LISTENING_EVENT_DATA_RECEIVED
     }
 
     override fun getPacketSize(): Int {
-        return 24
+        return FRAME_SIZE
     }
 
     override fun serialEvent(event: SerialPortEvent) {
@@ -52,14 +48,34 @@ class PacketListener : SerialPortPacketListener {
             counter++
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val newData = event.receivedData
-//            println("${newData.toHexString()}")
-            dataChunkRAW.emit(newData)
-//            flowRawComparatorMachine(updData = newData)
+        val newData = event.receivedData
+//        println("${newData.toHexString()}")
+        if (!dataChunkRAW.tryEmit(newData)) {
+            runBlocking {
+                dataChunkRAW.emit(newData)
+            }
         }
+//        flowRawComparatorMachine(updData = newData)
     }
 }
+
+private const val FRAME_SOF1 = 0xA5
+private const val FRAME_SOF2 = 0x5A
+private const val FRAME_SIZE = 29
+private const val FRAME_PAYLOAD_SIZE = 24
+private const val FRAME_DATA_FOR_CRC = 26
+
+private const val FRAME_TYPE_PRESSURE = 0x01
+private const val FRAME_TYPE_CURRENT = 0x02
+private const val FRAME_TYPE_START = 0x10
+private const val FRAME_TYPE_END = 0x11
+
+private data class ParsedFrame(
+    val type: Int,
+    val seq: Int,
+    val payload: ByteArray
+)
+
 private var counter = 0
 private var counter2 = 0
 
@@ -68,6 +84,112 @@ private var lastGauge : DataChunkG? = null
 
 private var COUNTER = 0L
 private var GARBAGECOUNTER = 0L
+
+private var pendingRxBytes = ByteArray(0)
+private var lastSeq = -1
+private var rxFramesOk = 0L
+private var rxCrcFail = 0L
+private var rxResyncCount = 0L
+private var rxSeqDropCount = 0L
+
+private fun crc8(data: ByteArray, offset: Int, length: Int): Int {
+    var crc = 0
+    var i = offset
+    while (i < offset + length) {
+        crc = crc xor byteToInt(data[i])
+        repeat(8) {
+            crc = if ((crc and 0x80) != 0) {
+                ((crc shl 1) xor 0x07) and 0xFF
+            } else {
+                (crc shl 1) and 0xFF
+            }
+        }
+        i++
+    }
+    return crc and 0xFF
+}
+
+private fun appendPendingBytes(chunk: ByteArray) {
+    if (chunk.isEmpty()) {
+        return
+    }
+    val merged = ByteArray(pendingRxBytes.size + chunk.size)
+    pendingRxBytes.copyInto(merged, destinationOffset = 0)
+    chunk.copyInto(merged, destinationOffset = pendingRxBytes.size)
+    pendingRxBytes = merged
+}
+
+private fun extractFramesFromChunk(chunk: ByteArray): List<ParsedFrame> {
+    appendPendingBytes(chunk)
+
+    val frames = mutableListOf<ParsedFrame>()
+
+    while (true) {
+        if (pendingRxBytes.size < 2) {
+            return frames
+        }
+
+        var sofIndex = -1
+        var i = 0
+        while (i <= pendingRxBytes.size - 2) {
+            if (byteToInt(pendingRxBytes[i]) == FRAME_SOF1 && byteToInt(pendingRxBytes[i + 1]) == FRAME_SOF2) {
+                sofIndex = i
+                break
+            }
+            i++
+        }
+
+        if (sofIndex == -1) {
+            val keepTail = pendingRxBytes.lastOrNull()?.let { byteToInt(it) == FRAME_SOF1 } == true
+            pendingRxBytes = if (keepTail) byteArrayOf(pendingRxBytes.last()) else byteArrayOf()
+            rxResyncCount++
+            return frames
+        }
+
+        if (sofIndex > 0) {
+            pendingRxBytes = pendingRxBytes.copyOfRange(sofIndex, pendingRxBytes.size)
+            rxResyncCount++
+        }
+
+        if (pendingRxBytes.size < FRAME_SIZE) {
+            return frames
+        }
+
+        val crcExpected = byteToInt(pendingRxBytes[FRAME_SIZE - 1])
+        val crcActual = crc8(pendingRxBytes, 2, FRAME_DATA_FOR_CRC)
+
+        if (crcExpected != crcActual) {
+            rxCrcFail++
+            pendingRxBytes = pendingRxBytes.copyOfRange(1, pendingRxBytes.size)
+            rxResyncCount++
+            continue
+        }
+
+        val type = byteToInt(pendingRxBytes[2])
+        val seq = byteToInt(pendingRxBytes[3])
+        val payload = pendingRxBytes.copyOfRange(4, 4 + FRAME_PAYLOAD_SIZE)
+        frames.add(ParsedFrame(type = type, seq = seq, payload = payload))
+        rxFramesOk++
+
+        pendingRxBytes = if (pendingRxBytes.size > FRAME_SIZE) {
+            pendingRxBytes.copyOfRange(FRAME_SIZE, pendingRxBytes.size)
+        } else {
+            byteArrayOf()
+        }
+    }
+}
+
+private fun trackSeq(seq: Int) {
+    if (lastSeq != -1) {
+        val expected = (lastSeq + 1) and 0xFF
+        if (seq != expected) {
+            val missed = (seq - expected + 256) and 0xFF
+            rxSeqDropCount += missed.toLong()
+            logError("Telemetry seq gap detected: expected=$expected got=$seq missed=$missed")
+        }
+    }
+    lastSeq = seq
+}
 
 suspend fun flowRawComparatorMachine() {
     //logInfo("Flow Receiver Machine, packet size: 24, protocol type: NEW")
@@ -85,95 +207,78 @@ suspend fun flowRawComparatorMachine() {
 
         //writeToFile(">> ${updData.toHexString()}", MainConfig_LogFile)
 
-        when {
-            isStartExperiment(updData)  -> {
-                generateNewChartLogFile()
-                isExperimentStarts = true
-                STATE_EXPERIMENT.value = StateExperiments.RECORDING
-                println("isStartExperiment ${updData.toHexString()}")
-                logInfo("Start Experiment! ${counter} ${isExperimentStarts}__${incrementExperiment}")
-
-            }
-            isEndOfExperiment(updData) -> {
-                println("isEndOfExperiment ${updData.toHexString()}")
-                isExperimentStarts = false
-                STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
-
-                logInfo("End Experiment! ${counter} ; ${counter2}| all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
-                counter = 0
-                incrementExperiment = 0
-                COUNTER = 0
-            }
-            !isExperimentStarts && isEndOfExperiment(updData) -> {
-                logError("No way to end not started experiment!")
-            }
-
-            //pressure
-            isPressureType(updData) -> {
-                //logGarbage("Pressure: ${updData.toHexString()} size:${updData.size}")
-                //println("> ${updData.toHexString()} [size:${updData.size}]")
-                if (isExperimentStarts) {
-                    incrementExperiment++
+        val frames = extractFramesFromChunk(updData)
+        for (frame in frames) {
+            trackSeq(frame.seq)
+            val payload = frame.payload
+            when (frame.type) {
+                FRAME_TYPE_START -> {
+                    generateNewChartLogFile()
+                    isExperimentStarts = true
+                    STATE_EXPERIMENT.value = StateExperiments.RECORDING
+                    println("isStartExperiment frame seq=${frame.seq}")
+                    logInfo("Start Experiment! ${counter} ${isExperimentStarts}__${incrementExperiment}")
                 }
-                dch = DataChunkG(
-                    isExperiment = isExperimentStarts,
-                    onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt()),
+                FRAME_TYPE_END -> {
+                    println("isEndOfExperiment frame seq=${frame.seq}")
+                    isExperimentStarts = false
+                    STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
-                    onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt()),
-                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt()),
-
-                    updData.getOrNull(17)?.let { onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt()) },
-                    updData.getOrNull(19)?.let { onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt()) },
-                    updData.getOrNull(21)?.let {onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt())},
-                    updData.getOrNull(23)?.let {onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt())}
-                )
-
-                //logGarbage(">>> ${dch.toString()}")
-                //println("PRES ${dch.toString()}")
-
-                pressuresChunkGauges.emit(dch)
-                lastGauge = dch
-            }
-
-            //currency
-            isCurrentType(updData) -> {
-                //logGarbage("Currency: ${updData.toHexString()} size:${updData.size}")
-                if (isExperimentStarts) {
-                    incrementExperiment++
+                    logInfo("End Experiment! ${counter} ; ${counter2}| frame seq=${frame.seq} ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}. rxOk=$rxFramesOk crcFail=$rxCrcFail seqDrops=$rxSeqDropCount resync=$rxResyncCount")
+                    counter = 0
+                    incrementExperiment = 0
+                    COUNTER = 0
                 }
-                dchCurr = DataChunkCurrent(
-                    onesAndTensFloat(byteToInt(updData[0]).toUInt(), byteToInt(updData[1]).toUInt() - 16u).toInt(), // 24??
-                    onesAndTensFloat(byteToInt(updData[2]).toUInt(), byteToInt(updData[3]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[4]).toUInt(), byteToInt(updData[5]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[6]).toUInt(), byteToInt(updData[7]).toUInt() - 16u).toInt(),
+                FRAME_TYPE_PRESSURE -> {
+                    if (isExperimentStarts) {
+                        incrementExperiment++
+                    }
+                    dch = DataChunkG(
+                        isExperiment = isExperimentStarts,
+                        onesAndTensFloat(byteToInt(payload[0]).toUInt(), byteToInt(payload[1]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[2]).toUInt(), byteToInt(payload[3]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[4]).toUInt(), byteToInt(payload[5]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[6]).toUInt(), byteToInt(payload[7]).toUInt()),
 
-                    onesAndTensFloat(byteToInt(updData[8]).toUInt(), byteToInt(updData[9]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[10]).toUInt(), byteToInt(updData[11]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[12]).toUInt(), byteToInt(updData[13]).toUInt() - 16u).toInt(),
-                    onesAndTensFloat(byteToInt(updData[14]).toUInt(), byteToInt(updData[15]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[8]).toUInt(), byteToInt(payload[9]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[10]).toUInt(), byteToInt(payload[11]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[12]).toUInt(), byteToInt(payload[13]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[14]).toUInt(), byteToInt(payload[15]).toUInt()),
 
-                        ninthCurrentData = updData.getOrNull(17)?.let { onesAndTensFloat(byteToInt(updData[16]).toUInt(), byteToInt(updData[17]).toUInt() - 16u).toInt() },
-                       tenthCurrentData =  updData.getOrNull(19)?.let { onesAndTensFloat(byteToInt(updData[18]).toUInt(), byteToInt(updData[19]).toUInt() - 16u).toInt() },
-                     eleventhCurrentData = updData.getOrNull(21)?.let { onesAndTensFloat(byteToInt(updData[20]).toUInt(), byteToInt(updData[21]).toUInt() - 16u).toInt() },
-                     twelfthCurrentData =  updData.getOrNull(23)?.let { onesAndTensFloat(byteToInt(updData[22]).toUInt(), byteToInt(updData[23]).toUInt() - 16u).toInt() },
-                )
-                //println("CURR  ${updData.joinToString()}||${dchCurr.toString()}")
-                dataChunkCurrents.emit(dchCurr)
-                lastGauge?.let { pressuresChunkGauges.emit(it) }
+                        onesAndTensFloat(byteToInt(payload[16]).toUInt(), byteToInt(payload[17]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[18]).toUInt(), byteToInt(payload[19]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[20]).toUInt(), byteToInt(payload[21]).toUInt()),
+                        onesAndTensFloat(byteToInt(payload[22]).toUInt(), byteToInt(payload[23]).toUInt())
+                    )
 
-            }
-            else -> {
-                // if not valid numbers - refresh connection
-                if (STATE_EXPERIMENT.value == StateExperiments.NONE) {
+                    pressuresChunkGauges.emit(dch)
+                    lastGauge = dch
+                }
+                FRAME_TYPE_CURRENT -> {
+                    if (isExperimentStarts) {
+                        incrementExperiment++
+                    }
+                    dchCurr = DataChunkCurrent(
+                        onesAndTensFloat(byteToInt(payload[0]).toUInt(), byteToInt(payload[1]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[2]).toUInt(), byteToInt(payload[3]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[4]).toUInt(), byteToInt(payload[5]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[6]).toUInt(), byteToInt(payload[7]).toUInt() - 16u).toInt(),
 
-                    logError("not valid numbers - refresh connection !!!")
-//                    showMeSnackBar("not valid numbers - refresh connection")
-                    //delay(1000)
+                        onesAndTensFloat(byteToInt(payload[8]).toUInt(), byteToInt(payload[9]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[10]).toUInt(), byteToInt(payload[11]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[12]).toUInt(), byteToInt(payload[13]).toUInt() - 16u).toInt(),
+                        onesAndTensFloat(byteToInt(payload[14]).toUInt(), byteToInt(payload[15]).toUInt() - 16u).toInt(),
+
+                        ninthCurrentData = onesAndTensFloat(byteToInt(payload[16]).toUInt(), byteToInt(payload[17]).toUInt() - 16u).toInt(),
+                        tenthCurrentData = onesAndTensFloat(byteToInt(payload[18]).toUInt(), byteToInt(payload[19]).toUInt() - 16u).toInt(),
+                        eleventhCurrentData = onesAndTensFloat(byteToInt(payload[20]).toUInt(), byteToInt(payload[21]).toUInt() - 16u).toInt(),
+                        twelfthCurrentData = onesAndTensFloat(byteToInt(payload[22]).toUInt(), byteToInt(payload[23]).toUInt() - 16u).toInt(),
+                    )
+                    dataChunkCurrents.emit(dchCurr)
+                    lastGauge?.let { pressuresChunkGauges.emit(it) }
+                }
+                else -> {
+                    logError("Unknown telemetry frame type: ${frame.type}, seq=${frame.seq}")
                 }
             }
         }
@@ -301,36 +406,4 @@ fun flowWriterMachine() {
     }
 }
 
-fun isEndOfExperiment(updData: ByteArray): Boolean = updData.all { it == 0xFF.toByte() }
-
-fun isStartExperiment(updData: ByteArray): Boolean {
-    return updData.size >= 24 &&
-            updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
-            updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
-            updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
-            updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
-            updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
-            updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
-            updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte() &&
-            updData[14] == 0xFE.toByte() && updData[15] == 0xFF.toByte() &&
-            updData[16] == 0xFE.toByte() && updData[17] == 0xFF.toByte() &&
-            updData[18] == 0xFE.toByte() && updData[19] == 0xFF.toByte() &&
-            updData[20] == 0xFE.toByte() && updData[21] == 0xFF.toByte() &&
-            updData[22] == 0xFE.toByte() && updData[23] == 0xFF.toByte()
-}
-
-//fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 24 && updData[3] < 24 && updData[5] < 24 && updData[7] < 24
-//
-//fun isCurrencyType(updData: ByteArray): Boolean  =
-//    updData[1] in 24..47 && updData[3] in 24..47 &&
-//            updData[5] in 24..47 && updData[7] in 24..47
-
-
 /////////////////////////////////////////////////////////////////////////
-
-
-fun isPressureType(updData: ByteArray): Boolean  = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
-
-fun isCurrentType(updData: ByteArray): Boolean  =
-    updData[1] in 16..31 && updData[3] in 16..31 &&
-            updData[5] in 16..31 && updData[7] in 16..31

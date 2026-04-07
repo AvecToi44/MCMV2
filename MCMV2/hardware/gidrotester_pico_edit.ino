@@ -18,6 +18,15 @@
 #define MOSI 15     //tx14
 #define TOTAL_RAW_BYTES 16
 
+const uint8_t FRAME_SOF1 = 0xA5;
+const uint8_t FRAME_SOF2 = 0x5A;
+const uint8_t FRAME_TYPE_PRESSURE = 0x01;
+const uint8_t FRAME_TYPE_CURRENT = 0x02;
+const uint8_t FRAME_TYPE_START = 0x10;
+const uint8_t FRAME_TYPE_END = 0x11;
+const uint8_t FRAME_PAYLOAD_SIZE = 24;
+const uint8_t FRAME_SIZE = 29;
+
 //uint8_t adcn;
  
 int bytesToRead = TOTAL_RAW_BYTES;
@@ -53,6 +62,8 @@ uint8_t indata[inbits]; // входящие данные
 byte pressures[24]; // массив давлений на отправку
 byte currents[24];  // массив токов на отправку
 byte pwms [12];
+uint8_t txSeq = 0;
+uint8_t zeroPayload[FRAME_PAYLOAD_SIZE] = {0};
 
 uint16_t freq;
 uint16_t hz;
@@ -90,34 +101,40 @@ unsigned long previousMillis = 0;
 const long interval = 1000;
 //sizeof(incomingByte)
 
+uint8_t crc8(const uint8_t* data, size_t len) {
+  uint8_t crc = 0x00;
+  for (size_t i = 0; i < len; i++) {
+    crc ^= data[i];
+    for (uint8_t bit = 0; bit < 8; bit++) {
+      if (crc & 0x80) {
+        crc = (uint8_t)((crc << 1) ^ 0x07);
+      } else {
+        crc <<= 1;
+      }
+    }
+  }
+  return crc;
+}
+
+void sendFrame(uint8_t type, const uint8_t* payload) {
+  uint8_t frame[FRAME_SIZE];
+  frame[0] = FRAME_SOF1;
+  frame[1] = FRAME_SOF2;
+  frame[2] = type;
+  frame[3] = txSeq++;
+  for (uint8_t i = 0; i < FRAME_PAYLOAD_SIZE; i++) {
+    frame[4 + i] = payload[i];
+  }
+  frame[FRAME_SIZE - 1] = crc8(&frame[2], 26);
+  Serial.write(frame, FRAME_SIZE);
+}
+
 void sendingpress() { //отправка давлений
-Serial.write(pressures[0]); Serial.write(pressures[1]);
-Serial.write(pressures[2]); Serial.write(pressures[3]);
-Serial.write(pressures[4]); Serial.write(pressures[5]);
-Serial.write(pressures[6]); Serial.write(pressures[7]);
-Serial.write(pressures[8]); Serial.write(pressures[9]);
-Serial.write(pressures[10]); Serial.write(pressures[11]);
-Serial.write(pressures[12]); Serial.write(pressures[13]);
-Serial.write(pressures[14]); Serial.write(pressures[15]);////////////////
- Serial.write(pressures[16]); Serial.write(pressures[17]);
-Serial.write(pressures[18]); Serial.write(pressures[19]);
-Serial.write(pressures[20]); Serial.write(pressures[21]);
-Serial.write(pressures[22]); Serial.write(pressures[23]); 
+  sendFrame(FRAME_TYPE_PRESSURE, pressures);
 }
 
 void sendingcurr(){  //отправка токов отправляется после 4х отправок давлений
- Serial.write(currents[0]); Serial.write(currents[1]);
-Serial.write(currents[2]); Serial.write(currents[3]);
-Serial.write(currents[4]); Serial.write(currents[5]);
-Serial.write(currents[6]); Serial.write(currents[7]);
-Serial.write(currents[8]); Serial.write(currents[9]);
-Serial.write(currents[10]); Serial.write(currents[11]);
-Serial.write(currents[12]); Serial.write(currents[13]);
-Serial.write(currents[14]); Serial.write(currents[15]); //////////////////
- Serial.write(currents[16]); Serial.write(currents[17]);
-Serial.write(currents[18]); Serial.write(currents[19]);
-Serial.write(currents[20]); Serial.write(currents[21]);
-Serial.write(currents[22]); Serial.write(currents[23]); 
+  sendFrame(FRAME_TYPE_CURRENT, currents);
 }
 
 
@@ -292,18 +309,7 @@ zeroflag=1;
 
 sendtimer= micros();
 
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
-Serial.write(254); Serial.write(255);
+sendFrame(FRAME_TYPE_START, zeroPayload);
 
   recievedflag=0;
 }
@@ -311,18 +317,7 @@ Serial.write(254); Serial.write(255);
 if (recievedflag==1&&indata[0]==120&&indata[1]==138&&indata[2]==2||stopflag==1&&startflag==0){
   //sendingflag=0;
   stopflag=0;
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
-Serial.write(255); Serial.write(255);
+sendFrame(FRAME_TYPE_END, zeroPayload);
   recievedflag=0;
 }
 if (recievedflag==1&&indata[0]==84){//стоп данных, обнуление времени
