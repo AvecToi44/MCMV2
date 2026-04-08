@@ -98,6 +98,7 @@ fun CenterPiece(
     val explMode = remember { EXPLORER_MODE }
     val expandedCom = remember { mutableStateOf(false) }
     val showBottomPanel = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
+    var showAnalogPanel by remember { mutableStateOf(false) }
     val allowManipulationWithUIInternal by remember { allowManipulationWithUI }
 
     val txt = remember { txtOfScenario }
@@ -586,13 +587,31 @@ fun CenterPiece(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+
+                        Box(
+                            Modifier
+                                .size(40.dp)
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                                .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                                .clickable {
+                                    showAnalogPanel = !showAnalogPanel
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "AN",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
 
                 /**
                  * SOLENOIDS PANEL
                  */
-                SolenoidsPanel(sizeRow = sizeRow, duration = duration)
+                SolenoidsPanel(sizeRow = sizeRow, duration = duration, showAnalogPanel = showAnalogPanel)
             }
         } else {
             Row(Modifier.fillMaxSize().background(Color.DarkGray).weight(0.2f), horizontalArrangement = Arrangement.SpaceAround) {
