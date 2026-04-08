@@ -38,6 +38,8 @@ fun TogglesPlate(
     isExporting: Boolean = false,
     isExportingTo1C: Boolean = false
 ) {
+    var expanded by remember { mutableStateOf(true) }
+
     Column(
         modifier = modifier.width(200.dp)
             .background(Color(0xE6000000), RoundedCornerShape(10.dp))
@@ -45,72 +47,89 @@ fun TogglesPlate(
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-
-        Text("View options", color = Color.White, fontSize = 11.sp)
-
-        toggles.forEach { spec ->
-            ToggleRowWithInfo(spec)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("View options", color = Color.White, fontSize = 11.sp)
+            Text(if (expanded) "▼" else "▶", color = Color.White, fontSize = 11.sp)
         }
 
-        if (onExportPdf != null) {
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Button(
-                onClick = onExportPdf,
-                enabled = !isExporting,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1976D2),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF666666),
-                    disabledContentColor = Color(0xFFAAAAAA)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                if (isExporting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                toggles.forEach { spec ->
+                    ToggleRowWithInfo(spec)
                 }
-                Text(
-                    text = if (isExporting) "Экспорт..." else "Экспорт PDF",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
 
-        if (onExportPdfTo1C != null) {
-            Spacer(modifier = Modifier.height(2.dp))
+                if (onExportPdf != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
 
-            Button(
-                onClick = onExportPdfTo1C,
-                enabled = false,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF444444),
-                    contentColor = Color(0xFF888888),
-                    disabledContainerColor = Color(0xFF444444),
-                    disabledContentColor = Color(0xFF888888)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                if (isExportingTo1C) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color(0xFFAAAAAA),
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = onExportPdf,
+                        enabled = !isExporting,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF1976D2),
+                            contentColor = Color.White,
+                            disabledContainerColor = Color(0xFF666666),
+                            disabledContentColor = Color(0xFFAAAAAA)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        if (isExporting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = if (isExporting) "Экспорт..." else "Экспорт PDF",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
-                Text(
-                    text = if (isExportingTo1C) "Отправка..." else "Экспорт PDF в 1С",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
+
+                if (onExportPdfTo1C != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Button(
+                        onClick = onExportPdfTo1C,
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF444444),
+                            contentColor = Color(0xFF888888),
+                            disabledContainerColor = Color(0xFF444444),
+                            disabledContentColor = Color(0xFF888888)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        if (isExportingTo1C) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color(0xFFAAAAAA),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = if (isExportingTo1C) "Отправка..." else "Экспорт PDF в 1С",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
     }

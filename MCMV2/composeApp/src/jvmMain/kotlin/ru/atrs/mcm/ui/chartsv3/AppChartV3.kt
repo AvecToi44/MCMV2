@@ -397,7 +397,7 @@ fun App(analysisAfterExperiment: Boolean = false) {
                 )
             ),
             onExportPdf = { exportPdf() },
-            onExportPdfTo1C = { exportPdfTo1C() },
+            onExportPdfTo1C = null,
             isExporting = isExporting,
             isExportingTo1C = isExportingTo1C
         )

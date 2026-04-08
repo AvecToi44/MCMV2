@@ -60,6 +60,7 @@ enum class ChartFileNameEnding { COMMENT_AND_TIMESTAMP, TIMESTAMP, COMMENT }
 var CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
 
 var SOLENOID_MAIN_FREQ: Int? = 0
+var SOLENOID_FREQ_PARAMS_0x68 = IntArray(10) { 0 }
 //var GRADIENT_TIME: Int? = 0
 var solenoids = mutableListOf<SolenoidHolder>()
 var pressures = mutableListOf<PressuresHolder>()

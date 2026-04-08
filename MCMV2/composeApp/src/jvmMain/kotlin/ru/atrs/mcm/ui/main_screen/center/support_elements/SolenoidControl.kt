@@ -83,16 +83,36 @@ fun SolenoidControl(
             androidx.compose.material3.Text(text = "${displayName}", fontSize = 12.sp, style = TextStyle(fontWeight = FontWeight.Bold))
         }
         Column(Modifier.fillMaxSize().weight(1f).background(Color.Gray)) {
-            Row(Modifier.fillMaxSize().weight(1f).padding(start = 6.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxSize().weight(1f).padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 androidx.compose.material3.Text(
                     "$current",
-                    fontSize = 17.sp, color = Color.Black
+                    fontSize = 17.sp,
+                    color = Color.Black
+                )
+                androidx.compose.material3.Text(
+                    "Ток",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
                 )
             }
-            Row(Modifier.fillMaxSize().weight(1f).padding(start = 6.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxSize().weight(1f).padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 androidx.compose.material3.Text(
-                    "${PWMremember.value}",//"${map(PWMremember.value, 0, 255, 0, 100)}\n%",
-                    fontSize = 17.sp, color = Color.Black
+                    "${PWMremember.value}",
+                    fontSize = 17.sp,
+                    color = Color.Black
+                )
+                androidx.compose.material3.Text(
+                    "PWM",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
                 )
             }
         }

@@ -38,7 +38,7 @@ import java.nio.channels.FileLock
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val APP_NAME = "MCM 1.2.26"
+    val APP_NAME = "MCM ${BuildConfig.APP_VERSION}"
     // Attempt to acquire a named mutex or file lock
     if (isAnotherInstanceRunning(APP_NAME)) {
         println("Another instance is already running. Exiting.")
