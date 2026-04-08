@@ -50,6 +50,7 @@ fun AppRoot() {
     var lastChangesSaved by remember { LAST_CHANGES_SAVED }
 
     var scenarioFileName by remember { mutableStateOf(MAIN_CONFIG.value.sheetName) }
+    var scenarioNameHasError by remember { mutableStateOf(false) }
     var standardName by remember { mutableStateOf(MAIN_CONFIG.value.standardPath) }
 
     val tabs = listOf("Main Scenario", "Pressures", "Currents")
@@ -74,8 +75,12 @@ fun AppRoot() {
                 onValueChange = { newText ->
                     scenarioFileName = newText
                     MAIN_CONFIG.value.sheetName = newText
+                    if (newText.isNotBlank()) {
+                        scenarioNameHasError = false
+                    }
                 },
-                label = { Text("Future scenario name") }
+                label = { Text("Future scenario name") },
+                isError = scenarioNameHasError
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -105,33 +110,49 @@ fun AppRoot() {
                 }
                 Text("${standardName}")
             }
-            if (scenarioFileName.isNotEmpty()) {
-                Box(
-                    Modifier
-                        .size(40.dp)
-                        .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                        .background(Color(0xFF444444), RoundedCornerShape(4.dp))
-                        .clickable {
-                            CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
-                                delay(10)
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                    .background(Color(0xFF444444), RoundedCornerShape(4.dp))
+                    .clickable {
+                        val targetName = scenarioFileName.trim()
+                        if (targetName.isBlank()) {
+                            scenarioNameHasError = true
+                            return@clickable
+                        }
 
-                                ExcelExporter.saveWithDialog()?.let { ExcelExporter.export(
+                        scenarioNameHasError = false
+                        MAIN_CONFIG.value.sheetName = targetName
+                        scenarioFileName = targetName
+
+                        CoroutineScope(Dispatchers.IO + CoroutineName("onCloseRequest")).launch {
+                            delay(10)
+
+                            ExcelExporter.saveWithDialog()?.let {
+                                ExcelExporter.export(
                                     MAIN_CONFIG.value.copy(
                                         pressures = PressuresBlockDto(pressures),
-                                        solenoids = SolenoidsBlock(channels = solenoids),
+                                        solenoids = SolenoidsBlock(
+                                            mainFrequencyHz = MAIN_CONFIG.value.solenoids.mainFrequencyHz,
+                                            frequencyParams0x68 = MAIN_CONFIG.value.solenoids.frequencyParams0x68.toMutableList(),
+                                            channels = solenoids
+                                        ),
                                         scenario = ScenarioBlockDto(steps = scenarios.toDtoList())
-                                    ), it) }
+                                    ),
+                                    it
+                                )
                             }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        imageVector = FeatherIcons.Save,
-                        contentDescription = "Save",
-                        colorFilter = ColorFilter.tint(Color.White),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    imageVector = FeatherIcons.Save,
+                    contentDescription = "Save",
+                    colorFilter = ColorFilter.tint(Color.White),
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
             Box(

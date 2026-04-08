@@ -99,6 +99,7 @@ fun CenterPiece(
     val expandedCom = remember { mutableStateOf(false) }
     val showBottomPanel = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
     var showAnalogPanel by remember { mutableStateOf(false) }
+    var autoScenarioComment by remember { mutableStateOf("") }
     val allowManipulationWithUIInternal by remember { allowManipulationWithUI }
 
     val txt = remember { txtOfScenario }
@@ -173,6 +174,34 @@ fun CenterPiece(
             pressure10X = it.pressure10
             pressure11X = it.pressure11
             pressure12X = it.pressure12
+        }
+    }
+
+    LaunchedEffect(explMode.value, stateChart.value, scenario.size) {
+        autoScenarioComment = ""
+
+        if (explMode.value != ExplorerMode.AUTO) {
+            return@LaunchedEffect
+        }
+        if (stateChart.value != StateExperiments.RECORDING) {
+            return@LaunchedEffect
+        }
+        if (scenario.isEmpty()) {
+            return@LaunchedEffect
+        }
+
+        for (stepIndex in scenario.indices) {
+            if (explMode.value != ExplorerMode.AUTO || stateChart.value != StateExperiments.RECORDING) {
+                break
+            }
+
+            autoScenarioComment = scenario[stepIndex].comment
+            val sleepMs = scenario[stepIndex].time.coerceAtLeast(0).toLong()
+            delay(sleepMs)
+        }
+
+        if (explMode.value == ExplorerMode.AUTO && stateChart.value == StateExperiments.RECORDING) {
+            autoScenarioComment = ""
         }
     }
 
@@ -440,7 +469,14 @@ fun CenterPiece(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(Modifier.padding(3.dp).fillMaxWidth().border(width = 2.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp)).padding(10.dp)) {
-                        Text(if (explMode.value == ExplorerMode.AUTO) {"${STATE_EXPERIMENT.value.name}"} else {"${txt.value}"}, fontWeight = FontWeight.Bold)
+                        Text(
+                            if (explMode.value == ExplorerMode.AUTO) {
+                                autoScenarioComment.takeIf { it.isNotBlank() } ?: "${STATE_EXPERIMENT.value.name}"
+                            } else {
+                                "${txt.value}"
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
                         Text( "${COM_PORT},${BAUD_RATE},${limitTime}ms" , fontSize = 12.sp)
                     }
 

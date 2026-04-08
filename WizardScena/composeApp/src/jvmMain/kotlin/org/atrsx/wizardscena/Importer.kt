@@ -109,7 +109,7 @@ object ExcelImporter {
             val importedPath = getString(sh, R_PATH, C_LABEL).orEmpty()
 
             val pressures = parsePressures(sh)
-            val (mainFreq, solenoids) = parseSolenoids(sh)
+            val (mainFreq, frequencyParams0x68, solenoids) = parseSolenoids(sh)
             val scenarioSteps = parseScenario(sh)
 
             // Fill state lists (clear + add to keep Compose reactive)
@@ -120,7 +120,11 @@ object ExcelImporter {
             // Refresh MAIN_CONFIG
             mainConfigState.value = MainExperimentConfig(
                 pressures = PressuresBlockDto(channels = pressuresState),
-                solenoids = SolenoidsBlock(mainFrequencyHz = mainFreq, channels = solenoidsState),
+                solenoids = SolenoidsBlock(
+                    mainFrequencyHz = mainFreq,
+                    frequencyParams0x68 = frequencyParams0x68.toMutableList(),
+                    channels = solenoidsState
+                ),
                 scenario  = ScenarioBlockDto(steps = scenariosState.toDtoList()),
                 standardPath = if (importedPath.isNotBlank()) importedPath else file.absolutePath,
                 sheetName = file.nameWithoutExtension
@@ -150,9 +154,12 @@ object ExcelImporter {
         return out
     }
 
-    /** Returns pair(mainFrequency, channels). */
-    private fun parseSolenoids(sh: Sheet): Pair<Int, List<SolenoidChannel>> {
+    /** Returns triple(mainFrequency, frequencyParams0x68, channels). */
+    private fun parseSolenoids(sh: Sheet): Triple<Int, List<Int>, List<SolenoidChannel>> {
         val mainFreq = getInt(sh, R_S_HDR, C_S_MainFreq_V, fallback = 1500)
+        val frequencyParams0x68 = MutableList(10) { idx ->
+            getInt(sh, R_S_HDR, C_S_MainFreq_V + 1 + idx, fallback = 0).coerceIn(0, 255)
+        }
         val out = ArrayList<SolenoidChannel>(12)
         for (i in 0 until 12) {
             val c = C_CH_FIRST + i
@@ -168,7 +175,7 @@ object ExcelImporter {
                 isVisible       = getBool(sh, R_S_Visible, c, defaultValue = true)
             )
         }
-        return mainFreq to out
+        return Triple(mainFreq, frequencyParams0x68, out)
     }
 
     private fun parseScenario(sh: Sheet): List<ScenarioStep> {

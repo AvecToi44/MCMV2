@@ -63,16 +63,17 @@ data class PressureChannel(
 data class SolenoidsBlock(
     var mainFrequencyHz: Int = 1500,      // "Main Frequency:"
     var testVariable: Int? = 0,           // optional
+    var frequencyParams0x68: MutableList<Int> = MutableList(10) { 0 },
     val channels: MutableList<SolenoidChannel> = MutableList(12) { i ->
         SolenoidChannel(
             displayName = "Без имени ${i + 1}",
             index = i,
-            maxPwm0_255 = 0,
+            maxPwm0_255 = 255,
             valueOfDivision = 0,
             DitherAmplitude = 0,
             DitherFrequency = 0,
             minValue = 0,
-            maxValue = 0,
+            maxValue = 4096,
             isVisible = true
         )
     }
@@ -273,8 +274,12 @@ object ExcelExporter {
 
         // --------- SOLENOIDS ----------
         label(R_S_HDR, "Solenoids")
-        cell(R_S_HDR, C_S_MainFreq_L).apply { setCellValue("Main Frequency:"); setCellStyle(bold) }
+        cell(R_S_HDR, C_S_MainFreq_L).apply { setCellValue("Main Frequency (0x68)"); setCellStyle(bold) }
         cell(R_S_HDR, C_S_MainFreq_V).setCellValue(config.solenoids.mainFrequencyHz.toDouble())
+        repeat(10) { idx ->
+            val value = config.solenoids.frequencyParams0x68.getOrNull(idx)?.coerceIn(0, 255) ?: 0
+            cell(R_S_HDR, C_S_MainFreq_V + 1 + idx).setCellValue(value.toDouble())
+        }
 
         label(R_S_Display, "DisplayName"); label(R_S_Index, "Index"); label(R_S_MaxPWM, "MaxPWM [0 - 255]")
         label(R_S_ValueDiv, "Value of division"); label(R_S_DitherAmp, "Dither Amplitude")
@@ -341,7 +346,7 @@ object ExcelExporter {
     }
 
     private fun ensureXls(file: File): File =
-        if (file.extension.lowercase(Locale.ROOT) != "xlsx")
+        if (file.extension.lowercase(Locale.ROOT) != "xls")
             File(file.parentFile, file.nameWithoutExtension + ".xls") else file
 }
 
