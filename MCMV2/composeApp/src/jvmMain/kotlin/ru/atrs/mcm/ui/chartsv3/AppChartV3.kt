@@ -395,7 +395,7 @@ fun App(analysisAfterExperiment: Boolean = false) {
                     label = "Наложение половин",
                     checked = overlapHalves,
                     onCheckedChange = { overlapHalves = it },
-                    info = "В первой половине используется ваш обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и эффект пунктирной траектории, смещенный по оси X так, чтобы его начало совпадало с первой половиной."
+                    info = "В первой половине используется обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и пунктир. Вторая половина зеркалится по оси X (режим 'книжки'), чтобы правый край накладывался на левый."
                 )
             ),
             onExportPdf = { exportPdf() },
@@ -560,15 +560,23 @@ fun ChartView(
     val maxPoints = 6000
     val minPoints = 200
 
-    fun splitAndShift(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
+    fun splitAndOverlapBook(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
         if (series.size < 2) return series to emptyList()
-        val mid = series.size / 2
-        val first = series.subList(0, mid)
-        val second = series.subList(mid, series.size)
+
+        val xMin = series.first().x
+        val xMax = series.last().x
+        val xMid = (xMin + xMax) / 2f
+
+        val first = series.filter { it.x <= xMid }
+        val second = series.filter { it.x > xMid }
+
         if (first.isEmpty() || second.isEmpty()) return first to emptyList()
-        val dx = second.first().x - first.first().x
-        val shiftedSecond = second.map { Point(it.x - dx, it.y) }
-        return first to shiftedSecond
+
+        val secondMirrored = second
+            .map { p -> Point(xMin + (xMax - p.x), p.y) }
+            .reversed()
+
+        return first to secondMirrored
     }
 
     val downsampledAll by remember(datasets, visibilityStates, overlapHalves) {
@@ -578,8 +586,8 @@ fun ChartView(
                     if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) emptyList()
                     else {
                         val seqs = if (!overlapHalves) listOf(series) else {
-                            val (first, secondShifted) = splitAndShift(series)
-                            listOf(first, secondShifted)
+                            val (first, secondMirrored) = splitAndOverlapBook(series)
+                            listOf(first, secondMirrored)
                         }
                         seqs.flatMap { seq ->
                             val step = (seq.size / minPoints).coerceAtLeast(1)
@@ -658,7 +666,7 @@ fun ChartView(
                     if (!overlapHalves) {
                         plot(series, isSecondHalf = false)
                     } else {
-                        val (first, secondShifted) = splitAndShift(series)
+                        val (first, secondShifted) = splitAndOverlapBook(series)
                         if (first.isNotEmpty()) plot(first, isSecondHalf = false)
                         if (secondShifted.isNotEmpty()) plot(secondShifted, isSecondHalf = true)
                     }
