@@ -10,11 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,12 +41,14 @@ data class HeaderSlot(
 
 @Composable
 fun HeaderBar(
+    modifier: Modifier = Modifier,
     slots: List<HeaderSlot>,
     colors: List<Color>
 ) {
     // One tight row: [Pick btn] [filename or error] [chips...] [Show/Clear]
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         slots.forEach { slot ->
             CompactFileSlot(slot, colors)
@@ -63,13 +64,13 @@ private fun CompactFileSlot(
 ) {
     Row(
         modifier = Modifier
-            .border(1.dp, Color(0x22222222), RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .border(1.dp, Color(0x22222222), RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Pick
-        SmallBtn(slot.label) {
+        TinyActionBtn(slot.label) {
             FileDialog(null as Frame?, "Select ${slot.label}", FileDialog.LOAD).apply {
                 isVisible = true
                 file?.let { filePath ->
@@ -82,14 +83,27 @@ private fun CompactFileSlot(
 
         // File name / status (very compact)
         when (slot.result) {
-            is ResultOrNull.Loading -> Text("...", fontSize = 11.sp, color = Color.Gray)
+            is ResultOrNull.Loading -> Text("...", fontSize = 10.sp, color = Color.Gray, modifier = Modifier.widthIn(max = 130.dp))
             is ResultOrNull.Failure -> {
                 val name = slot.path?.let { File(it).name } ?: "(none)"
-                Text("$name — ${slot.result.message}", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, color = Color(0xFFB00020))
+                Text(
+                    "$name — ${slot.result.message}",
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color(0xFFB00020),
+                    modifier = Modifier.widthIn(max = 210.dp)
+                )
             }
             is ResultOrNull.Success -> {
                 val cd = slot.result.chartData
-                Text(cd.fileName, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    cd.fileName,
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 210.dp)
+                )
             }
         }
 
@@ -99,9 +113,9 @@ private fun CompactFileSlot(
             val scroll = rememberScrollState()
             Row(
                 modifier = Modifier
-                    .weight(1f, fill = false)
+                    .weight(1f)
                     .horizontalScroll(scroll),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 cd.series.forEachIndexed { idx, series ->
@@ -119,9 +133,21 @@ private fun CompactFileSlot(
 
         // Show/Clear tiny buttons
         if (slot.result is ResultOrNull.Success) {
-            SmallBtn(if (slot.visibility.any { it }) "Hide" else "Show") { slot.onToggleAll() }
-            SmallBtn("Clear") { slot.onClear() }
+            TinyActionBtn(if (slot.visibility.any { it }) "Hide" else "Show") { slot.onToggleAll() }
+            TinyActionBtn("Clear") { slot.onClear() }
         }
+    }
+}
+
+@Composable
+private fun TinyActionBtn(text: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .background(Color.Black, RoundedCornerShape(6.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(text, fontSize = 10.sp, color = Color.White)
     }
 }
 
@@ -136,12 +162,12 @@ private fun CompactChip(
     val border = if (active) Color.Black else Color.White
     Box(
         modifier = Modifier
-            .background(bg, RoundedCornerShape(6.dp))
+            .background(bg, RoundedCornerShape(5.dp))
             .clickable { onClick() }
-            .border(2.dp, border, RoundedCornerShape(6.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .border(1.dp, border, RoundedCornerShape(5.dp))
+            .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
-        Text(label, fontSize = 11.sp, color = Color.White)
+        Text(label, fontSize = 10.sp, color = Color.White)
     }
 }
 
