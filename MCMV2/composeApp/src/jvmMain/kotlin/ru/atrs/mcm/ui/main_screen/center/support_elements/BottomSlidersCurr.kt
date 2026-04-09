@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,8 @@ fun SolenoidsPanel(
     showAnalogPanel: Boolean = false
 ) {
     val crctx = rememberCoroutineScope().coroutineContext
+    val density = LocalDensity.current
+    val analogPanelWidth = 170.dp
     var analogInput1 by remember { mutableStateOf((analog1.toInt() and 0xFF).toString()) }
     var analogInput2 by remember { mutableStateOf((analog2.toInt() and 0xFF).toString()) }
 
@@ -60,7 +63,7 @@ fun SolenoidsPanel(
     var current11 by remember { mutableStateOf(-1) }
     var current12 by remember { mutableStateOf(-1) }
 
-    var widthOfSolenoidControl by remember {mutableStateOf(0.dp)}
+    var widthOfSolenoidControl by remember { mutableStateOf(0.dp) }
 
 
     LaunchedEffect(true) {
@@ -89,132 +92,159 @@ fun SolenoidsPanel(
     Row(modifier = Modifier.fillMaxSize().onGloballyPositioned { coordinates ->
         // Set column height using the LayoutCoordinates
         if (coordinates.size.width != 0) {
-            val denominator = if (showAnalogPanel) 13 else 12
-            widthOfSolenoidControl = ((coordinates.size.width ) / denominator).dp
+            val reservedAnalogPanelPx = with(density) { analogPanelWidth.toPx() }
+            val usableWidthPx = (coordinates.size.width.toFloat()).coerceAtLeast(13f)
+            widthOfSolenoidControl = with(density) { (usableWidthPx / 13f).toDp() }
             println("<<<<< ${widthOfSolenoidControl}")
         }
     }, horizontalArrangement = Arrangement.End) {
-        AnimatedVisibility(showAnalogPanel) {
-            val panelWidth = if (widthOfSolenoidControl < 170.dp) 170.dp else widthOfSolenoidControl
-            Column(
+        androidx.compose.animation.AnimatedVisibility(showAnalogPanel, modifier = Modifier.width(widthOfSolenoidControl).fillMaxHeight()) {
+            Box(
                 modifier = Modifier
-                    .width(panelWidth)
+                    .width(widthOfSolenoidControl)
                     .fillMaxHeight()
-                    .background(Color(0xFF132238), RoundedCornerShape(10.dp))
-                    .border(2.dp, Color(0xFF5FA8FF), RoundedCornerShape(10.dp))
-                    .padding(6.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Box(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
+                        .fillMaxHeight()
+                        .background(Color.DarkGray, RoundedCornerShape(10.dp))
+                        .border(2.dp, Color.LightGray, RoundedCornerShape(10.dp))
+                        .padding(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    OutlinedTextField(
-                        value = analogInput1,
-                        onValueChange = { analogInput1 = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("CH1", fontSize = 11.sp) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 44.dp)
-                            .padding(horizontal = 2.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFEAF2FF),
-                            unfocusedContainerColor = Color(0xFFF4F8FF),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF0B3D91),
-                            unfocusedLabelColor = Color(0xFF2E4A76)
-                        )
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    OutlinedTextField(
-                        value = analogInput2,
-                        onValueChange = { analogInput2 = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("CH2", fontSize = 11.sp) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 44.dp)
-                            .padding(horizontal = 2.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFEAF2FF),
-                            unfocusedContainerColor = Color(0xFFF4F8FF),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF0B3D91),
-                            unfocusedLabelColor = Color(0xFF2E4A76)
-                        )
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .padding(horizontal = 2.dp, vertical = 2.dp),
-                        contentPadding = PaddingValues(vertical = 2.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF1976D2),
-                            contentColor = Color.White
-                        ),
-                        onClick = {
-                        val ch1Input = analogInput1.trim().toIntOrNull()
-                        val ch2Input = analogInput2.trim().toIntOrNull()
-
-                        if (ch1Input == null || ch2Input == null) {
-                            showMeSnackBar("CH1 и CH2 должны быть числами 0..255", Color.Red)
-                            return@Button
-                        }
-                        if (ch1Input !in 0..255 || ch2Input !in 0..255) {
-                            showMeSnackBar("CH1 и CH2 должны быть в диапазоне 0..255", Color.Red)
-                            return@Button
-                        }
-
-                        analog1 = ch1Input.toByte()
-                        analog2 = ch2Input.toByte()
-
-                        CoroutineScope(Dispatchers.IO + crctx).launch {
-                            writeToSerialPort(
-                                byteArrayOf(
-                                    0x51,
-                                    analog1,
-                                    analog2,
-                                    0x00, 0x00,
-                                    0x00, 0x00,
-                                    0x00, 0x00,
-                                    0x00, 0x00,
-                                    0x00, 0x00,
-                                    0x00,
-                                ),
-                                withFlush = false,
-                                delay = 0L
-                            )
-                        }
-                        }
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("OK", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        OutlinedTextField(
+                            value = analogInput1,
+                            onValueChange = { analogInput1 = it.filter { ch -> ch.isDigit() } },
+                            label = {
+                                Text(
+                                    "CH1",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 44.dp)
+                                .padding(horizontal = 2.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFF444444),
+                                unfocusedContainerColor = Color(0xFF444444),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedLabelColor = Color.White,
+                                unfocusedLabelColor = Color.White,
+                                focusedIndicatorColor = Color.White,
+                                unfocusedIndicatorColor = Color.LightGray,
+                                cursorColor = Color.White
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        OutlinedTextField(
+                            value = analogInput2,
+                            onValueChange = { analogInput2 = it.filter { ch -> ch.isDigit() } },
+                            label = {
+                                Text(
+                                    "CH2",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 44.dp)
+                                .padding(horizontal = 2.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFF444444),
+                                unfocusedContainerColor = Color(0xFF444444),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedLabelColor = Color.White,
+                                unfocusedLabelColor = Color.White,
+                                focusedIndicatorColor = Color.White,
+                                unfocusedIndicatorColor = Color.LightGray,
+                                cursorColor = Color.White
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .border(2.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 2.dp, vertical = 2.dp),
+                            contentPadding = PaddingValues(vertical = 2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF444444),
+                                contentColor = Color.White
+                            ),
+                            onClick = {
+                                val ch1Input = analogInput1.trim().toIntOrNull()
+                                val ch2Input = analogInput2.trim().toIntOrNull()
+
+                                if (ch1Input == null || ch2Input == null) {
+                                    showMeSnackBar("CH1 и CH2 должны быть числами 0..255", Color.Red)
+                                    return@Button
+                                }
+                                if (ch1Input !in 0..255 || ch2Input !in 0..255) {
+                                    showMeSnackBar("CH1 и CH2 должны быть в диапазоне 0..255", Color.Red)
+                                    return@Button
+                                }
+
+                                analog1 = ch1Input.toByte()
+                                analog2 = ch2Input.toByte()
+
+                                CoroutineScope(Dispatchers.IO + crctx).launch {
+                                    writeToSerialPort(
+                                        byteArrayOf(
+                                            0x51,
+                                            analog1,
+                                            analog2,
+                                            0x00, 0x00,
+                                            0x00, 0x00,
+                                            0x00, 0x00,
+                                            0x00, 0x00,
+                                            0x00, 0x00,
+                                            0x00,
+                                        ),
+                                        withFlush = false,
+                                        delay = 0L
+                                    )
+                                }
+                            }
+                        ) {
+                            Text("OK", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
         }
+
         if (solenoids[0].isVisible) {
             SolenoidControl(
                 index = 1,

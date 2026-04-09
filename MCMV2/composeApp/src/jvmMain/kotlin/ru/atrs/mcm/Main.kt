@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
@@ -64,7 +65,7 @@ fun main() = application {
     Window(
         title = APP_NAME,
         state = if (SHOW_FULLSCREEN) windowStateFullscreen else windowFloating,
-//        icon = Res.drawable.ava, //painterResource("resources/icon1.png"),
+        icon = painterResource("iconapp.png"),
         onCloseRequest = {
             CoroutineScope(Dispatchers.IO+CoroutineName("onCloseRequest")).launch {
                 RouterCommunication.stopSerialCommunication()

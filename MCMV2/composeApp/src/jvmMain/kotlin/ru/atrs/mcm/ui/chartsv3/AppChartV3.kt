@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
@@ -194,6 +195,7 @@ class AppChartV3 {
         Window(
             title = "ChartViewer V3 [Для зума зажми: Ctrl + Колесо мыши, для горизонтальной прокрутки: Shift + Колесо мыши]",
             state = WindowState(size = DpSize(1200.dp, 800.dp)),
+            icon = painterResource("iconapp.png"),
             onCloseRequest = {
                 if (doOpen_First_ChartWindow.value && analysisAfterExperiment) {
                     doOpen_First_ChartWindow.value = false

@@ -429,53 +429,53 @@ fun StarterScreen() {
                             )
                         }
                     }
-                    item {
-                        Row {
-                            Text("12 CHANNELS MODE",
-                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
-                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
-                            val checkedState = remember { mutableStateOf(TWELVE_CHANNELS_MODE) }
-                            Checkbox(
-                                checked = checkedState.value,
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = Color.Blue,
-                                    uncheckedColor = Color.Gray
-                                ),
-                                onCheckedChange = {
-                                    checkedState.value = it
-                                    TWELVE_CHANNELS_MODE = it
-                                    refreshJsonParameters()
-                                }
-                            )
-                        }
-                    }
-                    item {
-                        Row {
-                            Text("Protocol Type",
-                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
-                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
-
-                            Box {
-                                Text("${ProtocolType.NEW.name}",
-                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
-                                        expandedProtocolChooser = !expandedProtocolChooser
-                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
-
-                                DropdownMenu(
-                                    modifier = Modifier.background(Color.White),
-                                    expanded = expandedProtocolChooser,
-                                    onDismissRequest = { expandedProtocolChooser = false },
-                                ) {
-                                    Text("NEW",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
-                                        PROTOCOL_TYPE = ProtocolType.NEW
-                                        refreshJsonParameters()
-                                        expandedProtocolChooser = false
-                                    })  .fillMaxSize().padding(10.dp))
-
-                                }
-                            }
-                        }
-                    }
+//                    item {
+//                        Row {
+//                            Text("12 CHANNELS MODE",
+//                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+//                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+//                            val checkedState = remember { mutableStateOf(TWELVE_CHANNELS_MODE) }
+//                            Checkbox(
+//                                checked = checkedState.value,
+//                                colors = CheckboxDefaults.colors(
+//                                    checkedColor = Color.Blue,
+//                                    uncheckedColor = Color.Gray
+//                                ),
+//                                onCheckedChange = {
+//                                    checkedState.value = it
+//                                    TWELVE_CHANNELS_MODE = it
+//                                    refreshJsonParameters()
+//                                }
+//                            )
+//                        }
+//                    }
+//                    item {
+//                        Row {
+//                            Text("Protocol Type",
+//                                modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+//                                }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
+//
+//                            Box {
+//                                Text("${ProtocolType.NEW.name}",
+//                                    modifier = Modifier.width(200.dp).padding(4.dp).clickable {
+//                                        expandedProtocolChooser = !expandedProtocolChooser
+//                                    }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
+//
+//                                DropdownMenu(
+//                                    modifier = Modifier.background(Color.White),
+//                                    expanded = expandedProtocolChooser,
+//                                    onDismissRequest = { expandedProtocolChooser = false },
+//                                ) {
+//                                    Text("NEW",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+//                                        PROTOCOL_TYPE = ProtocolType.NEW
+//                                        refreshJsonParameters()
+//                                        expandedProtocolChooser = false
+//                                    })  .fillMaxSize().padding(10.dp))
+//
+//                                }
+//                            }
+//                        }
+//                    }
                         item {
                             Row {
                                 Text("Chart File Ending",
@@ -543,7 +543,6 @@ fun StarterScreen() {
                                     }
                                 }
                             }
-
                         }
                     }
                 })

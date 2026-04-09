@@ -138,7 +138,7 @@ fun CenterPiece(
     var counterAllowManipulationWithUI = 0
     LaunchedEffect(Unit) {
         while (true) {
-            logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
+            //logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
             if (allowManipulationWithUI.value == false && counterAllowManipulationWithUI >=5) {
                 allowManipulationWithUI.value = true
             } else {
