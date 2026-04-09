@@ -67,9 +67,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageVersion = appVersion
             packageName = "MCM (${packageVersion})"
-//            windows {
-//                iconFile.set(project.file("favicon.ico"))
-//            }
+            windows {
+                iconFile.set(project.file("src/jvmMain/resources/iconapp.ico"))
+            }
         }
         buildTypes.release {
             proguard {

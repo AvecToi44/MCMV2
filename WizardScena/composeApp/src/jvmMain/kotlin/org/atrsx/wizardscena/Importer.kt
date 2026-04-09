@@ -35,6 +35,7 @@ import org.atrsx.wizardscena.ExcelExporter.R_S_Visible
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
+import java.io.FilenameFilter
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -87,10 +88,20 @@ object ExcelImporter {
         scenariosState: SnapshotStateList<ScenarioStep>,
         mainConfigState: MutableState<MainExperimentConfig>
     ): Boolean {
-        val dlg = FileDialog(parent, "Open Excel", FileDialog.LOAD).apply { isVisible = true }
-        val chosen = dlg.file ?: return false
-        val file = File(dlg.directory, chosen)
+        val file = chooseExcelScenarioFile(parent) ?: return false
         return importFromFile(file, pressuresState, solenoidsState, scenariosState, mainConfigState)
+    }
+
+    fun chooseExcelScenarioFile(parent: Frame? = null): File? {
+        val dlg = FileDialog(parent, AppI18n.text("choose_excel_dialog"), FileDialog.LOAD).apply {
+            filenameFilter = FilenameFilter { _, name ->
+                val lower = name.lowercase(Locale.ROOT)
+                lower.endsWith(".xls") || lower.endsWith(".xlsx")
+            }
+            isVisible = true
+        }
+        val chosen = dlg.file ?: return null
+        return File(dlg.directory, chosen)
     }
 
     /** Import from a given file path. */

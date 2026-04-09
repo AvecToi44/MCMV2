@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import org.atrsx.wizardscena.MAIN_CONFIG
 import org.atrsx.wizardscena.SolenoidChannel
 import org.atrsx.wizardscena.solenoids
+import org.atrsx.wizardscena.tr
 
 @Composable
 fun SolenoidsScreen(modifier: Modifier = Modifier) {
@@ -70,7 +71,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                 .padding(12.dp).verticalScroll(verticalScroll),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Solenoids — Global & Channel Params", style = MaterialTheme.typography.titleMedium)
+            Text(tr("sol_title_panel"), style = MaterialTheme.typography.titleMedium)
 
             // --- Global: Main Frequency (Integer) ---
             OutlinedTextField(
@@ -84,7 +85,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
 //                    }
 //                    if (selectedIndex != null) freq10Text = f10.toString()
                 },
-                label = { Text("Main Frequency (Integer)") },
+                label = { Text(tr("sol_main_freq")) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -110,7 +111,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                     nameText = it
                     if (enabled) updateSelected { ch -> ch.copy(displayName = it) }
                 },
-                label = { Text("Display Name") },
+                label = { Text(tr("sol_display_name")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -127,7 +128,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(maxPwm0_255 = clamped) }
                     }
                 },
-                label = { Text("Max Value [0 - 255]") },
+                label = { Text(tr("sol_max_value_255")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -142,7 +143,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(valueOfDivision = newDiv) }
                     }
                 },
-                label = { Text("Value of division") },
+                label = { Text(tr("sol_value_div")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -157,7 +158,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(DitherAmplitude = newAmp10) }
                     }
                 },
-                label = { Text("Dither Amplitude") },
+                label = { Text(tr("sol_dither_amp")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -172,7 +173,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(DitherFrequency = newFreq10) }
                     }
                 },
-                label = { Text("Dither Frequency") },
+                label = { Text(tr("sol_dither_freq")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -191,7 +192,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("Min Current Value") },
+                label = { Text(tr("sol_min_current")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -210,7 +211,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("Max Current Value") },
+                label = { Text(tr("sol_max_current")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -218,7 +219,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
 
             if (!enabled) {
                 Text(
-                    "Выберите соленоид справа, чтобы редактировать параметры.",
+                    tr("sol_pick_right"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -227,7 +228,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
 
         // -------- RIGHT: Solenoids List (checkbox for visibility, row selection) --------
         Column(Modifier.weight(1f)) {
-            Text("Соленоиды", style = MaterialTheme.typography.titleLarge)
+            Text(tr("sol_list_title"), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
 
             LazyColumn(
@@ -279,7 +280,7 @@ fun SolenoidsScreen(modifier: Modifier = Modifier) {
                                 Text(ch.displayName, style = MaterialTheme.typography.titleMedium)
                                 Text(
                                     "PWM: ${ch.maxPwm0_255}  •  Div: ${ch.valueOfDivision}  •  Amp: ${ch.DitherAmplitude}  •  Freq: ${ch.DitherFrequency}\n" +
-                                            "Range: ${ch.minValue}…${ch.maxValue}",
+                                            "${tr("sol_range")}: ${ch.minValue}…${ch.maxValue}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 2
