@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>АКПП Health Analyzer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <h1>АКПП Health Analyzer</h1>
+      <p class="subhead">Офлайн анализ логов, редактор пресетов и оценка Health Score</p>
+    </header>
+
+    <section id="alertBox" class="alert hidden" role="alert"></section>
+
+    <section id="viewMode" class="view active">
+      <div class="mode-grid">
+        <button id="goPresetEditor" class="mode-card">
+          <span class="mode-title">Редактор пресетов</span>
+          <span class="mode-desc">Создание и редактирование эталонных допусков по RSLZ</span>
+        </button>
+        <button id="goAnalysis" class="mode-card">
+          <span class="mode-title">Анализ логов</span>
+          <span class="mode-desc">Проверка измерений с подстановкой пресета и Health Score</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="viewPreset" class="view hidden">
+      <div class="panel-head">
+        <h2>Редактор пресетов</h2>
+        <button class="secondary" data-back="mode">На главный экран</button>
+      </div>
+
+      <div class="panel-grid">
+        <div class="card controls">
+          <h3>Источник эталона</h3>
+          <label class="field">
+            <span>RSLZ файл эталона</span>
+            <input id="presetRefFile" type="file" accept=".rslz" />
+          </label>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Канал</span>
+              <select id="presetChannelType">
+                <option value="data">DataResult</option>
+                <option value="pwm">PWMResult</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Индекс</span>
+              <select id="presetChannelIndex"></select>
+            </label>
+          </div>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Базовый отступ допуска</span>
+              <input id="presetMargin" type="number" step="0.01" min="0" value="0.5" />
+            </label>
+            <label class="field">
+              <span>Лимит control points</span>
+              <input id="presetAnchorCount" type="number" min="12" max="300" step="1" value="120" />
+            </label>
+          </div>
+          <div class="btn-row">
+            <button id="loadPresetRef">Загрузить эталон</button>
+            <button id="rebuildBounds" class="secondary">Пересобрать допуски</button>
+          </div>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Режим графика</span>
+              <select id="presetEditMode">
+                <option value="view">Обзор</option>
+                <option value="edit">Редактировать точки</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Что тянуть</span>
+              <select id="presetDragTarget">
+                <option value="up">Верхний допуск (+)</option>
+                <option value="down">Нижний допуск (-)</option>
+              </select>
+            </label>
+          </div>
+          <div class="btn-row">
+            <button id="autoMarkers">Авто-маркеры</button>
+            <button id="resetControlPoints" class="secondary">Сбросить к авто</button>
+          </div>
+        </div>
+
+        <div class="card controls">
+          <h3>Preset JSON</h3>
+          <label class="field">
+            <span>Название пресета</span>
+            <input id="presetName" type="text" value="АКПП_тип1" />
+          </label>
+          <label class="field">
+            <span>Загрузить существующий пресет</span>
+            <input id="presetJsonInput" type="file" accept="application/json,.json" />
+          </label>
+          <div class="btn-row">
+            <button id="savePreset">Сохранить пресет</button>
+          </div>
+          <p class="hint">
+            Drag-and-drop: кликните маркер верхней/нижней границы и тяните мышью по оси Y.
+            Опорные точки привязаны ко времени ключевых фаз.
+          </p>
+          <div id="presetSummary" class="summary-box"></div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Эталон и допуски</h3>
+        <div id="presetPlot" class="plot"></div>
+      </div>
+
+      <div class="card">
+        <h3>Control Points</h3>
+        <div class="cp-toolbar">
+          <label class="field compact-field">
+            <span>Time (ms)</span>
+            <input id="cpAddTime" type="number" step="0.01" />
+          </label>
+          <label class="field compact-field">
+            <span>Tol +</span>
+            <input id="cpAddTolUp" type="number" min="0" step="0.01" />
+          </label>
+          <label class="field compact-field">
+            <span>Tol -</span>
+            <input id="cpAddTolDown" type="number" min="0" step="0.01" />
+          </label>
+          <button id="cpAddBtn" class="secondary">+ Add by time</button>
+          <button id="cpRemoveSelectedBtn" class="secondary">Удалить выбранную</button>
+        </div>
+        <div class="table-scroll cp-table-scroll">
+          <table id="controlPointsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Time</th>
+                <th>Ref</th>
+                <th>Tol +</th>
+                <th>Tol -</th>
+                <th>Kind</th>
+                <th>Importance</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewAnalysis" class="view hidden">
+      <div class="panel-head">
+        <h2>Анализ логов с пресетом</h2>
+        <button class="secondary" data-back="mode">На главный экран</button>
+      </div>
+
+      <div class="panel-grid">
+        <div class="card controls">
+          <h3>Входные данные</h3>
+          <label class="field">
+            <span>Тестовый RSLZ</span>
+            <input id="analysisRslzInput" type="file" accept=".rslz" />
+          </label>
+          <label class="field">
+            <span>Preset JSON</span>
+            <input id="analysisPresetInput" type="file" accept="application/json,.json" />
+          </label>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Канал</span>
+              <select id="analysisChannelType">
+                <option value="data">DataResult</option>
+                <option value="pwm">PWMResult</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Индекс</span>
+              <select id="analysisChannelIndex"></select>
+            </label>
+          </div>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Порог DeltaValue</span>
+              <input id="valueThr" type="number" min="0" step="0.01" value="0.5" />
+            </label>
+            <label class="field">
+              <span>Порог DeltaTime</span>
+              <input id="timeThr" type="number" min="0" step="1" value="50" />
+            </label>
+          </div>
+          <div class="btn-row">
+            <button id="runAnalysis">Выполнить анализ</button>
+          </div>
+          <div id="analysisSummary" class="summary-box"></div>
+        </div>
+
+        <div class="card controls">
+          <h3>Health Score</h3>
+          <div class="score-wrap">
+            <div id="healthScoreValue" class="score-value">--</div>
+            <div class="score-scale">
+              <div id="healthScoreFill" class="score-fill"></div>
+            </div>
+          </div>
+          <p id="scoreText" class="hint">Загрузите данные и выполните анализ.</p>
+          <p class="hint">Цвет шкалы: зеленый (здорово), желтый (внимание), красный (критично).</p>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Тестовый сигнал с допусками и подсветкой штрафов</h3>
+        <div id="analysisPlot" class="plot"></div>
+      </div>
+
+      <div class="panel-grid">
+        <div class="card">
+          <h3>Сегментированные веса</h3>
+          <div id="segmentWeights" class="segment-editor empty">Сегменты появятся после анализа.</div>
+        </div>
+        <div class="card">
+          <h3>Экстремумы и фазы</h3>
+          <div class="table-scroll">
+            <table id="extremaTable">
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>RefType</th>
+                  <th>TestType</th>
+                  <th>DeltaValue</th>
+                  <th>DeltaTime</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Control points status</h3>
+        <div class="table-scroll">
+          <table id="controlPointsStatusTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Time</th>
+                <th>Ref</th>
+                <th>Test</th>
+                <th>Tol +</th>
+                <th>Tol -</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel-grid">
+        <div class="card">
+          <h3>Дополнительная аналитика</h3>
+          <div id="metricsBox" class="summary-box"></div>
+        </div>
+        <div class="card">
+          <h3>Gemma 4 integration stub</h3>
+          <p class="hint">Структурированные данные для будущего Explain-контурa.</p>
+          <pre id="gemmaStub" class="gemma-stub">{}</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="vendor/plotly.min.js"></script>
+  <script src="vendor/pako.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
