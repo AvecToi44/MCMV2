@@ -145,140 +145,23 @@ var pressures = mutableStateListOf<PressureChannel>(
     ),
 )
 
-var solenoids = mutableStateListOf<SolenoidChannel>(
-    SolenoidChannel(
-        displayName = "Соленоид #0",
-        index = 0,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #1",
-        index = 1,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #2",
-        index = 2,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #3",
-        index = 3,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #4",
-        index = 4,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #5",
-        index = 5,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #6",
-        index = 6,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #7",
-        index = 7,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #8",
-        index = 8,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #9",
-        index = 9,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #10",
-        index = 10,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-    SolenoidChannel(
-        displayName = "Соленоид #11",
-        index = 11,
-        maxPwm0_255 = 0,
-        valueOfDivision = 0,
-        DitherAmplitude = 0,
-        DitherFrequency = 0,
-        minValue = 0,
-        maxValue = 0,
-        isVisible = true
-    ),
-)
+var solenoids = mutableStateListOf<SolenoidChannel>().apply {
+    repeat(12) { i ->
+        add(
+            SolenoidChannel(
+                displayName = "Соленоид #$i",
+                index = i,
+                maxPwm0_255 = 255,
+                valueOfDivision = 0,
+                DitherAmplitude = 0,
+                DitherFrequency = 0,
+                minValue = 0,
+                maxValue = 4096,
+                isVisible = true
+            )
+        )
+    }
+}
 
 var MAIN_CONFIG = mutableStateOf<MainExperimentConfig>(
     MainExperimentConfig(

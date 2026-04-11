@@ -1,17 +1,18 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
+val appVersion = providers.gradleProperty("app.version").orElse("1.2.26").get()
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
     kotlin("plugin.serialization") version "2.2.0"
     id("com.github.gmazzo.buildconfig") version "5.6.7"
 }
 
 buildConfig {
-//    buildConfigField("APP_NAME", project.name)
-    buildConfigField("APP_VERSION", provider { "1.2.25" })
+    packageName("ru.atrs.mcm")
+    buildConfigField("APP_VERSION", provider { appVersion })
 }
 
 kotlin {
@@ -64,11 +65,11 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageVersion = "1.2.25"
+            packageVersion = appVersion
             packageName = "MCM (${packageVersion})"
-//            windows {
-//                iconFile.set(project.file("favicon.ico"))
-//            }
+            windows {
+                iconFile.set(project.file("src/jvmMain/resources/iconapp.ico"))
+            }
         }
         buildTypes.release {
             proguard {

@@ -20,6 +20,7 @@ import ru.atrs.mcm.ui.main_screen.center.support_elements.ch9
 import ru.atrs.mcm.utils.BAUD_RATE
 import ru.atrs.mcm.utils.COM_PORT
 import ru.atrs.mcm.utils.READY_FOR_LISTENING_OF_PAYLOAD
+import ru.atrs.mcm.utils.SOLENOID_FREQ_PARAMS_0x68
 import ru.atrs.mcm.utils.SOLENOID_MAIN_FREQ
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.arrayOfComPorts
@@ -261,13 +262,16 @@ object CommMachineV2: COMProtocol {
     override suspend fun reInitSolenoids() {
         sendZerosToSolenoid()
     }
-
+    //
     override fun sendFrequency() {
         if (SOLENOID_MAIN_FREQ == null) {
             logError("NULL Main Frequency! Double check it")
         }
 
-        var mainFreq = SOLENOID_MAIN_FREQ?.to2ByteArray() ?: byteArrayOf(0,0)
+        val mainFreq = (SOLENOID_MAIN_FREQ ?: 0).coerceIn(0, 65535).to2ByteArray()
+        val freqPayload = IntArray(10) { index ->
+            SOLENOID_FREQ_PARAMS_0x68.getOrNull(index)?.coerceIn(0, 255) ?: 0
+        }
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -276,11 +280,11 @@ object CommMachineV2: COMProtocol {
                     0x68,
                     // ones , tens
                     mainFreq[0], mainFreq[1],
-                    0x00, 0x00,
-                    0x00, 0x00,
-                    0x00, 0x00,
-                    0x00, 0x00,
-                    0x00, 0x00,
+                    freqPayload[0].toByte(), freqPayload[1].toByte(),
+                    freqPayload[2].toByte(), freqPayload[3].toByte(),
+                    freqPayload[4].toByte(), freqPayload[5].toByte(),
+                    freqPayload[6].toByte(), freqPayload[7].toByte(),
+                    freqPayload[8].toByte(), freqPayload[9].toByte(),
                     0x00,
                 )
             )

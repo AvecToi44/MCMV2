@@ -24,6 +24,7 @@ data class PdfExportConfig(
     val seriesColors: List<Color>,
     val chartWidth: Int = 800,
     val chartHeight: Int = 600,
+    val renderScale: Int = 3,
     val chartFilePaths: List<String> = emptyList()
 )
 
@@ -150,8 +151,9 @@ object PdfExporter {
 
             val chartAreaWidth = (A4_WIDTH - MARGIN * 2).toInt()
             val chartAreaHeight = (A4_HEIGHT - MARGIN * 2 - 80).toInt()
+            val renderScale = config.renderScale.coerceIn(1, 6)
 
-            val chartImage = renderChartToImage(config, chartAreaWidth, chartAreaHeight)
+            val chartImage = renderChartToImage(config, chartAreaWidth, chartAreaHeight, renderScale)
 
             PDPageContentStream(document, page).use { contentStream ->
                 drawPage(contentStream, document, config, chartImage)
@@ -185,12 +187,17 @@ object PdfExporter {
         } else null
     }
 
-    private fun renderChartToImage(config: PdfExportConfig, width: Int, height: Int): BufferedImage {
-        val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+    private fun renderChartToImage(config: PdfExportConfig, width: Int, height: Int, renderScale: Int): BufferedImage {
+        val scaledWidth = width * renderScale
+        val scaledHeight = height * renderScale
+        val bufferedImage = BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB)
         val g2d = bufferedImage.createGraphics()
 
+        g2d.scale(renderScale.toDouble(), renderScale.toDouble())
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
         g2d.color = java.awt.Color.WHITE
         g2d.fillRect(0, 0, width, height)

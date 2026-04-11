@@ -18,12 +18,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -32,6 +38,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.atrs.mcm.storage.ChartReportStep
+import ru.atrs.mcm.storage.parseStepsHeaderLine
 import ru.atrs.mcm.ui.snackBarShow
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.chartFileAfterExperiment
@@ -43,6 +51,7 @@ import ru.atrsx.chartviewer.koala.ExperimentalKoalaPlotApi
 import ru.atrsx.chartviewer.koala.gestures.GestureConfig
 import ru.atrsx.chartviewer.koala.line.LinePlot
 import ru.atrsx.chartviewer.koala.style.LineStyle
+import ru.atrsx.chartviewer.koala.xygraph.AxisModel
 import ru.atrsx.chartviewer.koala.xygraph.Point
 import ru.atrsx.chartviewer.koala.xygraph.XYGraph
 import ru.atrsx.chartviewer.koala.xygraph.autoScaleXRange
@@ -51,6 +60,9 @@ import ru.atrsx.chartviewer.koala.xygraph.rememberFloatLinearAxisModel
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 // ==============================
 // Data & parsing
@@ -67,8 +79,40 @@ data class ChartData(
     val fileName: String,
     val series: List<List<Point<Float, Float>>>,  // size = channelCount
     val visibility: List<Boolean>,                // size = channelCount
+    val timelineSteps: List<ChartReportStep> = emptyList(),
     val pathEffect: PathEffect? = null
 )
+
+private data class ScenarioTimelineSection(
+    val startMs: Float,
+    val endMs: Float,
+    val durationMs: Int,
+    val comment: String
+)
+
+private fun buildScenarioTimelineSections(
+    steps: List<ChartReportStep>,
+    axisStartMs: Float
+): List<ScenarioTimelineSection> {
+    if (steps.isEmpty()) return emptyList()
+
+    var cursor = axisStartMs
+    return buildList {
+        steps.forEach { step ->
+            val duration = step.durationMs.coerceAtLeast(0)
+            val end = cursor + duration
+            add(
+                ScenarioTimelineSection(
+                    startMs = cursor,
+                    endMs = end,
+                    durationMs = duration,
+                    comment = step.comment.ifBlank { "no comment" }
+                )
+            )
+            cursor = end
+        }
+    }
+}
 
 /** Pattern guard: strict header validation + robust data parsing. */
 suspend fun parseChartFileStrict(
@@ -89,7 +133,8 @@ suspend fun parseChartFileStrict(
     // --- Validate headers
     // 0: #standard#<name_or_anything>
     // 1: #visibility#1#1#1#... (0/1 flags)
-    // 2: #  (separator)
+    // 2: #steps#time;comment#time;comment...  (optional)
+    // 2 or 3: #  (separator)
     if (lines.size < 4) return@withContext ParseOutcome.Error("Too few lines for header")
 
     val header0 = lines[0].trim()
@@ -101,8 +146,12 @@ suspend fun parseChartFileStrict(
         return@withContext ParseOutcome.Error("Line 2 must start with #visibility#")
 
     val header2 = lines[2].trim()
-    if (header2 != "#")
-        return@withContext ParseOutcome.Error("Line 3 must be exactly '#'")
+    val timelineSteps = if (header2.startsWith("#steps#")) parseStepsHeaderLine(header2) else emptyList()
+    val separatorLineIdx = if (header2.startsWith("#steps#")) 3 else 2
+    val separatorLine = lines.getOrNull(separatorLineIdx)?.trim()
+    if (separatorLine != "#") {
+        return@withContext ParseOutcome.Error("Expected separator '#' on line ${separatorLineIdx + 1}")
+    }
 
     // visibility flags (after '#visibility#')
     val rawVis = header1.split('#').drop(2) // skip ["", "visibility"]
@@ -115,7 +164,9 @@ suspend fun parseChartFileStrict(
     }
 
     // --- Find first data line (first line not starting with '#')
-    val dataStartIdx = lines.indexOfFirst { it.isNotBlank() && !it.trim().startsWith("#") }
+    val dataStartIdx = lines.indices.firstOrNull { idx ->
+        idx > separatorLineIdx && lines[idx].isNotBlank() && !lines[idx].trim().startsWith("#")
+    } ?: -1
     if (dataStartIdx == -1) return@withContext ParseOutcome.Error("No data rows after header")
 
     // Infer channelCount from the first data line
@@ -170,6 +221,7 @@ suspend fun parseChartFileStrict(
             fileName = f.name,
             series = series.map { it.toList() },
             visibility = visibility,
+            timelineSteps = timelineSteps,
             pathEffect = pathEffect
         )
     )
@@ -194,6 +246,7 @@ class AppChartV3 {
         Window(
             title = "ChartViewer V3 [Для зума зажми: Ctrl + Колесо мыши, для горизонтальной прокрутки: Shift + Колесо мыши]",
             state = WindowState(size = DpSize(1200.dp, 800.dp)),
+            icon = painterResource("iconapp.png"),
             onCloseRequest = {
                 if (doOpen_First_ChartWindow.value && analysisAfterExperiment) {
                     doOpen_First_ChartWindow.value = false
@@ -281,6 +334,12 @@ fun App(analysisAfterExperiment: Boolean = false) {
         ds2?.let { vis2 },
         ds3?.let { vis3 }
     )
+    val activeScenarioSteps = remember(ds1, ds2, ds3) {
+        listOfNotNull(ds1, ds2, ds3)
+            .firstOrNull { it.timelineSteps.isNotEmpty() }
+            ?.timelineSteps
+            ?: emptyList()
+    }
 
     fun exportPdf() {
         if (datasets.isEmpty()) {
@@ -332,51 +391,80 @@ fun App(analysisAfterExperiment: Boolean = false) {
 
     Box(Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize().padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // --- Compact header (put this inside Column, instead of 3 FilePickerRow calls) ---
-            HeaderBar(
-                slots = listOf(
-                    HeaderSlot(
-                        label = "File 1",
-                        path = path1,
-                        result = data1,
-                        visibility = vis1,
-                        onPick = { path1 = it },
-                        onClear = { path1 = null },
-                        onToggleAll = { vis1 = toggleAll(vis1) },
-                        onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                // --- Compact header (put this inside Column, instead of 3 FilePickerRow calls) ---
+                HeaderBar(
+                    modifier = Modifier.weight(1f),
+                    slots = listOf(
+                        HeaderSlot(
+                            label = "File 1",
+                            path = path1,
+                            result = data1,
+                            visibility = vis1,
+                            onPick = { path1 = it },
+                            onClear = { path1 = null },
+                            onToggleAll = { vis1 = toggleAll(vis1) },
+                            onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
+                        ),
+                        HeaderSlot(
+                            label = "File 2",
+                            path = path2,
+                            result = data2,
+                            visibility = vis2,
+                            onPick = { path2 = it },
+                            onClear = { path2 = null },
+                            onToggleAll = { vis2 = toggleAll(vis2) },
+                            onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
+                        ),
+                        HeaderSlot(
+                            label = "File 3",
+                            path = path3,
+                            result = data3,
+                            visibility = vis3,
+                            onPick = { path3 = it },
+                            onClear = { path3 = null },
+                            onToggleAll = { vis3 = toggleAll(vis3) },
+                            onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
+                        ),
                     ),
-                    HeaderSlot(
-                        label = "File 2",
-                        path = path2,
-                        result = data2,
-                        visibility = vis2,
-                        onPick = { path2 = it },
-                        onClear = { path2 = null },
-                        onToggleAll = { vis2 = toggleAll(vis2) },
-                        onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
+                    colors = seriesColors
+                )
+
+                TogglesPlate(
+                    modifier = Modifier,
+                    toggles = listOf(
+                        ToggleSpec(
+                            label = "Наложение половин",
+                            checked = overlapHalves,
+                            onCheckedChange = { overlapHalves = it },
+                            info = "В первой половине используется обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и пунктир. Вторая половина зеркалится по оси X (режим 'книжки'), чтобы правый край накладывался на левый."
+                        )
                     ),
-                    HeaderSlot(
-                        label = "File 3",
-                        path = path3,
-                        result = data3,
-                        visibility = vis3,
-                        onPick = { path3 = it },
-                        onClear = { path3 = null },
-                        onToggleAll = { vis3 = toggleAll(vis3) },
-                        onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
-                    ),
-                ),
-                colors = seriesColors
-            )
+                    onExportPdf = { exportPdf() },
+                    onExportPdfTo1C = null,
+                    isExporting = isExporting,
+                    isExportingTo1C = isExportingTo1C
+                )
+            }
 
 
             // Chart area
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (datasets.isNotEmpty()) {
-                    ChartView(datasets = datasets, visibilityStates = vis, colors = seriesColors, overlapHalves = overlapHalves)
+                    ChartView(
+                        datasets = datasets,
+                        visibilityStates = vis,
+                        colors = seriesColors,
+                        overlapHalves = overlapHalves,
+                        scenarioTimelineSteps = activeScenarioSteps
+                    )
                 }
 
 
@@ -386,21 +474,6 @@ fun App(analysisAfterExperiment: Boolean = false) {
 //            }
             }
         }
-        TogglesPlate(
-            modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
-            toggles = listOf(
-                ToggleSpec(
-                    label = "Наложение половин",
-                    checked = overlapHalves,
-                    onCheckedChange = { overlapHalves = it },
-                    info = "В первой половине используется ваш обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и эффект пунктирной траектории, смещенный по оси X так, чтобы его начало совпадало с первой половиной."
-                )
-            ),
-            onExportPdf = { exportPdf() },
-            onExportPdfTo1C = { exportPdfTo1C() },
-            isExporting = isExporting,
-            isExportingTo1C = isExportingTo1C
-        )
         
         if (isExporting) {
             PdfExportProgressDialog(
@@ -553,20 +626,29 @@ fun ChartView(
     datasets: List<ChartData>,
     visibilityStates: List<List<Boolean>>,
     colors: List<Color>,
-    overlapHalves: Boolean
+    overlapHalves: Boolean,
+    scenarioTimelineSteps: List<ChartReportStep> = emptyList()
 ) {
     val maxPoints = 6000
     val minPoints = 200
 
-    fun splitAndShift(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
+    fun splitAndOverlapBook(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
         if (series.size < 2) return series to emptyList()
-        val mid = series.size / 2
-        val first = series.subList(0, mid)
-        val second = series.subList(mid, series.size)
+
+        val xMin = series.first().x
+        val xMax = series.last().x
+        val xMid = (xMin + xMax) / 2f
+
+        val first = series.filter { it.x <= xMid }
+        val second = series.filter { it.x > xMid }
+
         if (first.isEmpty() || second.isEmpty()) return first to emptyList()
-        val dx = second.first().x - first.first().x
-        val shiftedSecond = second.map { Point(it.x - dx, it.y) }
-        return first to shiftedSecond
+
+        val secondMirrored = second
+            .map { p -> Point(xMin + (xMax - p.x), p.y) }
+            .reversed()
+
+        return first to secondMirrored
     }
 
     val downsampledAll by remember(datasets, visibilityStates, overlapHalves) {
@@ -576,8 +658,8 @@ fun ChartView(
                     if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) emptyList()
                     else {
                         val seqs = if (!overlapHalves) listOf(series) else {
-                            val (first, secondShifted) = splitAndShift(series)
-                            listOf(first, secondShifted)
+                            val (first, secondMirrored) = splitAndOverlapBook(series)
+                            listOf(first, secondMirrored)
                         }
                         seqs.flatMap { seq ->
                             val step = (seq.size / minPoints).coerceAtLeast(1)
@@ -591,6 +673,9 @@ fun ChartView(
 
     val xRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleXRange(useNiceRange = false) ?: (0f..1f)
     val yRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleYRange(useNiceRange = false) ?: (0f..1f)
+    val scenarioTimelineSections = remember(scenarioTimelineSteps, xRange.start) {
+        buildScenarioTimelineSections(scenarioTimelineSteps, xRange.start)
+    }
 
     val xModel = rememberFloatLinearAxisModel(
         range = xRange,
@@ -622,44 +707,122 @@ fun ChartView(
                 independentZoomEnabled = false
             )
         ) {
-            datasets.forEachIndexed { di, cd ->
-                cd.series.forEachIndexed { si, series ->
-                    if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
+            Column(Modifier.fillMaxSize()) {
+                if (scenarioTimelineSections.isNotEmpty()) {
+                    ScenarioTimelineAxisOverlay(
+                        xAxisModel = xAxisModel,
+                        sections = scenarioTimelineSections,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
-                    val baseColor = colors[si % colors.size]
+                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    datasets.forEachIndexed { di, cd ->
+                        cd.series.forEachIndexed { si, series ->
+                            if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
 
-                    @Composable
-                    fun plot(seq: List<Point<Float, Float>>, isSecondHalf: Boolean) {
-                        val step = (seq.size / minPoints).coerceAtLeast(1)
-                        val plotData =
-                            if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
+                            val baseColor = colors[si % colors.size]
 
-                        val dotted = if (isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
-                        val combinedEffect = when {
-                            cd.pathEffect != null && dotted != null -> dotted
-                            else -> cd.pathEffect ?: dotted
+                            @Composable
+                            fun plot(seq: List<Point<Float, Float>>, isSecondHalf: Boolean) {
+                                val step = (seq.size / minPoints).coerceAtLeast(1)
+                                val plotData =
+                                    if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
+
+                                val dotted = if (isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
+                                val combinedEffect = when {
+                                    cd.pathEffect != null && dotted != null -> dotted
+                                    else -> cd.pathEffect ?: dotted
+                                }
+
+                                val style = LineStyle(
+                                    brush = SolidColor(if (isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
+                                    strokeWidth = 2.dp,
+                                    pathEffect = combinedEffect
+                                )
+
+                                LinePlot(
+                                    data = plotData,
+                                    lineStyle = style,
+                                    symbol = null
+                                )
+                            }
+
+                            if (!overlapHalves) {
+                                plot(series, isSecondHalf = false)
+                            } else {
+                                val (first, secondShifted) = splitAndOverlapBook(series)
+                                if (first.isNotEmpty()) plot(first, isSecondHalf = false)
+                                if (secondShifted.isNotEmpty()) plot(secondShifted, isSecondHalf = true)
+                            }
                         }
-
-                        val style = LineStyle(
-                            brush = SolidColor(if (isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
-                            strokeWidth = 2.dp,
-                            pathEffect = combinedEffect
-                        )
-
-                        LinePlot(
-                            data = plotData,
-                            lineStyle = style,
-                            symbol = null
-                        )
                     }
+                }
+            }
+        }
+    }
+}
 
-                    if (!overlapHalves) {
-                        plot(series, isSecondHalf = false)
-                    } else {
-                        val (first, secondShifted) = splitAndShift(series)
-                        if (first.isNotEmpty()) plot(first, isSecondHalf = false)
-                        if (secondShifted.isNotEmpty()) plot(secondShifted, isSecondHalf = true)
-                    }
+@Composable
+private fun ScenarioTimelineAxisOverlay(
+    xAxisModel: AxisModel<Float>,
+    sections: List<ScenarioTimelineSection>,
+    modifier: Modifier = Modifier
+) {
+    val density = LocalDensity.current
+    val axisHeight = 34.dp
+
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(axisHeight)
+            .clipToBounds()
+            .background(Color(0xE9F0F4F9))
+            .border(1.dp, Color(0xFFB0BEC5))
+    ) {
+        val widthPx = with(density) { maxWidth.toPx() }
+
+        sections.forEachIndexed { index, section ->
+            val startNorm = xAxisModel.computeOffset(section.startMs)
+            val endNorm = xAxisModel.computeOffset(section.endMs)
+            val leftPx = min(startNorm, endNorm).coerceIn(0f, 1f) * widthPx
+            val rightPx = max(startNorm, endNorm).coerceIn(0f, 1f) * widthPx
+            val sectionWidthPx = rightPx - leftPx
+
+            if (sectionWidthPx <= 0.5f) return@forEachIndexed
+
+            val sectionWidthDp = with(density) { sectionWidthPx.toDp() }
+            val borderColor = if (index % 2 == 0) Color(0xFFC8D4DC) else Color(0xFFDCE5EB)
+
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(leftPx.roundToInt(), 0) }
+                    .width(sectionWidthDp)
+                    .fillMaxHeight()
+                    .border(1.dp, borderColor)
+                    .padding(horizontal = 3.dp, vertical = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = section.comment,
+                        fontSize = 9.sp,
+                        color = Color(0xFF1F2933),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "${section.durationMs} ms",
+                        fontSize = 8.sp,
+                        color = Color(0xFF52606D),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

@@ -35,6 +35,7 @@ import org.atrsx.wizardscena.ExcelExporter.R_S_Visible
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
+import java.io.FilenameFilter
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -87,10 +88,20 @@ object ExcelImporter {
         scenariosState: SnapshotStateList<ScenarioStep>,
         mainConfigState: MutableState<MainExperimentConfig>
     ): Boolean {
-        val dlg = FileDialog(parent, "Open Excel", FileDialog.LOAD).apply { isVisible = true }
-        val chosen = dlg.file ?: return false
-        val file = File(dlg.directory, chosen)
+        val file = chooseExcelScenarioFile(parent) ?: return false
         return importFromFile(file, pressuresState, solenoidsState, scenariosState, mainConfigState)
+    }
+
+    fun chooseExcelScenarioFile(parent: Frame? = null): File? {
+        val dlg = FileDialog(parent, AppI18n.text("choose_excel_dialog"), FileDialog.LOAD).apply {
+            filenameFilter = FilenameFilter { _, name ->
+                val lower = name.lowercase(Locale.ROOT)
+                lower.endsWith(".xls") || lower.endsWith(".xlsx")
+            }
+            isVisible = true
+        }
+        val chosen = dlg.file ?: return null
+        return File(dlg.directory, chosen)
     }
 
     /** Import from a given file path. */
@@ -109,7 +120,7 @@ object ExcelImporter {
             val importedPath = getString(sh, R_PATH, C_LABEL).orEmpty()
 
             val pressures = parsePressures(sh)
-            val (mainFreq, solenoids) = parseSolenoids(sh)
+            val (mainFreq, frequencyParams0x68, solenoids) = parseSolenoids(sh)
             val scenarioSteps = parseScenario(sh)
 
             // Fill state lists (clear + add to keep Compose reactive)
@@ -120,7 +131,11 @@ object ExcelImporter {
             // Refresh MAIN_CONFIG
             mainConfigState.value = MainExperimentConfig(
                 pressures = PressuresBlockDto(channels = pressuresState),
-                solenoids = SolenoidsBlock(mainFrequencyHz = mainFreq, channels = solenoidsState),
+                solenoids = SolenoidsBlock(
+                    mainFrequencyHz = mainFreq,
+                    frequencyParams0x68 = frequencyParams0x68.toMutableList(),
+                    channels = solenoidsState
+                ),
                 scenario  = ScenarioBlockDto(steps = scenariosState.toDtoList()),
                 standardPath = if (importedPath.isNotBlank()) importedPath else file.absolutePath,
                 sheetName = file.nameWithoutExtension
@@ -150,9 +165,12 @@ object ExcelImporter {
         return out
     }
 
-    /** Returns pair(mainFrequency, channels). */
-    private fun parseSolenoids(sh: Sheet): Pair<Int, List<SolenoidChannel>> {
+    /** Returns triple(mainFrequency, frequencyParams0x68, channels). */
+    private fun parseSolenoids(sh: Sheet): Triple<Int, List<Int>, List<SolenoidChannel>> {
         val mainFreq = getInt(sh, R_S_HDR, C_S_MainFreq_V, fallback = 1500)
+        val frequencyParams0x68 = MutableList(10) { idx ->
+            getInt(sh, R_S_HDR, C_S_MainFreq_V + 1 + idx, fallback = 0).coerceIn(0, 255)
+        }
         val out = ArrayList<SolenoidChannel>(12)
         for (i in 0 until 12) {
             val c = C_CH_FIRST + i
@@ -168,7 +186,7 @@ object ExcelImporter {
                 isVisible       = getBool(sh, R_S_Visible, c, defaultValue = true)
             )
         }
-        return mainFreq to out
+        return Triple(mainFreq, frequencyParams0x68, out)
     }
 
     private fun parseScenario(sh: Sheet): List<ScenarioStep> {

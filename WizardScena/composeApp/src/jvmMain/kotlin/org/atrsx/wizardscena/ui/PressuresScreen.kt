@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.alpha
 import org.atrsx.wizardscena.PressureChannel
 import org.atrsx.wizardscena.pressures
+import org.atrsx.wizardscena.tr
 import java.util.Locale
 import javax.swing.JColorChooser
 
@@ -167,7 +168,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Параметры канала", style = MaterialTheme.typography.titleMedium)
+            Text(tr("press_channel_params"), style = MaterialTheme.typography.titleMedium)
             val enabled = selectedIndex != null
 
             OutlinedTextField(
@@ -176,7 +177,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                     nameText = it
                     if (enabled) updateSelected { ch -> ch.copy(displayName = it) }
                 },
-                label = { Text("DisplayName") },
+                label = { Text(tr("press_display_name")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -195,7 +196,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("MinValue") },
+                label = { Text(tr("press_min_value")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -214,7 +215,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
-                label = { Text("MaxValue") },
+                label = { Text(tr("press_max_value")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -229,7 +230,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                         updateSelected { ch -> ch.copy(tolerance = newTol) }
                     }
                 },
-                label = { Text("Tolerance") },
+                label = { Text(tr("press_tolerance")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -241,7 +242,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
                     unitText = it
                     if (enabled) updateSelected { ch -> ch.copy(unit = it) }
                 },
-                label = { Text("Unit") },
+                label = { Text(tr("press_unit")) },
                 enabled = enabled,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -249,7 +250,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
 
             if (!enabled) {
                 Text(
-                    "Выберите канал справа, чтобы редактировать параметры.",
+                    tr("press_pick_right"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -258,7 +259,7 @@ fun PressuresScreen(modifier: Modifier = Modifier) {
 
         // -------- RIGHT: Channels List with checkboxes --------
         Column(Modifier.weight(1f)) {
-            Text("Давления", style = MaterialTheme.typography.titleLarge)
+            Text(tr("press_title"), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
 
             LazyColumn(

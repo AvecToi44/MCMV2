@@ -31,8 +31,10 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import java.util.UUID
 import org.atrsx.wizardscena.ScenarioStep
+import org.atrsx.wizardscena.AppI18n
 import org.atrsx.wizardscena.scenarios
 import org.atrsx.wizardscena.solenoids
+import org.atrsx.wizardscena.tr
 
 /* ==================== Keyboard grid helpers ==================== */
 
@@ -133,7 +135,7 @@ fun MainScenarioScreen() {
                             stepTimeMs = 1000,
                             channelValues = MutableList(12) { 0 },
                             analog1 = 0, analog2 = 0,
-                            gradientTimeMs = 0, text = "New Step"
+                            gradientTimeMs = 0, text = AppI18n.text("main_new_step_name")
                         )
                     )
                     val newRow = items.lastIndex
@@ -141,13 +143,13 @@ fun MainScenarioScreen() {
                     pendingFocus = CellId(newRow, COL_TEXT) // queue focus (cell will request after composed)
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Add Step") }
+            ) { Text(tr("main_add_step")) }
 
             Button(
                 onClick = { items.removeAll { it.isSelected } },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = anySelected
-            ) { Text("Delete") }
+            ) { Text(tr("main_delete")) }
 
 
 
@@ -160,7 +162,7 @@ fun MainScenarioScreen() {
                 },
                 enabled = anySelected,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Copy selected") }
+            ) { Text(tr("main_copy_selected")) }
 
             val selIndices by derivedStateOf { items.withIndex().filter { it.value.isSelected }.map { it.index } }
             val canPaste by derivedStateOf { clipboard.isNotEmpty() && selIndices.isNotEmpty() }
@@ -177,7 +179,7 @@ fun MainScenarioScreen() {
                 },
                 enabled = canPaste,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Paste BEFORE") }
+            ) { Text(tr("main_paste_before")) }
 
             Button(
                 onClick = {
@@ -192,20 +194,20 @@ fun MainScenarioScreen() {
                 },
                 enabled = canPaste,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Paste AFTER") }
+            ) { Text(tr("main_paste_after")) }
             Spacer(Modifier.height(20.dp))
             // Select/Deselect all
             Button(
                 onClick = { for (i in items.indices) items[i] = items[i].copy(isSelected = true) },
                 enabled = items.isNotEmpty() && anyUnselected,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Select All") }
+            ) { Text(tr("main_select_all")) }
 
             Button(
                 onClick = { for (i in items.indices) items[i] = items[i].copy(isSelected = false) },
                 enabled = anySelected,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Deselect") }
+            ) { Text(tr("main_deselect")) }
         }
     }
 }
@@ -251,7 +253,7 @@ private fun ScenarioStepRow(
             totalRows = totalRows,
             value = textTF,
             width = 120.dp,
-            label = "text",
+            label = tr("main_label_text"),
             listScrollTo = listScrollTo,
             numberOnly = false,
             onValueChange = {
@@ -270,7 +272,7 @@ private fun ScenarioStepRow(
             totalRows = totalRows,
             value = timeTF,
             width = 90.dp,
-            label = "duration",
+            label = tr("main_label_duration"),
             listScrollTo = listScrollTo,
             numberOnly = true,
             onValueChange = {
@@ -289,7 +291,7 @@ private fun ScenarioStepRow(
             totalRows = totalRows,
             value = gradTF,
             width = 110.dp,
-            label = "gradient time",
+            label = tr("main_label_gradient"),
             listScrollTo = listScrollTo,
             numberOnly = true,
             onValueChange = {
@@ -349,7 +351,7 @@ private fun ScenarioStepRow(
                 totalRows = totalRows,
                 value = a1TF,
                 width = 90.dp,
-                label = "analog 1",
+                label = tr("main_label_analog1"),
                 listScrollTo = listScrollTo,
                 numberOnly = true,
                 onValueChange = {
@@ -368,7 +370,7 @@ private fun ScenarioStepRow(
                 totalRows = totalRows,
                 value = a2TF,
                 width = 90.dp,
-                label = "analog 2",
+                label = tr("main_label_analog2"),
                 listScrollTo = listScrollTo,
                 numberOnly = true,
                 onValueChange = {

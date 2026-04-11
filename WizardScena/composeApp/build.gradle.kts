@@ -1,10 +1,17 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
+val appVersion = providers.gradleProperty("app.version").orElse("1.0.0").get()
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
+    id("com.github.gmazzo.buildconfig") version "5.6.7"
+}
+
+buildConfig {
+    packageName("org.atrsx.wizardscena")
+    buildConfigField("APP_VERSION", provider { appVersion })
 }
 
 kotlin {
@@ -42,8 +49,11 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Wizard (1.0.0)"
-            packageVersion = "1.0.0"
+            packageName = "WizardScena ($appVersion)"
+            packageVersion = appVersion
+            windows {
+                iconFile.set(project.file("src/jvmMain/resources/iconapp.ico"))
+            }
         }
     }
 }

@@ -9,12 +9,12 @@ import ru.atrs.mcm.utils.chartFileStandard
 import ru.atrs.mcm.utils.generateTimestampLastUpdate
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.pressures
-import ru.atrs.mcm.utils.toBin
 import ru.atrs.mcm.utils.Dir11ForTargetingSaveNewExperiment
 import ru.atrs.mcm.utils.NAME_OF_NEW_SCENARIO
 import ru.atrs.mcm.utils.COMMENT_OF_EXPERIMENT
 import ru.atrs.mcm.utils.STATE_EXPERIMENT
 import ru.atrs.mcm.utils.TWELVE_CHANNELS_MODE
+import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.to5Decimals
 import java.io.*
 
@@ -57,14 +57,21 @@ fun addHeaderForChartFile() {
         println("RECORD! isRecordingExperiment ")
 
         if (fileIsEmpty) {
-            bw.append("#standard#${chartFileStandard.value?.name}\n")
-            val twelveChannels = if (TWELVE_CHANNELS_MODE) {
-                "#${pressures[8].isVisible.toBin()}#${pressures[9].isVisible.toBin()}#${pressures[10].isVisible.toBin()}#${pressures[11].isVisible.toBin()}"
-            } else ""
-            bw.append(
-                "#visibility#${pressures[0].isVisible.toBin()}#${pressures[1].isVisible.toBin()}#${pressures[2].isVisible.toBin()}#${pressures[3].isVisible.toBin()}" +
-                        "#${pressures[4].isVisible.toBin()}#${pressures[5].isVisible.toBin()}#${pressures[6].isVisible.toBin()}#${pressures[7].isVisible.toBin()}$twelveChannels\n"
-            )
+            bw.append("${buildStandardHeaderLine(chartFileStandard.value?.name)}\n")
+            val visibilityFlags = buildList {
+                addAll((0..7).map { pressures[it].isVisible })
+                if (TWELVE_CHANNELS_MODE) {
+                    addAll((8..11).map { pressures[it].isVisible })
+                }
+            }
+            bw.append("${buildVisibilityHeaderLine(visibilityFlags)}\n")
+            val steps = scenario.map {
+                ChartReportStep(
+                    durationMs = it.time,
+                    comment = it.comment
+                )
+            }
+            bw.append("${buildStepsHeaderLine(steps)}\n")
             bw.append("#\n")
         }
     }
