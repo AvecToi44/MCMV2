@@ -21,6 +21,10 @@
           <span class="mode-title">Редактор пресетов</span>
           <span class="mode-desc">Создание и редактирование эталонных допусков по RSLZ</span>
         </button>
+        <button id="goSectionPresetEditor" class="mode-card">
+          <span class="mode-title">Простой редактор секций</span>
+          <span class="mode-desc">Пресет по равным временным секциям с Tol+/Tol- и Importance</span>
+        </button>
         <button id="goAnalysis" class="mode-card">
           <span class="mode-title">Анализ логов</span>
           <span class="mode-desc">Проверка измерений с подстановкой пресета и Health Score</span>
@@ -121,7 +125,7 @@
         <div class="cp-toolbar">
           <label class="field compact-field">
             <span>Time (ms)</span>
-            <input id="cpAddTime" type="number" step="0.01" />
+            <input id="cpAddTime" type="number" min="0" step="1" />
           </label>
           <label class="field compact-field">
             <span>Tol +</span>
@@ -152,6 +156,117 @@
             <tbody></tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <section id="viewSectionPreset" class="view hidden">
+      <div class="panel-head">
+        <h2>Простой редактор секций</h2>
+        <button class="secondary" data-back="mode">На главный экран</button>
+      </div>
+
+      <div class="panel-grid">
+        <div class="card controls">
+          <h3>Источник эталона</h3>
+          <label class="field">
+            <span>RSLZ файл эталона</span>
+            <input id="sectionRefFile" type="file" accept=".rslz" />
+          </label>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Канал</span>
+              <select id="sectionChannelType">
+                <option value="data">DataResult</option>
+                <option value="pwm">PWMResult</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Индекс</span>
+              <select id="sectionChannelIndex"></select>
+            </label>
+          </div>
+          <div class="inline-fields">
+            <label class="field">
+              <span>Кол-во секций</span>
+              <input id="sectionCount" type="number" min="2" max="200" step="1" value="12" />
+            </label>
+            <label class="field">
+              <span>Базовый Tol</span>
+              <input id="sectionBaseTol" type="number" min="0" step="0.01" value="0.5" />
+            </label>
+          </div>
+          <div class="btn-row">
+            <button id="loadSectionRef">Загрузить эталон</button>
+            <button id="rebuildSections" class="secondary">Пересобрать секции</button>
+          </div>
+          <div id="sectionSummary" class="summary-box"></div>
+        </div>
+
+        <div class="card controls">
+          <h3>Section Preset JSON</h3>
+          <label class="field">
+            <span>Название пресета</span>
+            <input id="sectionPresetName" type="text" value="АКПП_секции_v1" />
+          </label>
+          <label class="field">
+            <span>Загрузить section preset</span>
+            <input id="sectionPresetJsonInput" type="file" accept="application/json,.json" />
+          </label>
+          <div class="btn-row">
+            <button id="saveSectionPreset">Сохранить section preset</button>
+          </div>
+          <p class="hint">
+            Секции имеют равную ширину по времени. Изменение Tol+/Tol- и Importance доступно для каждой секции.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Управление секциями</h3>
+        <div class="cp-toolbar">
+          <button id="sectionSelectAll" class="secondary">Выбрать все</button>
+          <button id="sectionClearSelection" class="secondary">Снять выбор</button>
+          <button id="sectionSplitSelected" class="secondary">Разделить выбранную секцию</button>
+          <button id="sectionDisableSelected" class="secondary">Отключить выбранные</button>
+          <button id="sectionEnableSelected" class="secondary">Включить выбранные</button>
+        </div>
+        <div class="cp-toolbar">
+          <label class="field compact-field">
+            <span>Bulk Tol +</span>
+            <input id="sectionBulkTolUp" type="number" min="0" step="0.01" />
+          </label>
+          <label class="field compact-field">
+            <span>Bulk Tol -</span>
+            <input id="sectionBulkTolDown" type="number" min="0" step="0.01" />
+          </label>
+          <label class="field compact-field">
+            <span>Bulk Importance</span>
+            <input id="sectionBulkImportance" type="number" min="0.1" step="0.1" />
+          </label>
+          <button id="sectionApplyBulk" class="secondary">Применить к выбранным</button>
+        </div>
+        <div class="table-scroll cp-table-scroll">
+          <table id="sectionTable">
+            <thead>
+              <tr>
+                <th>Select</th>
+                <th>#</th>
+                <th>Start (ms)</th>
+                <th>End (ms)</th>
+                <th>Tol +</th>
+                <th>Tol -</th>
+                <th>Importance</th>
+                <th>Active</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Эталон и секционные допуски</h3>
+        <div id="sectionPlot" class="plot"></div>
       </div>
     </section>
 
@@ -197,6 +312,7 @@
           </div>
           <div class="btn-row">
             <button id="runAnalysis">Выполнить анализ</button>
+            <button id="goSectionEditorFromAnalysis" class="secondary">Открыть простой редактор секций</button>
           </div>
           <div id="analysisSummary" class="summary-box"></div>
         </div>

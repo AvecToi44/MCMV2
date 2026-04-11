@@ -17,6 +17,14 @@
 #define SCK 14       //15-ошибка      
 #define MOSI 15     //tx14
 #define TOTAL_RAW_BYTES 16
+#define SOF1 0xA5
+#define SOF2 0x5A
+#define FRAME_SIZE 29
+#define PAYLOAD_SIZE 24
+#define TYPE_PRESSURE 0x01
+#define TYPE_CURRENT 0x02
+#define TYPE_START 0x10
+#define TYPE_END 0x11
 
 const uint8_t FRAME_SOF1 = 0xA5;
 const uint8_t FRAME_SOF2 = 0x5A;
@@ -61,9 +69,13 @@ bool curmode;
 uint8_t indata[inbits]; // входящие данные
 byte pressures[24]; // массив давлений на отправку
 byte currents[24];  // массив токов на отправку
+uint8_t zeroPayload24[PAYLOAD_SIZE] = {0};
 byte pwms [12];
 uint8_t txSeq = 0;
+<<<<<<< Updated upstream
 uint8_t zeroPayload[FRAME_PAYLOAD_SIZE] = {0};
+=======
+>>>>>>> Stashed changes
 
 uint16_t freq;
 uint16_t hz;
@@ -116,6 +128,7 @@ uint8_t crc8(const uint8_t* data, size_t len) {
   return crc;
 }
 
+<<<<<<< Updated upstream
 void sendFrame(uint8_t type, const uint8_t* payload) {
   uint8_t frame[FRAME_SIZE];
   frame[0] = FRAME_SOF1;
@@ -135,6 +148,35 @@ void sendingpress() { //отправка давлений
 
 void sendingcurr(){  //отправка токов отправляется после 4х отправок давлений
   sendFrame(FRAME_TYPE_CURRENT, currents);
+=======
+void sendFrame(uint8_t type, const uint8_t* payload24) {
+  uint8_t frame[FRAME_SIZE];
+  uint8_t crcInput[2 + PAYLOAD_SIZE];
+
+  frame[0] = SOF1;
+  frame[1] = SOF2;
+  frame[2] = type;
+  frame[3] = txSeq;
+  crcInput[0] = type;
+  crcInput[1] = txSeq;
+
+  for (uint8_t i = 0; i < PAYLOAD_SIZE; i++) {
+    frame[4 + i] = payload24[i];
+    crcInput[2 + i] = payload24[i];
+  }
+
+  frame[FRAME_SIZE - 1] = crc8(crcInput, sizeof(crcInput));
+  Serial.write(frame, FRAME_SIZE);
+  txSeq++;
+}
+
+void sendingpress() { //отправка давлений
+sendFrame(TYPE_PRESSURE, pressures);
+}
+
+void sendingcurr(){  //отправка токов отправляется после 4х отправок давлений
+ sendFrame(TYPE_CURRENT, currents);
+>>>>>>> Stashed changes
 }
 
 
@@ -309,7 +351,11 @@ zeroflag=1;
 
 sendtimer= micros();
 
+<<<<<<< Updated upstream
 sendFrame(FRAME_TYPE_START, zeroPayload);
+=======
+sendFrame(TYPE_START, zeroPayload24);
+>>>>>>> Stashed changes
 
   recievedflag=0;
 }
@@ -317,7 +363,11 @@ sendFrame(FRAME_TYPE_START, zeroPayload);
 if (recievedflag==1&&indata[0]==120&&indata[1]==138&&indata[2]==2||stopflag==1&&startflag==0){
   //sendingflag=0;
   stopflag=0;
+<<<<<<< Updated upstream
 sendFrame(FRAME_TYPE_END, zeroPayload);
+=======
+sendFrame(TYPE_END, zeroPayload24);
+>>>>>>> Stashed changes
   recievedflag=0;
 }
 if (recievedflag==1&&indata[0]==84){//стоп данных, обнуление времени
