@@ -39,7 +39,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.atrs.mcm.storage.ChartReportStep
+import ru.atrs.mcm.storage.parseChannelsHeaderLine
 import ru.atrs.mcm.storage.parseStepsHeaderLine
+import ru.atrs.mcm.storage.sanitizeChannelName
 import ru.atrs.mcm.ui.snackBarShow
 import ru.atrs.mcm.ui.showMeSnackBar
 import ru.atrs.mcm.utils.chartFileAfterExperiment
@@ -77,6 +79,7 @@ data class ChartData(
     val fileName: String,
     val series: List<List<Point<Float, Float>>>,  // size = channelCount
     val visibility: List<Boolean>,                // size = channelCount
+    val channelNames: List<String> = emptyList(),
     val timelineSteps: List<ChartReportStep> = emptyList(),
     val pathEffect: PathEffect? = null
 )
@@ -131,8 +134,8 @@ suspend fun parseChartFileStrict(
     // --- Validate headers
     // 0: #standard#<name_or_anything>
     // 1: #visibility#1#1#1#... (0/1 flags)
-    // 2: #steps#time;comment#time;comment...  (optional)
-    // 2 or 3: #  (separator)
+    // 2+: optional #channels#... and/or #steps#...
+    // next: # (separator)
     if (lines.size < 4) return@withContext ParseOutcome.Error("Too few lines for header")
 
     val header0 = lines[0].trim()
@@ -143,12 +146,25 @@ suspend fun parseChartFileStrict(
     if (!header1.startsWith("#visibility#"))
         return@withContext ParseOutcome.Error("Line 2 must start with #visibility#")
 
-    val header2 = lines[2].trim()
-    val timelineSteps = if (header2.startsWith("#steps#")) parseStepsHeaderLine(header2) else emptyList()
-    val separatorLineIdx = if (header2.startsWith("#steps#")) 3 else 2
-    val separatorLine = lines.getOrNull(separatorLineIdx)?.trim()
+    var lineIndex = 2
+    var timelineSteps = emptyList<ChartReportStep>()
+    var channelNames = emptyList<String>()
+
+    while (lineIndex < lines.size) {
+        val headerLine = lines[lineIndex].trim()
+        when {
+            headerLine == "#" -> break
+            headerLine.isBlank() -> Unit
+            headerLine.startsWith("#channels#") -> channelNames = parseChannelsHeaderLine(headerLine)
+            headerLine.startsWith("#steps#") -> timelineSteps = parseStepsHeaderLine(headerLine)
+            else -> return@withContext ParseOutcome.Error("Unexpected header on line ${lineIndex + 1}: $headerLine")
+        }
+        lineIndex++
+    }
+
+    val separatorLine = lines.getOrNull(lineIndex)?.trim()
     if (separatorLine != "#") {
-        return@withContext ParseOutcome.Error("Expected separator '#' on line ${separatorLineIdx + 1}")
+        return@withContext ParseOutcome.Error("Expected separator '#' on line ${lineIndex + 1}")
     }
 
     // visibility flags (after '#visibility#')
@@ -163,7 +179,7 @@ suspend fun parseChartFileStrict(
 
     // --- Find first data line (first line not starting with '#')
     val dataStartIdx = lines.indices.firstOrNull { idx ->
-        idx > separatorLineIdx && lines[idx].isNotBlank() && !lines[idx].trim().startsWith("#")
+        idx > lineIndex && lines[idx].isNotBlank() && !lines[idx].trim().startsWith("#")
     } ?: -1
     if (dataStartIdx == -1) return@withContext ParseOutcome.Error("No data rows after header")
 
@@ -181,6 +197,14 @@ suspend fun parseChartFileStrict(
             visFlags.size > channelCount  -> visFlags.take(channelCount)
             else                          -> visFlags + List(channelCount - visFlags.size) { true }
         }
+    }
+
+    val normalizedChannelNames = when {
+        channelNames.isEmpty() -> List(channelCount) { index -> sanitizeChannelName("", index) }
+        channelNames.size == channelCount -> channelNames.mapIndexed { index, name -> sanitizeChannelName(name, index) }
+        channelNames.size > channelCount -> channelNames.take(channelCount).mapIndexed { index, name -> sanitizeChannelName(name, index) }
+        else -> channelNames.mapIndexed { index, name -> sanitizeChannelName(name, index) } +
+            List(channelCount - channelNames.size) { offset -> sanitizeChannelName("", channelNames.size + offset) }
     }
 
     // Parse data rows
@@ -219,6 +243,7 @@ suspend fun parseChartFileStrict(
             fileName = f.name,
             series = series.map { it.toList() },
             visibility = visibility,
+            channelNames = normalizedChannelNames,
             timelineSteps = timelineSteps,
             pathEffect = pathEffect
         )

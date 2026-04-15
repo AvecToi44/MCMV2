@@ -40,12 +40,75 @@ object PdfExporter {
     private const val A4_HEIGHT = 595f  // Landscape height
     private const val MARGIN = 25f
     private const val HEADER_HEIGHT = 20f
-    private const val CHANNEL_CHIP_WIDTH = 30f
+    private const val CHANNEL_CHIP_WIDTH = 39f
     private const val CHANNEL_CHIP_HEIGHT = 10f
     private const val CHIP_SPACING = 2f
     private const val ROW_SPACING = 14f
 
     private val AWtColor = java.awt.Color::class.java
+
+    private fun pdfChannelLabel(dataset: ChartData, channelIdx: Int): String {
+        val raw = dataset.channelNames.getOrElse(channelIdx) { "Ch${channelIdx + 1}" }
+        return if (raw.length > 6) raw.take(5) + "~" else raw
+    }
+
+    private fun isDarkColor(color: java.awt.Color): Boolean {
+        val luminance = 0.299 * color.red + 0.587 * color.green + 0.114 * color.blue
+        return luminance < 130.0
+    }
+
+    private fun drawChannelChipsInline(
+        contentStream: PDPageContentStream,
+        regularFont: PDFont,
+        yCursor: Float,
+        dataset: ChartData,
+        vis: List<Boolean>,
+        config: PdfExportConfig
+    ) {
+        val chipCount = vis.size
+        if (chipCount == 0) return
+
+        val totalWidth = chipCount * CHANNEL_CHIP_WIDTH + (chipCount - 1).coerceAtLeast(0) * CHIP_SPACING
+        var xCursor = (A4_WIDTH - MARGIN - totalWidth).coerceAtLeast(MARGIN + 250f)
+
+        for ((channelIdx, isVisible) in vis.withIndex()) {
+            val chipWidth = CHANNEL_CHIP_WIDTH
+            if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
+
+            val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
+            val awtColor = java.awt.Color(
+                (color.red * 255).toInt(),
+                (color.green * 255).toInt(),
+                (color.blue * 255).toInt()
+            )
+            val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
+            val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
+
+            contentStream.setNonStrokingColor(fillColor)
+            contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+            contentStream.fill()
+
+            contentStream.setStrokingColor(borderColor)
+            contentStream.setLineWidth(0.5f)
+            contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+            contentStream.stroke()
+
+            val textColor = when {
+                !isVisible -> java.awt.Color.GRAY
+                isDarkColor(fillColor) -> java.awt.Color.WHITE
+                else -> java.awt.Color.BLACK
+            }
+
+            contentStream.setNonStrokingColor(textColor)
+            contentStream.beginText()
+            contentStream.setFont(regularFont, 5.5f)
+            contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
+            contentStream.showText(pdfChannelLabel(dataset, channelIdx))
+            contentStream.endText()
+
+            xCursor += chipWidth + CHIP_SPACING
+        }
+    }
 
     private fun detectYAxisPrecision(allPoints: List<Point<Float, Float>>): Int {
         var maxDecimals = 0
@@ -415,41 +478,14 @@ object PdfExporter {
             contentStream.stroke()
             contentStream.setLineDashPattern(floatArrayOf(), 0f)
 
-            // Draw channel chips inline
-            var xCursor = MARGIN + 510f
-            contentStream.setFont(regularFont, 6f)
-
-            for ((channelIdx, isVisible) in vis.withIndex()) {
-                val chipWidth = CHANNEL_CHIP_WIDTH
-                if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
-
-                val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
-                val awtColor = java.awt.Color(
-                    (color.red * 255).toInt(),
-                    (color.green * 255).toInt(),
-                    (color.blue * 255).toInt()
-                )
-                val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
-                val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
-
-                contentStream.setNonStrokingColor(fillColor)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.fill()
-
-                contentStream.setStrokingColor(borderColor)
-                contentStream.setLineWidth(0.5f)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.stroke()
-
-                contentStream.setNonStrokingColor(if (isVisible) java.awt.Color.BLACK else java.awt.Color.GRAY)
-                contentStream.beginText()
-                contentStream.setFont(regularFont, 5.5f)
-                contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
-                contentStream.showText("Ch${channelIdx + 1}")
-                contentStream.endText()
-
-                xCursor += chipWidth + CHIP_SPACING
-            }
+            drawChannelChipsInline(
+                contentStream = contentStream,
+                regularFont = regularFont,
+                yCursor = yCursor,
+                dataset = dataset,
+                vis = vis,
+                config = config
+            )
 
             yCursor -= ROW_SPACING
         }
@@ -530,41 +566,14 @@ object PdfExporter {
             contentStream.stroke()
             contentStream.setLineDashPattern(floatArrayOf(), 0f)
 
-            // Draw channel chips inline
-            var xCursor = MARGIN + 510f
-            contentStream.setFont(regularFont, 6f)
-
-            for ((channelIdx, isVisible) in vis.withIndex()) {
-                val chipWidth = CHANNEL_CHIP_WIDTH
-                if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
-
-                val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
-                val awtColor = java.awt.Color(
-                    (color.red * 255).toInt(),
-                    (color.green * 255).toInt(),
-                    (color.blue * 255).toInt()
-                )
-                val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
-                val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
-
-                contentStream.setNonStrokingColor(fillColor)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.fill()
-
-                contentStream.setStrokingColor(borderColor)
-                contentStream.setLineWidth(0.5f)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.stroke()
-
-                contentStream.setNonStrokingColor(if (isVisible) java.awt.Color.BLACK else java.awt.Color.GRAY)
-                contentStream.beginText()
-                contentStream.setFont(regularFont, 5.5f)
-                contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
-                contentStream.showText("Ch${channelIdx + 1}")
-                contentStream.endText()
-
-                xCursor += chipWidth + CHIP_SPACING
-            }
+            drawChannelChipsInline(
+                contentStream = contentStream,
+                regularFont = regularFont,
+                yCursor = yCursor,
+                dataset = dataset,
+                vis = vis,
+                config = config
+            )
 
             yCursor -= ROW_SPACING
         }
