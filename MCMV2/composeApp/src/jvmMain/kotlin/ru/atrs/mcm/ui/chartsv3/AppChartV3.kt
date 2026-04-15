@@ -316,11 +316,23 @@ fun App(analysisAfterExperiment: Boolean = false) {
     var vis1 by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var vis2 by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var vis3 by remember { mutableStateOf<List<Boolean>>(emptyList()) }
+    var cachedVis1BeforeHide by remember { mutableStateOf<List<Boolean>?>(null) }
+    var cachedVis2BeforeHide by remember { mutableStateOf<List<Boolean>?>(null) }
+    var cachedVis3BeforeHide by remember { mutableStateOf<List<Boolean>?>(null) }
 
     // Sync visibility arrays whenever parse results change
-    LaunchedEffect(data1) { vis1 = (data1 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList() }
-    LaunchedEffect(data2) { vis2 = (data2 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList() }
-    LaunchedEffect(data3) { vis3 = (data3 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList() }
+    LaunchedEffect(data1) {
+        vis1 = (data1 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList()
+        cachedVis1BeforeHide = null
+    }
+    LaunchedEffect(data2) {
+        vis2 = (data2 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList()
+        cachedVis2BeforeHide = null
+    }
+    LaunchedEffect(data3) {
+        vis3 = (data3 as? ResultOrNull.Success)?.chartData?.visibility ?: emptyList()
+        cachedVis3BeforeHide = null
+    }
 
     val seriesColors = remember {
         listOf(
@@ -434,7 +446,16 @@ fun App(analysisAfterExperiment: Boolean = false) {
                             visibility = vis1,
                             onPick = { path1 = it },
                             onClear = { path1 = null },
-                            onToggleAll = { vis1 = toggleAll(vis1) },
+                            onToggleAll = {
+                                if (vis1.any { it }) {
+                                    cachedVis1BeforeHide = vis1
+                                    vis1 = List(vis1.size) { false }
+                                } else {
+                                    val fallback = ds1?.visibility ?: List(vis1.size) { true }
+                                    vis1 = (cachedVis1BeforeHide ?: fallback).take(vis1.size)
+                                    cachedVis1BeforeHide = null
+                                }
+                            },
                             onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
                         ),
                         HeaderSlot(
@@ -444,7 +465,16 @@ fun App(analysisAfterExperiment: Boolean = false) {
                             visibility = vis2,
                             onPick = { path2 = it },
                             onClear = { path2 = null },
-                            onToggleAll = { vis2 = toggleAll(vis2) },
+                            onToggleAll = {
+                                if (vis2.any { it }) {
+                                    cachedVis2BeforeHide = vis2
+                                    vis2 = List(vis2.size) { false }
+                                } else {
+                                    val fallback = ds2?.visibility ?: List(vis2.size) { true }
+                                    vis2 = (cachedVis2BeforeHide ?: fallback).take(vis2.size)
+                                    cachedVis2BeforeHide = null
+                                }
+                            },
                             onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
                         ),
                         HeaderSlot(
@@ -454,7 +484,16 @@ fun App(analysisAfterExperiment: Boolean = false) {
                             visibility = vis3,
                             onPick = { path3 = it },
                             onClear = { path3 = null },
-                            onToggleAll = { vis3 = toggleAll(vis3) },
+                            onToggleAll = {
+                                if (vis3.any { it }) {
+                                    cachedVis3BeforeHide = vis3
+                                    vis3 = List(vis3.size) { false }
+                                } else {
+                                    val fallback = ds3?.visibility ?: List(vis3.size) { true }
+                                    vis3 = (cachedVis3BeforeHide ?: fallback).take(vis3.size)
+                                    cachedVis3BeforeHide = null
+                                }
+                            },
                             onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
                         ),
                     ),

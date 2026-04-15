@@ -15,6 +15,7 @@ import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileOutputStream
+import java.net.InetAddress
 import javax.swing.JFileChooser
 import ru.atrsx.chartviewer.koala.xygraph.Point
 
@@ -44,6 +45,13 @@ object PdfExporter {
     private const val CHANNEL_CHIP_HEIGHT = 10f
     private const val CHIP_SPACING = 2f
     private const val ROW_SPACING = 14f
+
+    private data class TimelineSection(
+        val startMs: Float,
+        val endMs: Float,
+        val durationMs: Int,
+        val comment: String
+    )
 
     private val AWtColor = java.awt.Color::class.java
 
@@ -120,6 +128,40 @@ object PdfExporter {
             }
         }
         return maxDecimals.coerceIn(1, 6)
+    }
+
+    private fun buildTimelineSections(config: PdfExportConfig, axisStartMs: Float): List<TimelineSection> {
+        val steps = config.datasets.firstOrNull { it.timelineSteps.isNotEmpty() }?.timelineSteps ?: return emptyList()
+        if (steps.isEmpty()) return emptyList()
+
+        var cursor = axisStartMs
+        return buildList {
+            steps.forEach { step ->
+                val duration = step.durationMs.coerceAtLeast(0)
+                val end = cursor + duration
+                add(
+                    TimelineSection(
+                        startMs = cursor,
+                        endMs = end,
+                        durationMs = duration,
+                        comment = step.comment.ifBlank { "no comment" }
+                    )
+                )
+                cursor = end
+            }
+        }
+    }
+
+    private fun trimForWidth(g2d: java.awt.Graphics2D, text: String, maxWidthPx: Int): String {
+        if (maxWidthPx <= 4) return ""
+        val fm = g2d.fontMetrics
+        if (fm.stringWidth(text) <= maxWidthPx) return text
+
+        var trimmed = text
+        while (trimmed.isNotEmpty() && fm.stringWidth("$trimmed...") > maxWidthPx) {
+            trimmed = trimmed.dropLast(1)
+        }
+        return if (trimmed.isBlank()) "" else "$trimmed..."
     }
 
     private fun extractTimestampFromPaths(paths: List<String>): String {
@@ -291,6 +333,7 @@ object PdfExporter {
 
         val xRange = (xMax - xMin).takeIf { it != 0f } ?: 1f
         val yRange = (yMax - yMin).takeIf { it != 0f } ?: 1f
+        val timelineSections = buildTimelineSections(config, xMin)
 
         val precision = detectYAxisPrecision(allPoints)
         val formatString = "%.${precision}f"
@@ -318,6 +361,49 @@ object PdfExporter {
             g2d.color = java.awt.Color.GRAY
             g2d.font = java.awt.Font("Arial", java.awt.Font.PLAIN, 10)
             g2d.drawString(String.format("%.1f", xLabel), x - 10, height - padding + 20)
+        }
+
+        if (timelineSections.isNotEmpty()) {
+            val axisTop = 8
+            val axisHeight = 30
+            val axisBottom = axisTop + axisHeight
+
+            g2d.color = java.awt.Color(240, 244, 249)
+            g2d.fillRect(padding, axisTop, chartWidth, axisHeight)
+            g2d.color = java.awt.Color(176, 190, 197)
+            g2d.stroke = BasicStroke(1f)
+            g2d.drawRect(padding, axisTop, chartWidth, axisHeight)
+
+            timelineSections.forEachIndexed { index, section ->
+                val startNorm = ((section.startMs - xMin) / xRange).coerceIn(0f, 1f)
+                val endNorm = ((section.endMs - xMin) / xRange).coerceIn(0f, 1f)
+                val left = padding + (startNorm * chartWidth).toInt()
+                val right = padding + (endNorm * chartWidth).toInt()
+                val sectionWidth = right - left
+                if (sectionWidth <= 1) return@forEachIndexed
+
+                g2d.color = if (index % 2 == 0) java.awt.Color(200, 212, 220) else java.awt.Color(220, 229, 235)
+                g2d.drawRect(left, axisTop, sectionWidth, axisHeight)
+
+                g2d.font = java.awt.Font("Arial", java.awt.Font.PLAIN, 8)
+                g2d.color = java.awt.Color(31, 41, 51)
+                val comment = trimForWidth(g2d, section.comment, sectionWidth - 6)
+                if (comment.isNotBlank()) {
+                    val fmComment = g2d.fontMetrics
+                    val cx = left + (sectionWidth - fmComment.stringWidth(comment)) / 2
+                    g2d.drawString(comment, cx.coerceAtLeast(left + 2), axisTop + 12)
+                }
+
+                g2d.font = java.awt.Font("Arial", java.awt.Font.PLAIN, 7)
+                g2d.color = java.awt.Color(82, 96, 109)
+                val durationText = "${section.durationMs} ms"
+                val duration = trimForWidth(g2d, durationText, sectionWidth - 6)
+                if (duration.isNotBlank()) {
+                    val fmDuration = g2d.fontMetrics
+                    val dx = left + (sectionWidth - fmDuration.stringWidth(duration)) / 2
+                    g2d.drawString(duration, dx.coerceAtLeast(left + 2), axisBottom - 6)
+                }
+            }
         }
 
         g2d.color = java.awt.Color.BLACK
@@ -411,6 +497,59 @@ object PdfExporter {
         return PDType1Font.HELVETICA_BOLD
     }
 
+    private fun buildPcInfoLine(): String {
+        val host = runCatching { InetAddress.getLocalHost().hostName }
+            .getOrDefault("-")
+            .ifBlank { "-" }
+        val user = runCatching { System.getProperty("user.name") }
+            .getOrNull()
+            ?.ifBlank { "-" }
+            ?: "-"
+        val home = runCatching { System.getProperty("user.home") }
+            .getOrNull()
+            ?.ifBlank { "-" }
+            ?: "-"
+        return "$host; $user; $home"
+    }
+
+    private fun textWidth(font: PDFont, size: Float, text: String): Float {
+        return try {
+            font.getStringWidth(text) / 1000f * size
+        } catch (_: Exception) {
+            0f
+        }
+    }
+
+    private fun trimToWidth(font: PDFont, size: Float, text: String, maxWidth: Float): String {
+        if (textWidth(font, size, text) <= maxWidth) return text
+        var trimmed = text
+        while (trimmed.isNotEmpty() && textWidth(font, size, "$trimmed...") > maxWidth) {
+            trimmed = trimmed.dropLast(1)
+        }
+        return if (trimmed.isBlank()) "..." else "$trimmed..."
+    }
+
+    private fun drawPcInfoFooter(contentStream: PDPageContentStream, regularFont: PDFont) {
+        runCatching {
+            val fontSize = 7f
+            val rawText = buildPcInfoLine()
+            val maxWidth = A4_WIDTH - (MARGIN * 2)
+            val text = trimToWidth(regularFont, fontSize, rawText, maxWidth)
+            val width = textWidth(regularFont, fontSize, text)
+            val x = (A4_WIDTH - MARGIN - width).coerceAtLeast(MARGIN)
+            val y = MARGIN - 10f
+
+            contentStream.beginText()
+            contentStream.setFont(regularFont, fontSize)
+            contentStream.setNonStrokingColor(java.awt.Color(132, 132, 132))
+            contentStream.newLineAtOffset(x, y)
+            contentStream.showText(text)
+            contentStream.endText()
+        }.onFailure {
+            // Intentionally ignore footer failures to avoid PDF export crash.
+        }
+    }
+
     private fun drawPage(
         contentStream: PDPageContentStream,
         document: PDDocument,
@@ -498,6 +637,7 @@ object PdfExporter {
 
         val chartTop = yCursor - 10f
         contentStream.drawImage(pdImage, MARGIN, MARGIN, chartAreaWidth, chartTop - MARGIN)
+        drawPcInfoFooter(contentStream, regularFont)
     }
 
     private fun drawPageWithScreenshot(
@@ -604,6 +744,7 @@ object PdfExporter {
         val yOffset = MARGIN + (availableHeight - drawHeight) / 2
 
         contentStream.drawImage(screenshotPdImage, xOffset, yOffset, drawWidth, drawHeight)
+        drawPcInfoFooter(contentStream, regularFont)
     }
 
     private data class LineStyleInfo(val width: Float, val dashArray: FloatArray?) {

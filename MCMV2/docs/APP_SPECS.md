@@ -1,6 +1,6 @@
 # MCMV2 App Specs (Common, Concise)
 
-Scope: high-level application spec from Kotlin code.
+Scope: high-level application spec from current Kotlin/JVM code.
 
 ## 1) Runtime Snapshot
 
@@ -9,7 +9,8 @@ Scope: high-level application spec from Kotlin code.
 | App type | Compose Desktop (JVM) |
 | Package root | `ru.atrs.mcm` |
 | Entry point | `Main.kt` |
-| Window title | `MCM 1.2.25` |
+| Window title | `MCM <BuildConfig.APP_VERSION>` |
+| Version source | `gradle.properties` -> `app.version` |
 | Serial lib | `jSerialComm` |
 | Scenario format | `.xls` via Apache POI |
 
@@ -41,30 +42,29 @@ App()
 
 | Flow | Payload | Purpose |
 |---|---|---|
-| `dataChunkRAW` | `ByteArray` | raw serial packets |
+| `dataChunkRAW` | `ByteArray` | raw serial packets/chunks |
 | `pressuresChunkGauges` | `DataChunkG` | parsed pressure chunk |
 | `dataChunkCurrents` | `DataChunkCurrent` | parsed current chunk |
 | `dataGauges` | `UIGaugesData` | throttled UI gauge updates |
 
 ## 5) Scenario Parsing (`ParseScenario.kt`)
 
-Current parser settings:
-
 - fixed `NUMBER_OF_GAUGES = 12`
 - pressure metadata rows: `2..10`
-- solenoid metadata rows: `14..22`
-- scenario rows start at `27`
+- solenoid metadata rows: `14..23`
+- scenario rows start at `28` (`A28`)
+- comment column: `Q`
 
 Scenario columns:
 
 | Column | Meaning |
 |---:|---|
-| `0` | `time` |
-| `1..12` | channels |
-| `13` | `analog1` |
-| `14` | `analog2` |
-| `15` | `gradientTime` |
-| `16` | `comment` (optional) |
+| `A` | `time` (ms) |
+| `B..M` | channels 1..12 |
+| `N` | `analog1` |
+| `O` | `analog2` |
+| `P` | `gradientTime` |
+| `Q` | `comment` |
 
 ## 6) Config Persistence (`JsonWorker.kt`)
 
@@ -79,11 +79,13 @@ Main keys:
 
 ## 7) Chart Log File (`FileWorker.kt`)
 
-Header:
+Header (new logs):
 
 ```text
 #standard#<file>
 #visibility#<ch1>...<ch8>[...<ch12>]
+#channels#<name1>#<name2>#...<nameN>
+#steps#<time_ms;comment>#<time_ms;comment>#...
 #
 ```
 
@@ -93,7 +95,24 @@ Data row format:
 time;ch1|time;ch2|...|time;ch8|[time;ch9|...|time;ch12|]
 ```
 
-## 8) Filesystem Layout
+Compatibility notes:
+
+- old logs without `#channels#` and/or `#steps#` are supported
+- `#channels#` drives channel labels in ChartViewer and PDF chips
+- `#steps#` drives timeline sections in ChartViewer and PDF
+
+## 8) ChartViewer V3 Notes
+
+- `Hide`/`Show` restores previous per-channel visibility mask (not "all true")
+- `View options` panel is in layout flow and does not overlay picker controls
+- timeline axis is above chart area and does not overlap plot lines
+- PDF export includes:
+  - render path aligned with UI data preparation (`prepareChartRender`)
+  - channel names (`#channels#`)
+  - timeline sections (`#steps#`)
+  - footer (light gray): `<host>; <user>; <home>`
+
+## 9) Filesystem Layout
 
 ```text
 Documents/mcm/

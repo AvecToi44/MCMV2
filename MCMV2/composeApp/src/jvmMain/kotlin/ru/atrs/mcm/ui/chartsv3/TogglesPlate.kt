@@ -41,10 +41,10 @@ fun TogglesPlate(
     var expanded by remember { mutableStateOf(true) }
 
     Column(
-        modifier = modifier.width(200.dp)
+        modifier = modifier.width(176.dp)
             .background(Color(0xE6000000), RoundedCornerShape(10.dp))
             .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Row(

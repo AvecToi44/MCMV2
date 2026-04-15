@@ -104,6 +104,11 @@ interface COMProtocol {
 - `0x51` command for analog values
 - Scenario transfer with gradient time support
 
+### Input Parsing Modes
+`serial_port/ParseBytes.kt` supports both:
+- framed telemetry (`SOF A5 5A`, `type`, `seq`, `payload(24)`, `crc8`) when `FeatureToggles.FRAMED_TELEMETRY_ENABLED = true`
+- legacy 24-byte packets when toggle is `false`
+
 ### Serial Commands Reference
 
 | Byte | Purpose | Payload |
@@ -280,9 +285,19 @@ Columns: time | ch1 | ch2 | ... | ch8 | ch9-ch12? | analog1 | analog2 | gradient
 ```
 #standard#<standard_file_name>
 #visibility#1#1#1#1#1#1#1#1#1#1#1#1
+#channels#<name1>#<name2>#...#<nameN>
+#steps#<time_ms;comment>#<time_ms;comment>#...
 #
 <time>;<ch1_val>|<time>;<ch2_val>|...
 ```
+
+Compatibility:
+- old logs without `#channels#` or `#steps#` are still supported by parser fallback
+- new logs should include both tags
+
+UI/PDF usage:
+- `#channels#` is used for channel chip labels in ChartViewer and PDF
+- `#steps#` is used for top timeline sections in ChartViewer and in PDF
 
 ### Directory Structure
 ```
@@ -345,3 +360,5 @@ Run tests:
 5. **Coroutines**: Serial operations MUST run on Dispatchers.IO
 6. **Single Instance**: Main.kt uses file locking to prevent multiple instances
 7. **Sound Resources**: Sound files must exist in config directory or app will silently fail
+8. **ChartViewer Hide/Show semantics**: `Hide` must preserve previous per-channel visibility mask, and `Show` restores it (not force-enable all channels)
+9. **PDF safety**: Any optional metadata rendering (PC info/footer, optional tags) must fail safely and never abort PDF export
