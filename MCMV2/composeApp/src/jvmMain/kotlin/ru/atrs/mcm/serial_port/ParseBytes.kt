@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.atrs.mcm.enums.ExplorerMode
 import ru.atrs.mcm.enums.StateExperiments
-import ru.atrs.mcm.featureToggles.FeatureToggles.FRAMED_TELEMETRY_ENABLED
 import ru.atrs.mcm.storage.NewPointerLine
 import ru.atrs.mcm.storage.addNewLineForChart
 import ru.atrs.mcm.storage.generateNewChartLogFile
@@ -40,7 +39,6 @@ import ru.atrs.mcm.utils.toHexString
 
 private val DEBUG_PARSING = false
 
-private const val LEGACY_PACKET_SIZE = 24
 private const val FRAME_SIZE = 29
 private const val PAYLOAD_SIZE = 24
 private const val SOF1: Byte = 0xA5.toByte()
@@ -70,7 +68,7 @@ class PacketListener : SerialPortPacketListener {
     }
 
     override fun getPacketSize(): Int {
-        return if (FRAMED_TELEMETRY_ENABLED) FRAME_SIZE else LEGACY_PACKET_SIZE
+        return FRAME_SIZE
     }
 
     override fun serialEvent(event: SerialPortEvent) {
@@ -107,44 +105,11 @@ suspend fun flowRawComparatorMachine() {
             GARBAGECOUNTER++
         }
 
-        if (FRAMED_TELEMETRY_ENABLED) {
-            val frames = consumeFramedTelemetryBytes(updData)
-            for (frame in frames) {
-                processFramedFrame(frame)
-                if (isExperimentStarts) {
-                    COUNTER++
-                }
-            }
-        } else {
-            processLegacyPayload(updData)
+        val frames = consumeFramedTelemetryBytes(updData)
+        for (frame in frames) {
+            processFramedFrame(frame)
             if (isExperimentStarts) {
                 COUNTER++
-            }
-        }
-    }
-}
-
-private suspend fun processLegacyPayload(updData: ByteArray) {
-    when {
-        isStartExperiment(updData) -> {
-            handleStartExperiment("legacy ${updData.toHexString()}")
-        }
-
-        isEndOfExperiment(updData) -> {
-            handleEndExperiment("legacy ${updData.toHexString()}")
-        }
-
-        isPressureType(updData) -> {
-            processPressurePayload(updData)
-        }
-
-        isCurrentType(updData) -> {
-            processCurrentPayload(updData)
-        }
-
-        else -> {
-            if (STATE_EXPERIMENT.value == StateExperiments.NONE) {
-                logError("not valid numbers - refresh connection !!!")
             }
         }
     }
@@ -194,7 +159,7 @@ private fun handleEndExperiment(marker: String) {
 }
 
 private suspend fun processPressurePayload(payload: ByteArray) {
-    if (payload.size < LEGACY_PACKET_SIZE) {
+    if (payload.size < PAYLOAD_SIZE) {
         logError("Invalid pressure payload size=${payload.size}")
         return
     }
@@ -224,7 +189,7 @@ private suspend fun processPressurePayload(payload: ByteArray) {
 }
 
 private suspend fun processCurrentPayload(payload: ByteArray) {
-    if (payload.size < LEGACY_PACKET_SIZE) {
+    if (payload.size < PAYLOAD_SIZE) {
         logError("Invalid current payload size=${payload.size}")
         return
     }
@@ -469,26 +434,3 @@ fun flowWriterMachine() {
     }
 }
 
-fun isEndOfExperiment(updData: ByteArray): Boolean = updData.all { it == 0xFF.toByte() }
-
-fun isStartExperiment(updData: ByteArray): Boolean {
-    return updData.size >= LEGACY_PACKET_SIZE &&
-        updData[0] == 0xFE.toByte() && updData[1] == 0xFF.toByte() &&
-        updData[2] == 0xFE.toByte() && updData[3] == 0xFF.toByte() &&
-        updData[4] == 0xFE.toByte() && updData[5] == 0xFF.toByte() &&
-        updData[6] == 0xFE.toByte() && updData[7] == 0xFF.toByte() &&
-        updData[8] == 0xFE.toByte() && updData[9] == 0xFF.toByte() &&
-        updData[10] == 0xFE.toByte() && updData[11] == 0xFF.toByte() &&
-        updData[12] == 0xFE.toByte() && updData[13] == 0xFF.toByte() &&
-        updData[14] == 0xFE.toByte() && updData[15] == 0xFF.toByte() &&
-        updData[16] == 0xFE.toByte() && updData[17] == 0xFF.toByte() &&
-        updData[18] == 0xFE.toByte() && updData[19] == 0xFF.toByte() &&
-        updData[20] == 0xFE.toByte() && updData[21] == 0xFF.toByte() &&
-        updData[22] == 0xFE.toByte() && updData[23] == 0xFF.toByte()
-}
-
-fun isPressureType(updData: ByteArray): Boolean = updData[1] < 16 && updData[3] < 16 && updData[5] < 16 && updData[7] < 16
-
-fun isCurrentType(updData: ByteArray): Boolean =
-    updData[1] in 16..31 && updData[3] in 16..31 &&
-        updData[5] in 16..31 && updData[7] in 16..31
