@@ -54,8 +54,6 @@ import ru.atrsx.chartviewer.koala.style.LineStyle
 import ru.atrsx.chartviewer.koala.xygraph.AxisModel
 import ru.atrsx.chartviewer.koala.xygraph.Point
 import ru.atrsx.chartviewer.koala.xygraph.XYGraph
-import ru.atrsx.chartviewer.koala.xygraph.autoScaleXRange
-import ru.atrsx.chartviewer.koala.xygraph.autoScaleYRange
 import ru.atrsx.chartviewer.koala.xygraph.rememberFloatLinearAxisModel
 import java.awt.FileDialog
 import java.awt.Frame
@@ -358,6 +356,7 @@ fun App(analysisAfterExperiment: Boolean = false) {
                 datasets = datasets,
                 visibilityStates = vis,
                 seriesColors = seriesColors,
+                overlapHalves = overlapHalves,
                 chartFilePaths = chartPaths
             )
             
@@ -629,67 +628,31 @@ fun ChartView(
     overlapHalves: Boolean,
     scenarioTimelineSteps: List<ChartReportStep> = emptyList()
 ) {
-    val maxPoints = 6000
-    val minPoints = 200
-
-    fun splitAndOverlapBook(series: List<Point<Float, Float>>): Pair<List<Point<Float, Float>>, List<Point<Float, Float>>> {
-        if (series.size < 2) return series to emptyList()
-
-        val xMin = series.first().x
-        val xMax = series.last().x
-        val xMid = (xMin + xMax) / 2f
-
-        val first = series.filter { it.x <= xMid }
-        val second = series.filter { it.x > xMid }
-
-        if (first.isEmpty() || second.isEmpty()) return first to emptyList()
-
-        val secondMirrored = second
-            .map { p -> Point(xMin + (xMax - p.x), p.y) }
-            .reversed()
-
-        return first to secondMirrored
+    val preparedChart = remember(datasets, visibilityStates, overlapHalves) {
+        prepareChartRender(
+            datasets = datasets,
+            visibilityStates = visibilityStates,
+            overlapHalves = overlapHalves
+        )
     }
 
-    val downsampledAll by remember(datasets, visibilityStates, overlapHalves) {
-        derivedStateOf {
-            datasets.flatMapIndexed { di, cd ->
-                cd.series.flatMapIndexed { si, series ->
-                    if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) emptyList()
-                    else {
-                        val seqs = if (!overlapHalves) listOf(series) else {
-                            val (first, secondMirrored) = splitAndOverlapBook(series)
-                            listOf(first, secondMirrored)
-                        }
-                        seqs.flatMap { seq ->
-                            val step = (seq.size / minPoints).coerceAtLeast(1)
-                            if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    val xRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleXRange(useNiceRange = false) ?: (0f..1f)
-    val yRange = downsampledAll.takeIf { it.isNotEmpty() }?.autoScaleYRange(useNiceRange = false) ?: (0f..1f)
-    val scenarioTimelineSections = remember(scenarioTimelineSteps, xRange.start) {
-        buildScenarioTimelineSections(scenarioTimelineSteps, xRange.start)
+    val scenarioTimelineSections = remember(scenarioTimelineSteps, preparedChart.xRange.start) {
+        buildScenarioTimelineSections(scenarioTimelineSteps, preparedChart.xRange.start)
     }
 
     val xModel = rememberFloatLinearAxisModel(
-        range = xRange,
-        minViewExtent = (xRange.endInclusive - xRange.start) * 0.01f,
-        maxViewExtent = xRange.endInclusive - xRange.start,
-        minimumMajorTickIncrement = (xRange.endInclusive - xRange.start) * 0.005f,
+        range = preparedChart.xRange,
+        minViewExtent = (preparedChart.xRange.endInclusive - preparedChart.xRange.start) * 0.01f,
+        maxViewExtent = preparedChart.xRange.endInclusive - preparedChart.xRange.start,
+        minimumMajorTickIncrement = (preparedChart.xRange.endInclusive - preparedChart.xRange.start) * 0.005f,
         minimumMajorTickSpacing = 30.dp,
         minorTickCount = 4
     )
     val yModel = rememberFloatLinearAxisModel(
-        range = yRange,
-        minViewExtent = (yRange.endInclusive - yRange.start) * 0.01f,
-        maxViewExtent = yRange.endInclusive - yRange.start,
-        minimumMajorTickIncrement = (yRange.endInclusive - yRange.start) * 0.005f,
+        range = preparedChart.yRange,
+        minViewExtent = (preparedChart.yRange.endInclusive - preparedChart.yRange.start) * 0.01f,
+        maxViewExtent = preparedChart.yRange.endInclusive - preparedChart.yRange.start,
+        minimumMajorTickIncrement = (preparedChart.yRange.endInclusive - preparedChart.yRange.start) * 0.005f,
         minimumMajorTickSpacing = 30.dp,
         minorTickCount = 4
     )
@@ -717,45 +680,22 @@ fun ChartView(
                 }
 
                 Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    datasets.forEachIndexed { di, cd ->
-                        cd.series.forEachIndexed { si, series ->
-                            if (visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
+                    preparedChart.series.forEach { preparedSeries ->
+                        val baseColor = colors[preparedSeries.seriesIndex % colors.size]
+                        val dotted = if (preparedSeries.isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
+                        val combinedEffect = if (preparedSeries.isSecondHalf) dotted else preparedSeries.pathEffect
 
-                            val baseColor = colors[si % colors.size]
+                        val style = LineStyle(
+                            brush = SolidColor(if (preparedSeries.isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
+                            strokeWidth = 2.dp,
+                            pathEffect = combinedEffect
+                        )
 
-                            @Composable
-                            fun plot(seq: List<Point<Float, Float>>, isSecondHalf: Boolean) {
-                                val step = (seq.size / minPoints).coerceAtLeast(1)
-                                val plotData =
-                                    if (seq.size > maxPoints) seq.filterIndexed { idx, _ -> idx % step == 0 } else seq
-
-                                val dotted = if (isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
-                                val combinedEffect = when {
-                                    cd.pathEffect != null && dotted != null -> dotted
-                                    else -> cd.pathEffect ?: dotted
-                                }
-
-                                val style = LineStyle(
-                                    brush = SolidColor(if (isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
-                                    strokeWidth = 2.dp,
-                                    pathEffect = combinedEffect
-                                )
-
-                                LinePlot(
-                                    data = plotData,
-                                    lineStyle = style,
-                                    symbol = null
-                                )
-                            }
-
-                            if (!overlapHalves) {
-                                plot(series, isSecondHalf = false)
-                            } else {
-                                val (first, secondShifted) = splitAndOverlapBook(series)
-                                if (first.isNotEmpty()) plot(first, isSecondHalf = false)
-                                if (secondShifted.isNotEmpty()) plot(secondShifted, isSecondHalf = true)
-                            }
-                        }
+                        LinePlot(
+                            data = preparedSeries.points,
+                            lineStyle = style,
+                            symbol = null
+                        )
                     }
                 }
             }

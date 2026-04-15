@@ -80,7 +80,7 @@ fun StarterScreen() {
         healthCheck()
         while (true) {
             arrayOfComPorts = getComPorts_Array() as Array<SerialPort>
-            logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
+            //logGarbage(">>> ${allowManipulationWithUI.value}  ${counterAllowManipulationWithUI}")
             if (allowManipulationWithUI.value == false && counterAllowManipulationWithUI >=5) {
                 allowManipulationWithUI.value = true
             } else {

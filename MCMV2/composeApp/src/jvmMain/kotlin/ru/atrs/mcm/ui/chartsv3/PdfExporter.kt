@@ -22,6 +22,7 @@ data class PdfExportConfig(
     val datasets: List<ChartData>,
     val visibilityStates: List<List<Boolean>>,
     val seriesColors: List<Color>,
+    val overlapHalves: Boolean = false,
     val chartWidth: Int = 800,
     val chartHeight: Int = 600,
     val renderScale: Int = 3,
@@ -192,6 +193,12 @@ object PdfExporter {
         val scaledHeight = height * renderScale
         val bufferedImage = BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB)
         val g2d = bufferedImage.createGraphics()
+        val preparedChart = prepareChartRender(
+            datasets = config.datasets,
+            visibilityStates = config.visibilityStates,
+            overlapHalves = config.overlapHalves
+        )
+        val allPoints = preparedChart.series.flatMap { it.points }
 
         g2d.scale(renderScale.toDouble(), renderScale.toDouble())
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -206,15 +213,6 @@ object PdfExporter {
         val chartWidth = width - padding * 2
         val chartHeight = height - padding * 2
 
-        val allPoints = mutableListOf<Point<Float, Float>>()
-        config.datasets.forEachIndexed { di, cd ->
-            cd.series.forEachIndexed { si, series ->
-                if (config.visibilityStates.getOrNull(di)?.getOrNull(si) == true) {
-                    allPoints.addAll(series)
-                }
-            }
-        }
-
         if (allPoints.isEmpty()) {
             g2d.color = java.awt.Color.GRAY
             g2d.font = java.awt.Font("Arial", java.awt.Font.PLAIN, 14)
@@ -223,13 +221,13 @@ object PdfExporter {
             return bufferedImage
         }
 
-        val xMin = allPoints.minOf { it.x }
-        val xMax = allPoints.maxOf { it.x }
-        val yMin = allPoints.minOf { it.y }
-        val yMax = allPoints.maxOf { it.y }
+        val xMin = preparedChart.xRange.start
+        val xMax = preparedChart.xRange.endInclusive
+        val yMin = preparedChart.yRange.start
+        val yMax = preparedChart.yRange.endInclusive
 
-        val xRange = xMax - xMin
-        val yRange = yMax - yMin
+        val xRange = (xMax - xMin).takeIf { it != 0f } ?: 1f
+        val yRange = (yMax - yMin).takeIf { it != 0f } ?: 1f
 
         val precision = detectYAxisPrecision(allPoints)
         val formatString = "%.${precision}f"
@@ -263,30 +261,26 @@ object PdfExporter {
         g2d.stroke = BasicStroke(2f)
         g2d.drawRect(padding, padding, chartWidth, chartHeight)
 
-        config.datasets.forEachIndexed { di, cd ->
-            cd.series.forEachIndexed { si, series ->
-                if (config.visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
-                if (series.isEmpty()) return@forEachIndexed
-
-                val baseColor = config.seriesColors.getOrElse(si % config.seriesColors.size) { Color.Black }
+        preparedChart.series.forEach { preparedSeries ->
+                val baseColor = config.seriesColors.getOrElse(preparedSeries.seriesIndex % config.seriesColors.size) { Color.Black }
                 val red = (baseColor.red * 255).toInt().coerceIn(0, 255)
                 val green = (baseColor.green * 255).toInt().coerceIn(0, 255)
                 val blue = (baseColor.blue * 255).toInt().coerceIn(0, 255)
-                val color = java.awt.Color(red, green, blue)
-                val alpha = if (di == 2) 128 else 255
+                val alpha = if (preparedSeries.isSecondHalf) (255 * 0.65f).toInt() else 255
                 val strokeColor = java.awt.Color(red, green, blue, alpha)
 
                 g2d.color = strokeColor
                 g2d.stroke = when {
-                    di == 1 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
-                    di == 2 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
+                    preparedSeries.isSecondHalf -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(4f, 6f), 0f)
+                    preparedSeries.datasetIndex == 1 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
+                    preparedSeries.datasetIndex == 2 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
                     else -> BasicStroke(2f)
                 }
 
                 val path = java.awt.geom.Path2D.Float()
                 var isFirst = true
 
-                for (point in series) {
+                for (point in preparedSeries.points) {
                     val px = padding + ((point.x - xMin) / xRange * chartWidth).toFloat()
                     val py = padding + chartHeight - ((point.y - yMin) / yRange * chartHeight).toFloat()
 
@@ -299,7 +293,6 @@ object PdfExporter {
                 }
 
                 g2d.draw(path)
-            }
         }
 
         g2d.font = java.awt.Font("Arial", java.awt.Font.BOLD, 12)
