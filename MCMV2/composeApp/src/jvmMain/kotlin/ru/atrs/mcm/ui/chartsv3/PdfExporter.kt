@@ -33,7 +33,8 @@ data class PdfExportConfig(
 data class PdfExportResult(
     val success: Boolean,
     val filePath: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val warningMessage: String? = null
 )
 
 object PdfExporter {
@@ -45,6 +46,7 @@ object PdfExporter {
     private const val CHANNEL_CHIP_HEIGHT = 10f
     private const val CHIP_SPACING = 2f
     private const val ROW_SPACING = 14f
+    private const val PDF_CHART_LINE_STROKE = 1f
 
     private data class TimelineSection(
         val startMs: Float,
@@ -54,6 +56,61 @@ object PdfExporter {
     )
 
     private val AWtColor = java.awt.Color::class.java
+
+    private fun canEncodeGlyph(font: PDFont, codePoint: Int): Boolean {
+        val candidate = String(Character.toChars(codePoint))
+        return runCatching {
+            font.encode(candidate)
+            true
+        }.getOrDefault(false)
+    }
+
+    private fun sanitizePdfText(
+        text: String,
+        font: PDFont,
+        context: String,
+        warnings: MutableSet<String>
+    ): String {
+        if (text.isEmpty()) return text
+
+        var replaced = false
+        val out = StringBuilder(text.length)
+        var index = 0
+
+        while (index < text.length) {
+            val codePoint = text.codePointAt(index)
+            val normalizedCodePoint = if (codePoint == 0xFFFD) {
+                replaced = true
+                '?'.code
+            } else {
+                codePoint
+            }
+
+            val hasGlyph = canEncodeGlyph(font, normalizedCodePoint)
+            if (hasGlyph) {
+                out.appendCodePoint(normalizedCodePoint)
+            } else {
+                replaced = true
+                out.append('?')
+            }
+
+            index += Character.charCount(codePoint)
+        }
+
+        if (replaced) {
+            warnings += context
+        }
+
+        val sanitized = out.toString()
+        return if (sanitized.isBlank() && text.isNotBlank()) "?" else sanitized
+    }
+
+    private fun buildWarningMessage(warnings: Set<String>): String? {
+        if (warnings.isEmpty()) return null
+        val sample = warnings.take(3).joinToString(", ")
+        val suffix = if (warnings.size > 3) ", ..." else ""
+        return "В PDF заменены неподдерживаемые символы на '?'. Поля: $sample$suffix"
+    }
 
     private fun pdfChannelLabel(dataset: ChartData, channelIdx: Int): String {
         val raw = dataset.channelNames.getOrElse(channelIdx) { "Ch${channelIdx + 1}" }
@@ -71,7 +128,8 @@ object PdfExporter {
         yCursor: Float,
         dataset: ChartData,
         vis: List<Boolean>,
-        config: PdfExportConfig
+        config: PdfExportConfig,
+        warnings: MutableSet<String>
     ) {
         val chipCount = vis.size
         if (chipCount == 0) return
@@ -111,7 +169,14 @@ object PdfExporter {
             contentStream.beginText()
             contentStream.setFont(regularFont, 5.5f)
             contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
-            contentStream.showText(pdfChannelLabel(dataset, channelIdx))
+            contentStream.showText(
+                sanitizePdfText(
+                    text = pdfChannelLabel(dataset, channelIdx),
+                    font = regularFont,
+                    context = "channel-chip",
+                    warnings = warnings
+                )
+            )
             contentStream.endText()
 
             xCursor += chipWidth + CHIP_SPACING
@@ -279,6 +344,7 @@ object PdfExporter {
             }
 
             val document = PDDocument()
+            val warnings = linkedSetOf<String>()
             val page = PDPage(PDRectangle(842f, 595f))
             document.addPage(page)
 
@@ -289,7 +355,7 @@ object PdfExporter {
             val chartImage = renderChartToImage(config, chartAreaWidth, chartAreaHeight, renderScale)
 
             PDPageContentStream(document, page).use { contentStream ->
-                drawPage(contentStream, document, config, chartImage)
+                drawPage(contentStream, document, config, chartImage, warnings)
             }
 
             val firstDataset = config.datasets.firstOrNull()
@@ -304,7 +370,7 @@ object PdfExporter {
 
                     val channelImage = renderChartToImage(pageConfig, chartAreaWidth, chartAreaHeight, renderScale)
                     PDPageContentStream(document, channelPage).use { contentStream ->
-                        drawPage(contentStream, document, pageConfig, channelImage)
+                        drawPage(contentStream, document, pageConfig, channelImage, warnings)
                     }
                 }
             }
@@ -315,7 +381,11 @@ object PdfExporter {
             }
             document.close()
 
-            PdfExportResult(success = true, filePath = outputFile.absolutePath)
+            PdfExportResult(
+                success = true,
+                filePath = outputFile.absolutePath,
+                warningMessage = buildWarningMessage(warnings)
+            )
         } catch (e: Exception) {
             PdfExportResult(success = false, errorMessage = e.message ?: "Unknown error")
         }
@@ -464,10 +534,10 @@ object PdfExporter {
 
                 g2d.color = strokeColor
                 g2d.stroke = when {
-                    preparedSeries.isSecondHalf -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(4f, 6f), 0f)
-                    preparedSeries.datasetIndex == 1 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
-                    preparedSeries.datasetIndex == 2 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
-                    else -> BasicStroke(2f)
+                    preparedSeries.isSecondHalf -> BasicStroke(PDF_CHART_LINE_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(4f, 6f), 0f)
+                    preparedSeries.datasetIndex == 1 -> BasicStroke(PDF_CHART_LINE_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
+                    preparedSeries.datasetIndex == 2 -> BasicStroke(PDF_CHART_LINE_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
+                    else -> BasicStroke(PDF_CHART_LINE_STROKE)
                 }
 
                 val path = java.awt.geom.Path2D.Float()
@@ -573,12 +643,13 @@ object PdfExporter {
         return if (trimmed.isBlank()) "..." else "$trimmed..."
     }
 
-    private fun drawPcInfoFooter(contentStream: PDPageContentStream, regularFont: PDFont) {
+    private fun drawPcInfoFooter(contentStream: PDPageContentStream, regularFont: PDFont, warnings: MutableSet<String>) {
         runCatching {
             val fontSize = 7f
             val rawText = buildPcInfoLine()
             val maxWidth = A4_WIDTH - (MARGIN * 2)
-            val text = trimToWidth(regularFont, fontSize, rawText, maxWidth)
+            val safeRaw = sanitizePdfText(rawText, regularFont, "pc-footer", warnings)
+            val text = trimToWidth(regularFont, fontSize, safeRaw, maxWidth)
             val width = textWidth(regularFont, fontSize, text)
             val x = (A4_WIDTH - MARGIN - width).coerceAtLeast(MARGIN)
             val y = MARGIN - 10f
@@ -598,7 +669,8 @@ object PdfExporter {
         contentStream: PDPageContentStream,
         document: PDDocument,
         config: PdfExportConfig,
-        chartImage: BufferedImage
+        chartImage: BufferedImage,
+        warnings: MutableSet<String>
     ) {
         val boldFont: PDFont = loadCyrillicBoldFont(document)
         val regularFont: PDFont = loadCyrillicFont(document)
@@ -614,7 +686,7 @@ object PdfExporter {
         contentStream.beginText()
         contentStream.setFont(boldFont, 12f)
         contentStream.newLineAtOffset(MARGIN, yCursor)
-        contentStream.showText("MCMV2 Measurement from $timestamp")
+        contentStream.showText(sanitizePdfText("MCMV2 Measurement from $timestamp", boldFont, "title", warnings))
         contentStream.endText()
 
         yCursor -= ROW_SPACING
@@ -643,7 +715,14 @@ object PdfExporter {
             contentStream.setFont(boldFont, 8f)
             contentStream.newLineAtOffset(MARGIN, yCursor)
             val displayName = if (dataset.fileName.length > 35) dataset.fileName.take(32) + "..." else dataset.fileName
-            contentStream.showText("File ${datasetIdx + 1}: $displayName")
+            contentStream.showText(
+                sanitizePdfText(
+                    text = "File ${datasetIdx + 1}: $displayName",
+                    font = boldFont,
+                    context = "file-row",
+                    warnings = warnings
+                )
+            )
             contentStream.endText()
 
             // Short line style indicator under filename
@@ -667,7 +746,8 @@ object PdfExporter {
                 yCursor = yCursor,
                 dataset = dataset,
                 vis = vis,
-                config = config
+                config = config,
+                warnings = warnings
             )
 
             yCursor -= ROW_SPACING
@@ -681,14 +761,15 @@ object PdfExporter {
 
         val chartTop = yCursor - 10f
         contentStream.drawImage(pdImage, MARGIN, MARGIN, chartAreaWidth, chartTop - MARGIN)
-        drawPcInfoFooter(contentStream, regularFont)
+        drawPcInfoFooter(contentStream, regularFont, warnings)
     }
 
     private fun drawPageWithScreenshot(
         contentStream: PDPageContentStream,
         document: PDDocument,
         config: PdfExportConfig,
-        screenshot: BufferedImage
+        screenshot: BufferedImage,
+        warnings: MutableSet<String>
     ) {
         val boldFont: PDFont = loadCyrillicBoldFont(document)
         val regularFont: PDFont = loadCyrillicFont(document)
@@ -703,7 +784,7 @@ object PdfExporter {
         contentStream.beginText()
         contentStream.setFont(boldFont, 12f)
         contentStream.newLineAtOffset(MARGIN, yCursor)
-        contentStream.showText("MCMV2 Measurement from $timestamp")
+        contentStream.showText(sanitizePdfText("MCMV2 Measurement from $timestamp", boldFont, "title", warnings))
         contentStream.endText()
 
         yCursor -= ROW_SPACING
@@ -732,7 +813,14 @@ object PdfExporter {
             contentStream.setFont(boldFont, 8f)
             contentStream.newLineAtOffset(MARGIN, yCursor)
             val displayName = if (dataset.fileName.length > 35) dataset.fileName.take(32) + "..." else dataset.fileName
-            contentStream.showText("File ${datasetIdx + 1}: $displayName")
+            contentStream.showText(
+                sanitizePdfText(
+                    text = "File ${datasetIdx + 1}: $displayName",
+                    font = boldFont,
+                    context = "file-row",
+                    warnings = warnings
+                )
+            )
             contentStream.endText()
 
             // Short line style indicator under filename
@@ -756,7 +844,8 @@ object PdfExporter {
                 yCursor = yCursor,
                 dataset = dataset,
                 vis = vis,
-                config = config
+                config = config,
+                warnings = warnings
             )
 
             yCursor -= ROW_SPACING
@@ -788,7 +877,7 @@ object PdfExporter {
         val yOffset = MARGIN + (availableHeight - drawHeight) / 2
 
         contentStream.drawImage(screenshotPdImage, xOffset, yOffset, drawWidth, drawHeight)
-        drawPcInfoFooter(contentStream, regularFont)
+        drawPcInfoFooter(contentStream, regularFont, warnings)
     }
 
     private data class LineStyleInfo(val width: Float, val dashArray: FloatArray?) {

@@ -407,7 +407,12 @@ fun App(analysisAfterExperiment: Boolean = false) {
             isExporting = false
             
             if (result.success) {
-                showMeSnackBar("PDF сохранён: ${result.filePath}", Color(0xFF4CAF50))
+                if (!result.warningMessage.isNullOrBlank()) {
+                    logError("PDF export warning: ${result.warningMessage}")
+                    showMeSnackBar("PDF сохранён, но есть предупреждение: ${result.warningMessage}", Color(0xFFFF9800))
+                } else {
+                    showMeSnackBar("PDF сохранён: ${result.filePath}", Color(0xFF4CAF50))
+                }
             } else if (result.errorMessage != null && result.errorMessage != "Export cancelled") {
                 logError("PDF export failed: ${result.errorMessage}")
                 showMeSnackBar("Ошибка экспорта: ${result.errorMessage}", Color.Red)
