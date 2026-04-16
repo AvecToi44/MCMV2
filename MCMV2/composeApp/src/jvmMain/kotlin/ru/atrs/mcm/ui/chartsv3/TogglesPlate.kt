@@ -41,11 +41,11 @@ fun TogglesPlate(
     var expanded by remember { mutableStateOf(true) }
 
     Column(
-        modifier = modifier.width(176.dp)
+        modifier = modifier.width(164.dp)
             .background(Color(0xE6000000), RoundedCornerShape(10.dp))
             .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(10.dp))
-            .padding(horizontal = 10.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+            .padding(horizontal = 8.dp, vertical = 7.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Row(
             modifier = Modifier
@@ -55,8 +55,8 @@ fun TogglesPlate(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("View options", color = Color.White, fontSize = 11.sp)
-            Text(if (expanded) "▼" else "▶", color = Color.White, fontSize = 11.sp)
+            Text("View options", color = Color.White, fontSize = 10.sp)
+            Text(if (expanded) "▼" else "▶", color = Color.White, fontSize = 10.sp)
         }
 
         AnimatedVisibility(
@@ -94,7 +94,7 @@ fun TogglesPlate(
                         }
                         Text(
                             text = if (isExporting) "Экспорт..." else "Экспорт PDF",
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -125,7 +125,7 @@ fun TogglesPlate(
                         }
                         Text(
                             text = if (isExportingTo1C) "Отправка..." else "Экспорт PDF в 1С",
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -155,7 +155,7 @@ private fun ToggleRowWithInfo(spec: ToggleSpec) {
                     checkedTrackColor = Color(0xFF1976D2)
                 )
             )
-            Text(spec.label, color = Color.White, fontSize = 12.sp)
+            Text(spec.label, color = Color.White, fontSize = 11.sp)
 
             // Info pill — click to expand/collapse description
             Box(

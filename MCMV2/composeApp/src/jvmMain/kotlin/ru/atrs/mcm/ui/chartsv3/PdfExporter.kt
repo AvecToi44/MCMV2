@@ -118,6 +118,33 @@ object PdfExporter {
         }
     }
 
+    private fun effectiveVisibilityForDataset(
+        config: PdfExportConfig,
+        datasetIndex: Int,
+        dataset: ChartData
+    ): List<Boolean> {
+        val fromState = config.visibilityStates.getOrNull(datasetIndex)
+        val fallback = if (dataset.visibility.isNotEmpty()) dataset.visibility else List(dataset.series.size) { true }
+        val base = if (fromState.isNullOrEmpty()) fallback else fromState
+
+        return List(dataset.series.size) { idx ->
+            base.getOrElse(idx) { fallback.getOrElse(idx) { true } }
+        }
+    }
+
+    private fun buildVisibilityForSingleFirstChannel(
+        config: PdfExportConfig,
+        channelIndex: Int
+    ): List<List<Boolean>> {
+        return config.datasets.mapIndexed { datasetIndex, dataset ->
+            if (datasetIndex == 0) {
+                List(dataset.series.size) { idx -> idx == channelIndex }
+            } else {
+                effectiveVisibilityForDataset(config, datasetIndex, dataset)
+            }
+        }
+    }
+
     private fun detectYAxisPrecision(allPoints: List<Point<Float, Float>>): Int {
         var maxDecimals = 0
         for (point in allPoints) {
@@ -263,6 +290,23 @@ object PdfExporter {
 
             PDPageContentStream(document, page).use { contentStream ->
                 drawPage(contentStream, document, config, chartImage)
+            }
+
+            val firstDataset = config.datasets.firstOrNull()
+            if (firstDataset != null) {
+                for (channelIndex in firstDataset.series.indices) {
+                    val pageConfig = config.copy(
+                        visibilityStates = buildVisibilityForSingleFirstChannel(config, channelIndex)
+                    )
+
+                    val channelPage = PDPage(PDRectangle(842f, 595f))
+                    document.addPage(channelPage)
+
+                    val channelImage = renderChartToImage(pageConfig, chartAreaWidth, chartAreaHeight, renderScale)
+                    PDPageContentStream(document, channelPage).use { contentStream ->
+                        drawPage(contentStream, document, pageConfig, channelImage)
+                    }
+                }
             }
 
             outputFile.parentFile?.mkdirs()
