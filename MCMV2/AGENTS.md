@@ -105,9 +105,8 @@ interface COMProtocol {
 - Scenario transfer with gradient time support
 
 ### Input Parsing Modes
-`serial_port/ParseBytes.kt` supports both:
-- framed telemetry (`SOF A5 5A`, `type`, `seq`, `payload(24)`, `crc8`) when `FeatureToggles.FRAMED_TELEMETRY_ENABLED = true`
-- legacy 24-byte packets when toggle is `false`
+`serial_port/ParseBytes.kt` uses:
+- framed telemetry (`SOF A5 5A`, `type`, `seq`, `payload(24)`, `crc8`)
 
 ### Serial Commands Reference
 

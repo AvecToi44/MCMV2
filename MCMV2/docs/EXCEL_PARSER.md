@@ -83,6 +83,7 @@ Scenario data columns (row 28+):
 | O | analog2 |
 | P | gradientTime |
 | Q | text/comment |
+| R | commands for operator (pause dialog text) |
 
 ## Parsed outputs
 

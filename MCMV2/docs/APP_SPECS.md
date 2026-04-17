@@ -46,6 +46,7 @@ App()
 | `pressuresChunkGauges` | `DataChunkG` | parsed pressure chunk |
 | `dataChunkCurrents` | `DataChunkCurrent` | parsed current chunk |
 | `dataGauges` | `UIGaugesData` | throttled UI gauge updates |
+| `operatorPauseDialogRequests` | `String` | pause dialog text for operator |
 
 ## 5) Scenario Parsing (`ParseScenario.kt`)
 
@@ -54,6 +55,7 @@ App()
 - solenoid metadata rows: `14..23`
 - scenario rows start at `28` (`A28`)
 - comment column: `Q`
+- operator command column: `R`
 
 Scenario columns:
 
@@ -65,6 +67,7 @@ Scenario columns:
 | `O` | `analog2` |
 | `P` | `gradientTime` |
 | `Q` | `comment` |
+| `R` | `commands for operator` (if non-empty -> controller pause flag + operator popup) |
 
 ## 6) Config Persistence (`JsonWorker.kt`)
 

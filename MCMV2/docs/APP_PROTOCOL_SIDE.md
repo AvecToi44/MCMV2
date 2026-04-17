@@ -8,8 +8,7 @@ Scope: Kotlin/JVM application side, protocol `NEW` only (`CommMachineV2`).
 UI/Intents -> RouterCommunication -> CommMachineV2 -> Serial write (14 bytes)
 
 Serial listener -> ParseBytes:
-  - framed telemetry path (if FRAMED_TELEMETRY_ENABLED = true)
-  - legacy 24-byte path (if FRAMED_TELEMETRY_ENABLED = false)
+  - framed telemetry path (`SOF A5 5A`, `type`, `seq`, `payload(24)`, `crc8`)
 ```
 
 ## 1) App Output Arrays (App -> Controller)
@@ -19,6 +18,7 @@ All outbound command frames are 14 bytes.
 | Cmd | Purpose |
 |---|---|
 | `0x74` | start telemetry stream |
+| `0x22` | resume scenario after pause |
 | `0x54` | reset communication |
 | `0x78` | start experiment |
 | `0x68` | set main frequency |
@@ -35,17 +35,15 @@ Byte order for packed integers: `[lowByte, highByte]`.
 |---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `0x68` | `0x68` | `freqLow` | `freqHigh` | `p0` | `p1` | `p2` | `p3` | `p4` | `p5` | `p6` | `p7` | `p8` | `p9` | `00` |
 | `0x73` | `0x73` | `stepLow` | `stepHigh` | `ch1` | `ch2` | `ch3` | `ch4` | `ch5` | `ch6` | `ch7` | `ch8` | `timeLow` | `timeHigh` | `00` |
-| `0x72` | `0x72` | `stepLow` | `stepHigh` | `ch9` | `ch10` | `ch11` | `ch12` | `analog1` | `analog2` | `gradLow` | `gradHigh` | `00` | `00` | `00` |
+| `0x72` | `0x72` | `stepLow` | `stepHigh` | `ch9` | `ch10` | `ch11` | `ch12` | `analog1` | `analog2` | `gradLow` | `gradHigh` | `pauseFlag` | `00` | `00` |
 | `0x71` | `0x71` | `ch1` | `ch2` | `ch3` | `ch4` | `ch5` | `ch6` | `ch7` | `ch8` | `ch9` | `ch10` | `ch11` | `ch12` | `00` |
 | `0x51` | `0x51` | `analog1` | `analog2` | `00` | `00` | `00` | `00` | `00` | `00` | `00` | `00` | `00` | `00` | `00` |
 
 ## 2) App Input Arrays (Controller -> App)
 
-Parser supports both framed and legacy input.
+Parser expects framed telemetry input.
 
-### 2.1 Framed telemetry mode
-
-Enabled by feature toggle: `FeatureToggles.FRAMED_TELEMETRY_ENABLED`.
+### 2.1 Framed telemetry
 
 Frame size: `29` bytes.
 
@@ -61,6 +59,7 @@ Frame types:
 | `0x02` | current payload |
 | `0x10` | experiment start marker |
 | `0x11` | experiment end marker |
+| `0x12` | pause marker (controller entered pause state) |
 
 Parser behavior:
 
@@ -68,30 +67,121 @@ Parser behavior:
 - CRC8 check over bytes `[2..27]`
 - sequence gap tracking (`rxSeqDropCount`)
 
-### 2.2 Legacy mode (24-byte packets)
+## 3) Pause Extension (`gidrotester_pico_protocol_new_add_pause.ino`)
 
-Legacy packet size: `24` bytes.
+Scenario pause behavior is extended in hardware and should be reflected in the app protocol handling.
 
-Marker frames:
+- `0x72[11]` carries a per-step pause flag (`0` = normal step, `1` = pause after applying this step).
+- When pause flag is triggered on controller side, scenario progression is frozen until resume command arrives.
+- Resume command from app: `0x22` in byte 0 (`byteArrayOf(0x22, 0x00, ... x14)`), same 14-byte command shape as other host commands.
+- Telemetry stream may stop while paused (firmware sets internal sending flag to false during pause).
 
-- start marker: `(FE FF)` repeated 12 times
-- end marker: all bytes are `FF`
+Current app behavior for pause flow:
 
-Telemetry map (horizontal):
+- Pause trigger is derived from Excel column `R` (`commands for operator`): non-empty text => `pauseFlag=1` in `0x72[11]`.
+- Parser handles framed type `0x12` as pause event from controller.
+- On pause event, app shows operator dialog with step text and `OK` button.
+- On `OK`, app sends resume command `0x22 00 00 00 00 00 00 00 00 00 00 00 00 00`.
 
-| idx | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
-|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| pressure | `ch1L` | `ch1H` | `ch2L` | `ch2H` | `ch3L` | `ch3H` | `ch4L` | `ch4H` | `ch5L` | `ch5H` | `ch6L` | `ch6H` | `ch7L` | `ch7H` | `ch8L` | `ch8H` | `ch9L` | `ch9H` | `ch10L` | `ch10H` | `ch11L` | `ch11H` | `ch12L` | `ch12H` |
-| current | `ch1L` | `ch1H+16` | `ch2L` | `ch2H+16` | `ch3L` | `ch3H+16` | `ch4L` | `ch4H+16` | `ch5L` | `ch5H+16` | `ch6L` | `ch6H+16` | `ch7L` | `ch7H+16` | `ch8L` | `ch8H+16` | `ch9L` | `ch9H+16` | `ch10L` | `ch10H+16` | `ch11L` | `ch11H+16` | `ch12L` | `ch12H+16` |
+## 4) Typical Protocol Use Case (ordered)
 
-Type checks:
+This is a practical order of messages for one normal run with a pause.
 
-- pressure: `b1,b3,b5,b7 < 16`
-- current: `b1,b3,b5,b7 in 16..31`
+### Step 0: session init
 
-Decode formulas:
+1. App -> Controller: start telemetry listener
 
 ```text
-pressureValue = low + high * 256
-currentValue  = low + (highTagged - 16) * 256
+0x74 00 00 00 00 00 00 00 00 00 00 00 00 00
 ```
+
+2. Controller -> App: periodic framed telemetry starts
+
+```text
+A5 5A 01 seq p0..p23 crc   // pressure frame
+A5 5A 02 seq c0..c23 crc   // current frame
+```
+
+### Step 1: send hardware configuration
+
+3. App -> Controller: set PWM frequency (`0x68`)
+
+```text
+0x68 freqLow freqHigh p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 00
+```
+
+Example for 2500 Hz (`0x09C4` => low/high = `C4 09`):
+
+```text
+0x68 C4 09 00 00 00 00 00 00 00 00 00 00 00
+```
+
+### Step 2: upload scenario (for each step index N)
+
+4. App -> Controller: scenario part A (`0x73`)
+
+```text
+0x73 stepLow stepHigh ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 timeLow timeHigh 00
+```
+
+5. App -> Controller: scenario part B (`0x72`)
+
+```text
+0x72 stepLow stepHigh ch9 ch10 ch11 ch12 analog1 analog2 gradLow gradHigh pauseFlag 00 00
+```
+
+Example (step 5, time=1000ms, grad=200ms, pause=1):
+
+```text
+0x73 05 00 10 20 30 40 50 60 70 80 E8 03 00
+0x72 05 00 90 A0 B0 C0 00 00 C8 00 01 00 00
+```
+
+### Step 3: start experiment
+
+6. App -> Controller: start record/play (`0x78`)
+
+```text
+0x78 00 00 00 00 00 00 00 00 00 00 00 00 00
+```
+
+7. Controller -> App: framed start marker
+
+```text
+A5 5A 10 seq 00..00 crc
+```
+
+8. Controller -> App: streaming pressure/current frames during execution
+
+```text
+A5 5A 01 seq payload(24) crc
+A5 5A 02 seq payload(24) crc
+```
+
+### Step 4: pause and resume
+
+9. Controller reaches step where `pauseFlag=1`:
+   - scenario progression pauses,
+   - telemetry may stop until resume.
+
+10. App -> Controller: resume command (`0x22`)
+
+```text
+0x22 00 00 00 00 00 00 00 00 00 00 00 00 00
+```
+
+11. Controller -> App: pause marker on pause entry, then telemetry continues after resume.
+
+```text
+A5 5A 12 seq 00..00 crc
+```
+
+### Step 5: finish
+
+12. Controller completes all steps (including pause time compensation) and sends end marker:
+
+```text
+A5 5A 11 seq 00..00 crc
+```
+
+13. App moves experiment state to end/prepare chart.

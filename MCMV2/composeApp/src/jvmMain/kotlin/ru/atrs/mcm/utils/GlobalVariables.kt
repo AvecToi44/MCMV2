@@ -75,6 +75,7 @@ var dataChunkRAW          = MutableSharedFlow<ByteArray>(replay = 0, extraBuffer
 var pressuresChunkGauges  = MutableSharedFlow<DataChunkG>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
 var dataGauges            = MutableSharedFlow<UIGaugesData>(replay = 0, extraBufferCapacity = 100, onBufferOverflow = BufferOverflow.SUSPEND)
 var dataChunkCurrents     = MutableSharedFlow<DataChunkCurrent>(replay = 0, extraBufferCapacity = 1_000_000, onBufferOverflow = BufferOverflow.SUSPEND)
+var operatorPauseDialogRequests = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
 val PRESSURE_MAX_RAW = 4095
 val CURRENT_MAX_RAW = 255

@@ -64,6 +64,7 @@ private const val SCENARIO_ANALOG1_COL = 13
 private const val SCENARIO_ANALOG2_COL = 14
 private const val SCENARIO_GRADIENT_COL = 15
 private const val SCENARIO_COMMENT_COL = 16
+private const val SCENARIO_OPERATOR_COMMAND_COL = 17
 
 private const val STRICT_TEMPLATE_VALIDATION = true
 
@@ -376,6 +377,7 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
             val analog2 = cellAsDouble(row, SCENARIO_ANALOG2_COL, evaluator)?.toInt() ?: 0
             val gradientTime = cellAsDouble(row, SCENARIO_GRADIENT_COL, evaluator)?.toInt() ?: 0
             val comment = cellAsString(row, SCENARIO_COMMENT_COL, evaluator) ?: "no name step"
+            val operatorCommand = (cellAsString(row, SCENARIO_OPERATOR_COMMAND_COL, evaluator) ?: "").trim()
 
             scenario.add(
                 ScenarioStep(
@@ -384,7 +386,8 @@ suspend fun targetParseScenario(inputScenarioFile: File?) : Boolean {
                     analog1 = analog1,
                     analog2 = analog2,
                     gradientTime = gradientTime,
-                    comment = comment
+                    comment = comment,
+                    operatorCommand = operatorCommand,
                 )
             )
 

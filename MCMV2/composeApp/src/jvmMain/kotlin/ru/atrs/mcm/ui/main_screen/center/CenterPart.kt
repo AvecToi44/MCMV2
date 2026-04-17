@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -67,6 +69,7 @@ import ru.atrs.mcm.utils.isExperimentStarts
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
+import ru.atrs.mcm.utils.operatorPauseDialogRequests
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.test_time
@@ -100,6 +103,7 @@ fun CenterPiece(
     val showBottomPanel = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
     var showAnalogPanel by remember { mutableStateOf(false) }
     var autoScenarioComment by remember { mutableStateOf("") }
+    var operatorPauseDialogText by remember { mutableStateOf<String?>(null) }
     val allowManipulationWithUIInternal by remember { allowManipulationWithUI }
 
     val txt = remember { txtOfScenario }
@@ -174,6 +178,12 @@ fun CenterPiece(
             pressure10X = it.pressure10
             pressure11X = it.pressure11
             pressure12X = it.pressure12
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        operatorPauseDialogRequests.collect { message ->
+            operatorPauseDialogText = message
         }
     }
 
@@ -759,6 +769,30 @@ fun CenterPiece(
                     )
                 }
             }
+        }
+
+        operatorPauseDialogText?.let { pauseMessage ->
+            AlertDialog(
+                onDismissRequest = {},
+                title = {
+                    Text("Commands for operator")
+                },
+                text = {
+                    Text(pauseMessage)
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            operatorPauseDialogText = null
+                            ctxScope.launch {
+                                RouterCommunication.resumeAfterPause()
+                            }
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
         }
     }
 }

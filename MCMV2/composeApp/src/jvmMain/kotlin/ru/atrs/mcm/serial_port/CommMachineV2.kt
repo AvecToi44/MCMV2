@@ -226,6 +226,7 @@ object CommMachineV2: COMProtocol {
 
             writeToSerialPort(send, delay = 10)
             val gradientTimeByteArray = s.gradientTime.to2ByteArray()
+            val pauseFlag = if (s.operatorCommand.isNotBlank()) 0x01 else 0x00
 
             val send2 = byteArrayOf(
                 0x72, // in string is 115
@@ -243,7 +244,7 @@ object CommMachineV2: COMProtocol {
                 //time.getOrNull(1).takeIf { time.size == 2 } ?: 0x00,
                 gradientTimeByteArray[0], // ones
                 gradientTimeByteArray[1] ?: 0x00, // tens
-                0x00,
+                pauseFlag.toByte(),
                 0x00,
                 0x00,
             )
@@ -256,6 +257,14 @@ object CommMachineV2: COMProtocol {
                 STATE_EXPERIMENT.value = StateExperiments.NONE
             }
         }
+    }
+
+    override suspend fun resumeAfterPause() {
+        writeToSerialPort(
+            byteArrayOf(0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
+            withFlush = false,
+            delay = 0L,
+        )
     }
 
     // making solenoids zero

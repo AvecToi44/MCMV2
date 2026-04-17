@@ -35,6 +35,8 @@ import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.pressuresChunkGauges
+import ru.atrs.mcm.utils.operatorPauseDialogRequests
+import ru.atrs.mcm.utils.scenario
 import ru.atrs.mcm.utils.toHexString
 
 private val DEBUG_PARSING = false
@@ -47,6 +49,7 @@ private const val TYPE_PRESSURE: Byte = 0x01
 private const val TYPE_CURRENT: Byte = 0x02
 private const val TYPE_START: Byte = 0x10
 private const val TYPE_END: Byte = 0x11
+private const val TYPE_PAUSE: Byte = 0x12
 
 var rxFramesOk = 0L
 var rxCrcFail = 0L
@@ -94,6 +97,7 @@ private var counter2 = 0
 
 var incrementExperiment = 0
 private var lastGauge: DataChunkG? = null
+private var pauseMessageCursor = 0
 
 private var COUNTER = 0L
 private var GARBAGECOUNTER = 0L
@@ -125,6 +129,10 @@ private suspend fun processFramedFrame(frame: FramedTelemetryFrame) {
             handleEndExperiment("framed seq=${frame.seq}")
         }
 
+        TYPE_PAUSE -> {
+            handlePauseExperiment("framed seq=${frame.seq}")
+        }
+
         TYPE_PRESSURE -> {
             processPressurePayload(frame.payload)
         }
@@ -142,9 +150,26 @@ private suspend fun processFramedFrame(frame: FramedTelemetryFrame) {
 private fun handleStartExperiment(marker: String) {
     generateNewChartLogFile()
     isExperimentStarts = true
+    pauseMessageCursor = 0
     STATE_EXPERIMENT.value = StateExperiments.RECORDING
     println("isStartExperiment $marker")
     logInfo("Start Experiment! ${counter} ${isExperimentStarts}__${incrementExperiment}")
+}
+
+private suspend fun handlePauseExperiment(marker: String) {
+    val pauseMessages = scenario
+        .map { it.operatorCommand.trim() }
+        .filter { it.isNotBlank() }
+
+    val message = pauseMessages.getOrNull(pauseMessageCursor)
+        ?: "Pause detected. Press OK to continue."
+
+    if (pauseMessageCursor < pauseMessages.size) {
+        pauseMessageCursor++
+    }
+
+    operatorPauseDialogRequests.emit(message)
+    logInfo("Pause marker received: $marker")
 }
 
 private fun handleEndExperiment(marker: String) {

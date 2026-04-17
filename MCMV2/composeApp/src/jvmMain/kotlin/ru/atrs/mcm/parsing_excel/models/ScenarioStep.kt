@@ -7,4 +7,5 @@ data class ScenarioStep(
     val analog2: Int,
     val gradientTime: Int,
     val comment: String = "",
+    val operatorCommand: String = "",
 )

@@ -94,6 +94,18 @@ class ParseBytesFramedParserTest {
         assertEquals(2, lastSeq)
     }
 
+    @Test
+    fun acceptsPauseMarkerFrameType() {
+        resetFramedTelemetryParserState()
+        val pauseFrame = buildFrame(type = 0x12, seq = 0x40, payload = ByteArray(24))
+
+        val frames = consumeFramedTelemetryBytes(pauseFrame)
+
+        assertEquals(1, frames.size)
+        assertEquals(0x12, frames[0].type.toInt() and 0xFF)
+        assertEquals(0L, rxCrcFail)
+    }
+
     private fun buildFrame(type: Int, seq: Int, payload: ByteArray): ByteArray {
         require(payload.size == 24)
         val frame = ByteArray(29)

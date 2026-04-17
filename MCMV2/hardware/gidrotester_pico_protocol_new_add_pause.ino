@@ -17,14 +17,6 @@
 #define SCK 14       //15-ошибка      
 #define MOSI 15     //tx14
 #define TOTAL_RAW_BYTES 16
-#define SOF1 0xA5
-#define SOF2 0x5A
-#define FRAME_SIZE 29
-#define PAYLOAD_SIZE 24
-#define TYPE_PRESSURE 0x01
-#define TYPE_CURRENT 0x02
-#define TYPE_START 0x10
-#define TYPE_END 0x11
 
 const uint8_t FRAME_SOF1 = 0xA5;
 const uint8_t FRAME_SOF2 = 0x5A;
@@ -32,9 +24,11 @@ const uint8_t FRAME_TYPE_PRESSURE = 0x01;
 const uint8_t FRAME_TYPE_CURRENT = 0x02;
 const uint8_t FRAME_TYPE_START = 0x10;
 const uint8_t FRAME_TYPE_END = 0x11;
+const uint8_t FRAME_TYPE_PAUSE = 0x12;
 const uint8_t FRAME_PAYLOAD_SIZE = 24;
 const uint8_t FRAME_SIZE = 29;
 
+bool pauseflag;
 //uint8_t adcn;
  
 int bytesToRead = TOTAL_RAW_BYTES;
@@ -69,13 +63,9 @@ bool curmode;
 uint8_t indata[inbits]; // входящие данные
 byte pressures[24]; // массив давлений на отправку
 byte currents[24];  // массив токов на отправку
-uint8_t zeroPayload24[PAYLOAD_SIZE] = {0};
 byte pwms [12];
 uint8_t txSeq = 0;
-<<<<<<< Updated upstream
 uint8_t zeroPayload[FRAME_PAYLOAD_SIZE] = {0};
-=======
->>>>>>> Stashed changes
 
 uint16_t freq;
 uint16_t hz;
@@ -87,9 +77,9 @@ uint8_t analog2;
 uint8_t out [2000][14];
 uint16_t timers [2000];
 uint16_t grad [2000];
+uint8_t pauseFlags[2000];
 //uint16_t out[10];
 //uint16_t gradient;
-
 
 uint32_t adress;
 
@@ -104,7 +94,12 @@ unsigned long totaltime;
 
  unsigned long previousstarttimer=0;
  unsigned long previousstarttimersteps=0;
- 
+  unsigned long pausetime=0;
+  unsigned long startpausetime=0;
+  bool pausetimeflag;
+  unsigned long totalpausetime=0;
+ // bool totalpausetimeflag;
+   bool totalpauseflag;
 
 unsigned long sendtimer = 0;
 const long sendinterval = 2000;  // задержка между пакетами!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -128,7 +123,6 @@ uint8_t crc8(const uint8_t* data, size_t len) {
   return crc;
 }
 
-<<<<<<< Updated upstream
 void sendFrame(uint8_t type, const uint8_t* payload) {
   uint8_t frame[FRAME_SIZE];
   frame[0] = FRAME_SOF1;
@@ -148,35 +142,6 @@ void sendingpress() { //отправка давлений
 
 void sendingcurr(){  //отправка токов отправляется после 4х отправок давлений
   sendFrame(FRAME_TYPE_CURRENT, currents);
-=======
-void sendFrame(uint8_t type, const uint8_t* payload24) {
-  uint8_t frame[FRAME_SIZE];
-  uint8_t crcInput[2 + PAYLOAD_SIZE];
-
-  frame[0] = SOF1;
-  frame[1] = SOF2;
-  frame[2] = type;
-  frame[3] = txSeq;
-  crcInput[0] = type;
-  crcInput[1] = txSeq;
-
-  for (uint8_t i = 0; i < PAYLOAD_SIZE; i++) {
-    frame[4 + i] = payload24[i];
-    crcInput[2 + i] = payload24[i];
-  }
-
-  frame[FRAME_SIZE - 1] = crc8(crcInput, sizeof(crcInput));
-  Serial.write(frame, FRAME_SIZE);
-  txSeq++;
-}
-
-void sendingpress() { //отправка давлений
-sendFrame(TYPE_PRESSURE, pressures);
-}
-
-void sendingcurr(){  //отправка токов отправляется после 4х отправок давлений
- sendFrame(TYPE_CURRENT, currents);
->>>>>>> Stashed changes
 }
 
 
@@ -339,6 +304,12 @@ if (recievedflag==1&&indata[0]==116){//старт данных
   recievedflag=0;
 }
 
+if (recievedflag==1&&indata[0]==34){//старт данных после паузы
+  pauseflag=0;
+  recievedflag=0;
+  sendingflag=1;
+}
+
 if (recievedflag==1&&indata[0]==120&&indata[1]==0&&indata[2]==0){
   //delay(1000);
 startflag=1;
@@ -351,11 +322,7 @@ zeroflag=1;
 
 sendtimer= micros();
 
-<<<<<<< Updated upstream
 sendFrame(FRAME_TYPE_START, zeroPayload);
-=======
-sendFrame(TYPE_START, zeroPayload24);
->>>>>>> Stashed changes
 
   recievedflag=0;
 }
@@ -363,11 +330,7 @@ sendFrame(TYPE_START, zeroPayload24);
 if (recievedflag==1&&indata[0]==120&&indata[1]==138&&indata[2]==2||stopflag==1&&startflag==0){
   //sendingflag=0;
   stopflag=0;
-<<<<<<< Updated upstream
 sendFrame(FRAME_TYPE_END, zeroPayload);
-=======
-sendFrame(TYPE_END, zeroPayload24);
->>>>>>> Stashed changes
   recievedflag=0;
 }
 if (recievedflag==1&&indata[0]==84){//стоп данных, обнуление времени
@@ -425,7 +388,7 @@ out [steps][11]=indata[6];
 out [steps][12]=indata[7];
 out [steps][13]=indata[8];
 grad [steps]= gradient;
-
+pauseFlags[steps] = indata[11];
 recievedflag=0;
 }
 
@@ -451,7 +414,6 @@ out [steps][5]=indata[8];
 out [steps][6]=indata[9];
 out [steps][7]=indata[10];
 
-
 totaltime = totaltime+intime;
 recievedflag=0;
 }
@@ -465,6 +427,8 @@ if (recievedflag==1&&indata[0]==104){
 hz=indata[2]<< 8;
 hz=hz+indata[1];
 hz=constrain(hz, 25, 5000);
+analogWriteFreq(hz);
+analogWriteResolution(8);
 //pwmController.setPWMFrequency(hz);
   recievedflag=0;
 }
@@ -474,19 +438,20 @@ hz=constrain(hz, 25, 5000);
 
 void pwmsend() {
 
-analogWrite(25, map((pwms[0]),0,100,0,255));
-analogWrite(24, map((pwms[1]),0,100,0,255));
-analogWrite(23, map((pwms[2]),0,100,0,255));
-analogWrite(22, map((pwms[3]),0,100,0,255));
-analogWrite(21, map((pwms[4]),0,100,0,255));
-analogWrite(20, map((pwms[5]),0,100,0,255));
-analogWrite(6,  map((pwms[6]),0,100,0,255));
-analogWrite(19, map((pwms[7]),0,100,0,255));
-analogWrite(7, map((pwms[8]),0,100,0,255));
-analogWrite(18, map((pwms[9]),0,100,0,255));
-analogWrite(8,  map((pwms[10]),0,100,0,255));
-analogWrite(17, map((pwms[11]),0,100,0,255));
-
+analogWrite(25, pwms[0]);
+analogWrite(15, pwms[1]);
+analogWrite(1, pwms[2]);
+analogWrite(0, pwms[3]);
+analogWrite(21, pwms[4]);
+analogWrite(20, pwms[5]);
+analogWrite(6,  pwms[6]);
+analogWrite(19, pwms[7]);
+analogWrite(7,  pwms[8]);
+analogWrite(18, pwms[9]);
+analogWrite(8,  pwms[10]);
+analogWrite(17, pwms[11]);
+//analogWrite(2,  analog1);
+//analogWrite(3,  analog2);
 }
 
 
@@ -511,15 +476,6 @@ freq=2500;
 analogWriteFreq(freq);
 analogWriteResolution(8);
 
-
-
-for (byte i = 1; i < 16; i=i+2) {
-  currents[i]=16;
-}
-
- currents[0]=255;
-
-hz=55;
 //sendingflag=1;
 }
 
@@ -538,9 +494,11 @@ void initial() {
   pinMode(SCK, OUTPUT);
 
 pinMode(25, OUTPUT);
-pinMode(24, OUTPUT);
-pinMode(23, OUTPUT);
-pinMode(22, OUTPUT);
+//pinMode(24, OUTPUT);
+
+pinMode(15, OUTPUT);
+//pinMode(23, OUTPUT);
+//pinMode(22, OUTPUT);
 pinMode(21, OUTPUT);
 pinMode(20, OUTPUT);
 pinMode(6, OUTPUT);
@@ -552,6 +510,9 @@ pinMode(17, OUTPUT);
 
 pinMode(2, OUTPUT);
 pinMode(3, OUTPUT);
+pinMode(0, OUTPUT);
+pinMode(1, OUTPUT);
+pinMode(16, OUTPUT);
 
  pinMode(4, OUTPUT);
   
@@ -659,17 +620,20 @@ parseRawBytes();
 //    stopflag=1;}}
 
 if (startflag==1){
-
+analog1=0;
+analog2=0;
  
  if (millis() - previousstarttimersteps >= timers[stepscounter]) {
 if(zeroflag==0){
+  if(pauseflag==0){
 stepscounter++;
+  }
 }
 
 analogWrite(25,out[stepscounter][0]);
-analogWrite(24,out[stepscounter][1]);
-analogWrite(23,out[stepscounter][2]);
-analogWrite(22,out[stepscounter][3]);
+analogWrite(15,out[stepscounter][1]);
+analogWrite(1,out[stepscounter][2]);
+analogWrite(0,out[stepscounter][3]);
 analogWrite(21,out[stepscounter][4]);
 analogWrite(20,out[stepscounter][5]);
 analogWrite (6,out[stepscounter][6]);
@@ -678,16 +642,39 @@ analogWrite(7, out[stepscounter][8]);
 analogWrite(18,out[stepscounter][9]);
 analogWrite(8, out[stepscounter][10]);
 analogWrite(17, out[stepscounter][11]);
-
-
+//analogWrite(2, out[stepscounter][12]);
+//analogWrite(3, out[stepscounter][13]);
+if(pauseflag==0){
 previousstarttimersteps= millis();
+if (totalpauseflag==1){
+  totalpausetime=totalpausetime+pausetime;
+  totalpauseflag=0;
+  pausetimeflag=0;
+}
+  }else{
+ previousstarttimersteps= 0; 
+
+ if(pausetimeflag==0){
+   startpausetime=millis();
+   totalpauseflag=1; 
+   pausetimeflag=1;
+   sendFrame(FRAME_TYPE_PAUSE, zeroPayload);
+ }
+ pausetime=millis()-startpausetime;
+  }
+
+if(pauseFlags[stepscounter]==1){
+  pauseflag=1;
+  sendingflag=0;
+}
+
 if(zeroflag==1){
  stepscounter=0;
  zeroflag=0; 
 }
  }
   
-if (millis() - previousstarttimer >= totaltime) { 
+if (millis() - previousstarttimer >= totaltime+totalpausetime) { 
     startflag=0;
     stopflag=1;
     stepscounter=0;}}
@@ -702,6 +689,7 @@ if (millis() - previousstarttimer >= totaltime) {
 if (pwmflag==1){
  pwmsend();
  pwmflag=0;  
+ 
 }
 
 }

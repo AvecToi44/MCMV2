@@ -51,6 +51,10 @@ object RouterCommunication {
         allowManipulationWithUI.value = true
     }
 
+    suspend fun resumeAfterPause() {
+        CommMachineV2.resumeAfterPause()
+    }
+
     suspend fun reInitSolenoids() {
         CommMachineV2.reInitSolenoids()
     }

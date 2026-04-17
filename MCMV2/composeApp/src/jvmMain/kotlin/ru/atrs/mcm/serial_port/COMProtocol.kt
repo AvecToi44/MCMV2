@@ -9,6 +9,7 @@ interface COMProtocol {
     suspend fun comparatorToSolenoid(newIndex: Int)
     suspend fun sendZerosToSolenoid()
     suspend fun sendScenarioToController()
+    suspend fun resumeAfterPause()
     suspend fun reInitSolenoids()
     fun sendFrequency()
     suspend fun solenoidControl(isChangedFirstFourthInternal: Boolean)

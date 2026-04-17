@@ -112,9 +112,10 @@ The application communicates with hardware via binary serial commands:
 | `0x71` | Set channels 1-12 |
 | `0x51` | Set analog1/analog2 |
 | `0x73` | Send scenario step (part 1) |
-| `0x72` | Send scenario step (part 2) |
+| `0x72` | Send scenario step (part 2, includes pause flag in byte 11) |
 | `0x68` | Set main frequency |
 | `0x74` | Start receiving data |
+| `0x22` | Resume scenario after pause |
 | `0x54` | Reset communication |
 | `0x78` | Start recording |
 

@@ -1,6 +1,6 @@
-# MCMV2 Hardware Side (from `gidrotester_pico.ino`)
+# MCMV2 Hardware Side (from `gidrotester_pico_protocol_new_add_pause.ino`)
 
-Scope: only `hardware/gidrotester_pico.ino`.
+Scope: only `hardware/gidrotester_pico_protocol_new_add_pause.ino`.
 
 ## 1) Runtime Snapshot
 
@@ -26,6 +26,7 @@ Input buffer is fixed:
 | `indata[0]` | Meaning |
 |---:|---|
 | `0x74` | start telemetry sending |
+| `0x22` | resume scenario after pause |
 | `0x54` | stop/reset telemetry state |
 | `0x78` | scenario start/stop control |
 | `0x71` | direct PWM channels |
@@ -40,7 +41,7 @@ Input buffer is fixed:
 
 | idx | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| val | `0x71` | `pwm0` | `pwm1` | `pwm2` | `pwm3` | `pwm4` | `pwm5` | `pwm6` | `pwm7` | `n/a` | `n/a` | `n/a` | `n/a` | `n/a` |
+| val | `0x71` | `pwm0` | `pwm1` | `pwm2` | `pwm3` | `pwm4` | `pwm5` | `pwm6` | `pwm7` | `pwm8` | `pwm9` | `pwm10` | `pwm11` | `n/a` |
 
 `0x51` analog update:
 
@@ -58,7 +59,7 @@ Input buffer is fixed:
 
 | idx | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| val | `0x72` | `stepLow` | `stepHigh` | `out8` | `out9` | `out10` | `out11` | `out12` | `out13` | `gradLow` | `gradHigh` | `n/a` | `n/a` | `n/a` |
+| val | `0x72` | `stepLow` | `stepHigh` | `out8` | `out9` | `out10` | `out11` | `analog1` | `analog2` | `gradLow` | `gradHigh` | `pauseFlag` | `n/a` | `n/a` |
 
 `0x68` frequency:
 
@@ -75,7 +76,29 @@ Input buffer is fixed:
 
 ## 3) Firmware Output Byte Arrays (Firmware -> Host/App)
 
-### 3.1 Telemetry packing slots (`pressures[]` / `currents[]`)
+Firmware sends framed telemetry (`29` bytes):
+
+| idx | 0 | 1 | 2 | 3 | 4..27 | 28 |
+|---:|---|---|---|---|---|---|
+| val | `0xA5` | `0x5A` | `type` | `seq` | `payload(24)` | `crc8` |
+
+Frame `type` values used by sketch:
+
+| Type | Meaning |
+|---|---|
+| `0x01` | pressure payload |
+| `0x02` | current payload |
+| `0x10` | experiment start marker |
+| `0x11` | experiment end marker |
+| `0x12` | pause marker (emitted once on pause entry) |
+
+CRC8 parameters:
+
+- poly: `0x07`
+- init: `0x00`
+- range: bytes `[2..27]` (`type + seq + payload`)
+
+### 3.1 Telemetry payload packing slots (`pressures[]` / `currents[]`)
 
 Packing rule in code:
 
@@ -106,24 +129,46 @@ Horizontal slot map:
 
 | out byte order | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
 |---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| source | `currents[0]` | `currents[1]` | `currents[2]` | `currents[3]` | `currents[4]` | `currents[5]` | `currents[6]` | `currents[7]` | `currents[8]` | `currents[9]` | `currents[10]` | `currents[11]` | `currents[12]` | `currents[13]` | `currents[14]` | `currents[15]` | `pressures[16]` | `pressures[17]` | `pressures[18]` | `pressures[19]` | `pressures[20]` | `pressures[21]` | `pressures[22]` | `pressures[23]` |
+| source | `currents[0]` | `currents[1]` | `currents[2]` | `currents[3]` | `currents[4]` | `currents[5]` | `currents[6]` | `currents[7]` | `currents[8]` | `currents[9]` | `currents[10]` | `currents[11]` | `currents[12]` | `currents[13]` | `currents[14]` | `currents[15]` | `currents[16]` | `currents[17]` | `currents[18]` | `currents[19]` | `currents[20]` | `currents[21]` | `currents[22]` | `currents[23]` |
 
 ### 3.3 Marker output arrays
 
-Start marker output (sent on `0x78,0,0`):
+Start marker output (sent on `0x78,0,0`): framed packet with `type=0x10`, zero payload.
 
-| idx | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
-|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| val | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` | `FE` | `FF` |
+Stop marker output (stop branch): framed packet with `type=0x11`, zero payload.
 
-Stop marker output (stop branch):
+## 4) Pause Behavior (new)
 
-| idx | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
-|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| val | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` | `FF` |
+- Pause flag is stored per scenario step from command `0x72` byte index `11` (`pauseFlags[step] = indata[11]`).
+- When active step has `pauseFlags[stepscounter] == 1`:
+  - firmware sets `pauseflag = 1`
+  - scenario step index stops incrementing
+  - telemetry sending is disabled (`sendingflag = 0`)
+  - framed pause marker is emitted once: `type=0x12`, zero payload
+- Resume is handled by command `0x22` (`indata[0] == 34`):
+  - `pauseflag = 0`
+  - telemetry sending is re-enabled (`sendingflag = 1`)
+  - scenario timing continues; pause duration is accumulated into `totalpausetime`
+- Experiment stop condition includes accumulated pause duration:
 
-## 4) Timing/Behavior Notes
+```text
+millis() - previousstarttimer >= totaltime + totalpausetime
+```
+
+## 5) Timing/Behavior Notes
 
 - send interval in telemetry: `2000` microseconds
 - send pattern: 3 pressure packets, then 1 current packet
-- declared array length mismatch in file: arrays are declared `16`, but code accesses up to index `23`
+
+## 6) Bring-up Checklist (App <-> Hardware)
+
+Use this order during field debugging after firmware/app changes:
+
+1. Start app listener (`0x74`) and verify framed RX (`A5 5A`) with valid CRC.
+2. Send `0x68` and verify PWM base frequency changes on controller.
+3. Upload 2-3 scenario steps via `0x73` + `0x72` and confirm step index/timers are populated.
+4. Ensure one step has `pauseFlag=1` in `0x72[11]`.
+5. Start experiment with `0x78 00 00 ...` and verify controller emits `type=0x10`.
+6. At pause step verify controller emits `type=0x12` once and telemetry pauses.
+7. Send resume `0x22 00 00 ...` and verify telemetry resumes.
+8. On completion verify controller emits `type=0x11` and app closes recording state.
