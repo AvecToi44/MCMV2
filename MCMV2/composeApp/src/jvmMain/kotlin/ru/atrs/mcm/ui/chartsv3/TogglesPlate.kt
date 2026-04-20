@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,25 +39,25 @@ fun TogglesPlate(
     isExporting: Boolean = false,
     isExportingTo1C: Boolean = false
 ) {
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.width(164.dp)
             .background(Color(0xE6000000), RoundedCornerShape(10.dp))
             .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 7.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
+            .padding(horizontal = 6.dp, vertical = 3.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
-                .padding(vertical = 2.dp),
+                .padding(vertical = 1.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("View options", color = Color.White, fontSize = 10.sp)
-            Text(if (expanded) "▼" else "▶", color = Color.White, fontSize = 10.sp)
+            Text("View options", color = Color.White, fontSize = 9.sp)
+            Text(if (expanded) "▼" else "▶", color = Color.White, fontSize = 9.sp)
         }
 
         AnimatedVisibility(
@@ -64,68 +65,66 @@ fun TogglesPlate(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 toggles.forEach { spec ->
                     ToggleRowWithInfo(spec)
                 }
 
                 if (onExportPdf != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     Button(
                         onClick = onExportPdf,
                         enabled = !isExporting,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 26.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF1976D2),
                             contentColor = Color.White,
                             disabledContainerColor = Color(0xFF666666),
                             disabledContentColor = Color(0xFFAAAAAA)
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 3.dp)
                     ) {
                         if (isExporting) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(12.dp),
                                 color = Color.White,
                                 strokeWidth = 2.dp
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = if (isExporting) "Экспорт..." else "Экспорт PDF",
-                            fontSize = 11.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
 
                 if (onExportPdfTo1C != null) {
-                    Spacer(modifier = Modifier.height(2.dp))
-
                     Button(
                         onClick = onExportPdfTo1C,
                         enabled = false,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 26.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF444444),
                             contentColor = Color(0xFF888888),
                             disabledContainerColor = Color(0xFF444444),
                             disabledContentColor = Color(0xFF888888)
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 3.dp)
                     ) {
                         if (isExportingTo1C) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(12.dp),
                                 color = Color(0xFFAAAAAA),
                                 strokeWidth = 2.dp
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = if (isExportingTo1C) "Отправка..." else "Экспорт PDF в 1С",
-                            fontSize = 11.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -140,14 +139,15 @@ private fun ToggleRowWithInfo(spec: ToggleSpec) {
     var showInfo by remember { mutableStateOf(false) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Switch(
+                modifier = Modifier.scale(0.72f),
                 checked = spec.checked,
                 onCheckedChange = spec.onCheckedChange,
                 colors = SwitchDefaults.colors(
@@ -155,17 +155,17 @@ private fun ToggleRowWithInfo(spec: ToggleSpec) {
                     checkedTrackColor = Color(0xFF1976D2)
                 )
             )
-            Text(spec.label, color = Color.White, fontSize = 11.sp)
+            Text(spec.label, color = Color.White, fontSize = 9.sp)
 
             // Info pill — click to expand/collapse description
             Box(
                 modifier = Modifier
-                    .padding(start = 6.dp)
+                    .padding(start = 2.dp)
                     .background(Color(0x33FFFFFF), RoundedCornerShape(8.dp))
                     .clickable { showInfo = !showInfo }
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
             ) {
-                Text("i", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("i", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -179,13 +179,13 @@ private fun ToggleRowWithInfo(spec: ToggleSpec) {
                     .fillMaxWidth()
                     .background(Color(0xCC1E1E1E), RoundedCornerShape(8.dp))
                     .border(1.dp, Color(0x22FFFFFF), RoundedCornerShape(8.dp))
-                    .padding(10.dp)
+                    .padding(6.dp)
             ) {
                 Text(
                     text = spec.info,
                     color = Color(0xFFEFEFEF),
-                    fontSize = 10.sp,
-                    lineHeight = 16.sp
+                    fontSize = 9.sp,
+                    lineHeight = 12.sp
                 )
             }
         }

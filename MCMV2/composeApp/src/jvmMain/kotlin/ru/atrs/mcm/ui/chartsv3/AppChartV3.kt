@@ -430,98 +430,125 @@ fun App(analysisAfterExperiment: Boolean = false) {
         showMeSnackBar("Функция 'Экспорт PDF в 1С' будет добавлена позже", Color(0xFF6A3281))
     }
 
+    val headerSlots = listOf(
+        HeaderSlot(
+            label = "File 1",
+            path = path1,
+            result = data1,
+            visibility = vis1,
+            onPick = { path1 = it },
+            onClear = { path1 = null },
+            onToggleAll = {
+                if (vis1.any { it }) {
+                    cachedVis1BeforeHide = vis1
+                    vis1 = List(vis1.size) { false }
+                } else {
+                    val fallback = ds1?.visibility ?: List(vis1.size) { true }
+                    vis1 = (cachedVis1BeforeHide ?: fallback).take(vis1.size)
+                    cachedVis1BeforeHide = null
+                }
+            },
+            onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
+        ),
+        HeaderSlot(
+            label = "File 2",
+            path = path2,
+            result = data2,
+            visibility = vis2,
+            onPick = { path2 = it },
+            onClear = { path2 = null },
+            onToggleAll = {
+                if (vis2.any { it }) {
+                    cachedVis2BeforeHide = vis2
+                    vis2 = List(vis2.size) { false }
+                } else {
+                    val fallback = ds2?.visibility ?: List(vis2.size) { true }
+                    vis2 = (cachedVis2BeforeHide ?: fallback).take(vis2.size)
+                    cachedVis2BeforeHide = null
+                }
+            },
+            onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
+        ),
+        HeaderSlot(
+            label = "File 3",
+            path = path3,
+            result = data3,
+            visibility = vis3,
+            onPick = { path3 = it },
+            onClear = { path3 = null },
+            onToggleAll = {
+                if (vis3.any { it }) {
+                    cachedVis3BeforeHide = vis3
+                    vis3 = List(vis3.size) { false }
+                } else {
+                    val fallback = ds3?.visibility ?: List(vis3.size) { true }
+                    vis3 = (cachedVis3BeforeHide ?: fallback).take(vis3.size)
+                    cachedVis3BeforeHide = null
+                }
+            },
+            onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
+        ),
+    )
+
+    val overlapToggleSpec = listOf(
+        ToggleSpec(
+            label = "Наложение половин",
+            checked = overlapHalves,
+            onCheckedChange = { overlapHalves = it },
+            info = "В первой половине используется обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и пунктир. Вторая половина зеркалится по оси X (режим 'книжки'), чтобы правый край накладывался на левый."
+        )
+    )
+
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                // --- Compact header (put this inside Column, instead of 3 FilePickerRow calls) ---
-                HeaderBar(
-                    modifier = Modifier.weight(1f),
-                    slots = listOf(
-                        HeaderSlot(
-                            label = "File 1",
-                            path = path1,
-                            result = data1,
-                            visibility = vis1,
-                            onPick = { path1 = it },
-                            onClear = { path1 = null },
-                            onToggleAll = {
-                                if (vis1.any { it }) {
-                                    cachedVis1BeforeHide = vis1
-                                    vis1 = List(vis1.size) { false }
-                                } else {
-                                    val fallback = ds1?.visibility ?: List(vis1.size) { true }
-                                    vis1 = (cachedVis1BeforeHide ?: fallback).take(vis1.size)
-                                    cachedVis1BeforeHide = null
-                                }
-                            },
-                            onToggleIdx = { idx -> vis1 = vis1.updateIndex(idx) }
-                        ),
-                        HeaderSlot(
-                            label = "File 2",
-                            path = path2,
-                            result = data2,
-                            visibility = vis2,
-                            onPick = { path2 = it },
-                            onClear = { path2 = null },
-                            onToggleAll = {
-                                if (vis2.any { it }) {
-                                    cachedVis2BeforeHide = vis2
-                                    vis2 = List(vis2.size) { false }
-                                } else {
-                                    val fallback = ds2?.visibility ?: List(vis2.size) { true }
-                                    vis2 = (cachedVis2BeforeHide ?: fallback).take(vis2.size)
-                                    cachedVis2BeforeHide = null
-                                }
-                            },
-                            onToggleIdx = { idx -> vis2 = vis2.updateIndex(idx) }
-                        ),
-                        HeaderSlot(
-                            label = "File 3",
-                            path = path3,
-                            result = data3,
-                            visibility = vis3,
-                            onPick = { path3 = it },
-                            onClear = { path3 = null },
-                            onToggleAll = {
-                                if (vis3.any { it }) {
-                                    cachedVis3BeforeHide = vis3
-                                    vis3 = List(vis3.size) { false }
-                                } else {
-                                    val fallback = ds3?.visibility ?: List(vis3.size) { true }
-                                    vis3 = (cachedVis3BeforeHide ?: fallback).take(vis3.size)
-                                    cachedVis3BeforeHide = null
-                                }
-                            },
-                            onToggleIdx = { idx -> vis3 = vis3.updateIndex(idx) }
-                        ),
-                    ),
-                    colors = seriesColors
-                )
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val stackHeaderAndToggles = maxWidth < 1080.dp
 
-                TogglesPlate(
-                    modifier = Modifier,
-                    toggles = listOf(
-                        ToggleSpec(
-                            label = "Наложение половин",
-                            checked = overlapHalves,
-                            onCheckedChange = { overlapHalves = it },
-                            info = "В первой половине используется обычный стиль; во второй половине используется тот же цвет с альфа ~0,65 и пунктир. Вторая половина зеркалится по оси X (режим 'книжки'), чтобы правый край накладывался на левый."
+                if (stackHeaderAndToggles) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        HeaderBar(
+                            modifier = Modifier.fillMaxWidth(),
+                            slots = headerSlots,
+                            colors = seriesColors
                         )
-                    ),
-                    onExportPdf = { exportPdf() },
-                    onExportPdfTo1C = null,
-                    isExporting = isExporting,
-                    isExportingTo1C = isExportingTo1C
-                )
-            }
+                        Box(modifier = Modifier.align(Alignment.End)) {
+                            TogglesPlate(
+                                toggles = overlapToggleSpec,
+                                onExportPdf = { exportPdf() },
+                                onExportPdfTo1C = null,
+                                isExporting = isExporting,
+                                isExportingTo1C = isExportingTo1C
+                            )
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        HeaderBar(
+                            modifier = Modifier.weight(1f),
+                            slots = headerSlots,
+                            colors = seriesColors
+                        )
 
+                        TogglesPlate(
+                            toggles = overlapToggleSpec,
+                            onExportPdf = { exportPdf() },
+                            onExportPdfTo1C = null,
+                            isExporting = isExporting,
+                            isExportingTo1C = isExportingTo1C
+                        )
+                    }
+                }
+            }
 
             // Chart area
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -534,13 +561,11 @@ fun App(analysisAfterExperiment: Boolean = false) {
                         scenarioTimelineSteps = activeScenarioSteps
                     )
                 }
-
-
-
 //            Box(Modifier.align(Alignment.TopStart).padding(10.dp)) {
 //                StickyHint()
 //            }
             }
+
         }
         
         if (isExporting) {
@@ -726,47 +751,58 @@ fun ChartView(
         minorTickCount = 4
     )
 
-    Box(Modifier.fillMaxSize()) {
-        XYGraph(
-            xAxisModel = xModel,
-            yAxisModel = yModel,
-            modifier = Modifier.fillMaxSize(),
-            gestureConfig = GestureConfig(
-                panXEnabled = true,
-                panYEnabled = true,
-                zoomXEnabled = true,
-                zoomYEnabled = true,
-                independentZoomEnabled = false
-            )
-        ) {
-            Column(Modifier.fillMaxSize()) {
-                if (scenarioTimelineSections.isNotEmpty()) {
-                    ScenarioTimelineAxisOverlay(
-                        xAxisModel = xAxisModel,
-                        sections = scenarioTimelineSections,
-                        modifier = Modifier.fillMaxWidth()
+    val timelineAxisHeight = 34.dp
+    val timelineGapFromChart = 2.dp
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        if (scenarioTimelineSections.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(timelineAxisHeight + timelineGapFromChart))
+        }
+
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            XYGraph(
+                xAxisModel = xModel,
+                yAxisModel = yModel,
+                modifier = Modifier.fillMaxSize(),
+                gestureConfig = GestureConfig(
+                    panXEnabled = true,
+                    panYEnabled = true,
+                    zoomXEnabled = true,
+                    zoomYEnabled = true,
+                    independentZoomEnabled = false
+                )
+            ) {
+                preparedChart.series.forEach { preparedSeries ->
+                    val baseColor = colors[preparedSeries.seriesIndex % colors.size]
+                    val dotted = if (preparedSeries.isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
+                    val combinedEffect = if (preparedSeries.isSecondHalf) dotted else preparedSeries.pathEffect
+
+                    val style = LineStyle(
+                        brush = SolidColor(if (preparedSeries.isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
+                        strokeWidth = 2.dp,
+                        pathEffect = combinedEffect
+                    )
+
+                    LinePlot(
+                        data = preparedSeries.points,
+                        lineStyle = style,
+                        symbol = null
                     )
                 }
+            }
 
-                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    preparedChart.series.forEach { preparedSeries ->
-                        val baseColor = colors[preparedSeries.seriesIndex % colors.size]
-                        val dotted = if (preparedSeries.isSecondHalf) PathEffect.dashPathEffect(floatArrayOf(4f, 6f)) else null
-                        val combinedEffect = if (preparedSeries.isSecondHalf) dotted else preparedSeries.pathEffect
-
-                        val style = LineStyle(
-                            brush = SolidColor(if (preparedSeries.isSecondHalf) baseColor.copy(alpha = 0.65f) else baseColor),
-                            strokeWidth = 2.dp,
-                            pathEffect = combinedEffect
-                        )
-
-                        LinePlot(
-                            data = preparedSeries.points,
-                            lineStyle = style,
-                            symbol = null
-                        )
-                    }
-                }
+            if (scenarioTimelineSections.isNotEmpty()) {
+                ScenarioTimelineAxisOverlay(
+                    xAxisModel = xModel,
+                    sections = scenarioTimelineSections,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopStart)
+                        .offset(y = -(timelineAxisHeight + timelineGapFromChart))
+                )
             }
         }
     }
