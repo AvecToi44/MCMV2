@@ -48,6 +48,10 @@ App()
 | `dataGauges` | `UIGaugesData` | throttled UI gauge updates |
 | `operatorPauseDialogRequests` | `String` | pause dialog text for operator |
 
+Pause runtime rule:
+
+- when operator pause is active (`0x12` received), app suspends chart point recording and auto step timing until operator presses `OK` and resume `0x22` is sent.
+
 ## 5) Scenario Parsing (`ParseScenario.kt`)
 
 - fixed `NUMBER_OF_GAUGES = 12`
@@ -79,6 +83,11 @@ Main keys:
 - mode/UI: `is12ChannelsMode`, `isFullscreenEnabled`, `isBottomPanelShow`, `GAUGES_IN_THE_ROW`
 - run/chart: `last_scenario`, `delay_before_chart`, `CHART_FILE_NAME_ENDING`
 - operator/log/sound: `last_operator_id`, `LOG_LEVEL`, `sound_enabled`
+
+Serial log modes (mapped to `LOG_LEVEL`):
+
+- `COMPACT` -> `ERRORS`: logs only control command traffic (`0x74`, `0x54`, `0x78`, `0x22`, `0x68` and RX types `0x10`, `0x11`, `0x12`)
+- `FULL` -> `DEBUG`: logs all serial TX/RX traffic
 
 ## 7) Chart Log File (`FileWorker.kt`)
 

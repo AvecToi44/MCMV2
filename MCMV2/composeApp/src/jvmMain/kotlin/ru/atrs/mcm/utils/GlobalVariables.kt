@@ -119,6 +119,7 @@ var chartFileStandard = mutableStateOf<File?>( null ) // File(Dir7ReportsStandar
 //var NAME_OF_NEW_CHART_LOG_FILE: File? = null
 var allowManipulationWithUI = mutableStateOf(true)
 var isExperimentStarts = false
+var isOperatorPauseActive = mutableStateOf(false)
 var incrementTime = 0L
 
 data class DataChunkG(

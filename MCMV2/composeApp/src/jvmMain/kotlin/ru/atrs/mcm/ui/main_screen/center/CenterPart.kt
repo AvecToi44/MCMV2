@@ -40,6 +40,7 @@ import ru.atrs.mcm.enums.ExplorerMode
 import ru.atrs.mcm.enums.StateParseBytes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.math.min
 import ru.atrs.mcm.enums.StateExperiments
 import ru.atrs.mcm.launchPlay
 import ru.atrs.mcm.serial_port.RouterCommunication
@@ -66,6 +67,7 @@ import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.healthCheck
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isExperimentStarts
+import ru.atrs.mcm.utils.isOperatorPauseActive
 import ru.atrs.mcm.utils.limitTime
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
@@ -107,6 +109,7 @@ fun CenterPiece(
     val allowManipulationWithUIInternal by remember { allowManipulationWithUI }
 
     val txt = remember { txtOfScenario }
+    val uiScope = rememberCoroutineScope()
 
     val ctxScope =
         CoroutineScope(Dispatchers.IO) + rememberCoroutineScope().coroutineContext + CoroutineName("MainScreen-CenterPart")
@@ -206,8 +209,21 @@ fun CenterPiece(
             }
 
             autoScenarioComment = scenario[stepIndex].comment
-            val sleepMs = scenario[stepIndex].time.coerceAtLeast(0).toLong()
-            delay(sleepMs)
+            var remainingMs = scenario[stepIndex].time.coerceAtLeast(0).toLong()
+            while (remainingMs > 0L) {
+                if (explMode.value != ExplorerMode.AUTO || stateChart.value != StateExperiments.RECORDING) {
+                    break
+                }
+
+                if (isOperatorPauseActive.value) {
+                    delay(50)
+                    continue
+                }
+
+                val tick = min(50L, remainingMs)
+                delay(tick)
+                remainingMs -= tick
+            }
         }
 
         if (explMode.value == ExplorerMode.AUTO && stateChart.value == StateExperiments.RECORDING) {
@@ -783,9 +799,12 @@ fun CenterPiece(
                 confirmButton = {
                     Button(
                         onClick = {
-                            operatorPauseDialogText = null
-                            ctxScope.launch {
-                                RouterCommunication.resumeAfterPause()
+                            uiScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    RouterCommunication.resumeAfterPause()
+                                }
+                                isOperatorPauseActive.value = false
+                                operatorPauseDialogText = null
                             }
                         }
                     ) {

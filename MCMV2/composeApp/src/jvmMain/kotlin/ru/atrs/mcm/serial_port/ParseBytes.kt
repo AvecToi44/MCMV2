@@ -28,15 +28,18 @@ import ru.atrs.mcm.utils.incrementTime
 import ru.atrs.mcm.utils.indexOfScenario
 import ru.atrs.mcm.utils.isAlreadyReceivedBytesForChart
 import ru.atrs.mcm.utils.isExperimentStarts
+import ru.atrs.mcm.utils.isOperatorPauseActive
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
+import ru.atrs.mcm.utils.logSerialRxFrame
 import ru.atrs.mcm.utils.mapFloat
 import ru.atrs.mcm.utils.onesAndTensFloat
 import ru.atrs.mcm.utils.pressures
 import ru.atrs.mcm.utils.pressuresChunkGauges
 import ru.atrs.mcm.utils.operatorPauseDialogRequests
 import ru.atrs.mcm.utils.scenario
+import ru.atrs.mcm.utils.isSerialLogFullMode
 import ru.atrs.mcm.utils.toHexString
 
 private val DEBUG_PARSING = false
@@ -104,7 +107,7 @@ private var GARBAGECOUNTER = 0L
 
 suspend fun flowRawComparatorMachine() {
     dataChunkRAW.collect { updData ->
-        if (GARBAGECOUNTER <= 10 && READY_FOR_LISTENING_OF_PAYLOAD) {
+        if (isSerialLogFullMode() && GARBAGECOUNTER <= 10 && READY_FOR_LISTENING_OF_PAYLOAD) {
             logGarbage("bytesReceiverMachine ${updData.toHexString()}")
             GARBAGECOUNTER++
         }
@@ -120,6 +123,12 @@ suspend fun flowRawComparatorMachine() {
 }
 
 private suspend fun processFramedFrame(frame: FramedTelemetryFrame) {
+    logSerialRxFrame(
+        type = frame.type.toInt() and 0xFF,
+        seq = frame.seq,
+        payloadSize = frame.payload.size,
+    )
+
     when (frame.type) {
         TYPE_START -> {
             handleStartExperiment("framed seq=${frame.seq}")
@@ -150,6 +159,7 @@ private suspend fun processFramedFrame(frame: FramedTelemetryFrame) {
 private fun handleStartExperiment(marker: String) {
     generateNewChartLogFile()
     isExperimentStarts = true
+    isOperatorPauseActive.value = false
     pauseMessageCursor = 0
     STATE_EXPERIMENT.value = StateExperiments.RECORDING
     println("isStartExperiment $marker")
@@ -157,6 +167,8 @@ private fun handleStartExperiment(marker: String) {
 }
 
 private suspend fun handlePauseExperiment(marker: String) {
+    isOperatorPauseActive.value = true
+
     val pauseMessages = scenario
         .map { it.operatorCommand.trim() }
         .filter { it.isNotBlank() }
@@ -175,6 +187,7 @@ private suspend fun handlePauseExperiment(marker: String) {
 private fun handleEndExperiment(marker: String) {
     println("isEndOfExperiment $marker")
     isExperimentStarts = false
+    isOperatorPauseActive.value = false
     STATE_EXPERIMENT.value = StateExperiments.ENDING_OF_EXPERIMENT
 
     logInfo("End Experiment! ${counter} ; ${counter2}| all it == 0xFF ${isExperimentStarts}. count of packets of experiment: ${incrementExperiment}, COUNTER ${COUNTER}")
@@ -189,12 +202,14 @@ private suspend fun processPressurePayload(payload: ByteArray) {
         return
     }
 
-    if (isExperimentStarts) {
+    if (isExperimentStarts && !isOperatorPauseActive.value) {
         incrementExperiment++
     }
 
+    val isRecordingNow = isExperimentStarts && !isOperatorPauseActive.value
+
     val dch = DataChunkG(
-        isExperiment = isExperimentStarts,
+        isExperiment = isRecordingNow,
         onesAndTensFloat(byteToInt(payload[0]).toUInt(), byteToInt(payload[1]).toUInt()),
         onesAndTensFloat(byteToInt(payload[2]).toUInt(), byteToInt(payload[3]).toUInt()),
         onesAndTensFloat(byteToInt(payload[4]).toUInt(), byteToInt(payload[5]).toUInt()),
@@ -219,7 +234,7 @@ private suspend fun processCurrentPayload(payload: ByteArray) {
         return
     }
 
-    if (isExperimentStarts) {
+    if (isExperimentStarts && !isOperatorPauseActive.value) {
         incrementExperiment++
     }
 
@@ -239,7 +254,9 @@ private suspend fun processCurrentPayload(payload: ByteArray) {
     )
 
     dataChunkCurrents.emit(dchCurr)
-    lastGauge?.let { pressuresChunkGauges.emit(it) }
+    lastGauge?.let {
+        pressuresChunkGauges.emit(it.copy(isExperiment = isExperimentStarts && !isOperatorPauseActive.value))
+    }
 }
 
 internal fun consumeFramedTelemetryBytes(chunk: ByteArray): List<FramedTelemetryFrame> {

@@ -362,7 +362,7 @@ fun StarterScreen() {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
                             Box {
-                                Text("${LOG_LEVEL.name}",
+                                Text("${if (LOG_LEVEL == LogLevel.DEBUG) "FULL" else "COMPACT"}",
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                         expandedLogs = !expandedLogs
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
@@ -372,12 +372,12 @@ fun StarterScreen() {
                                     expanded = expandedLogs,
                                     onDismissRequest = { expandedLogs = false },
                                 ) {
-                                    Text("ERRORS",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                    Text("COMPACT",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         LOG_LEVEL = LogLevel.ERRORS
                                         refreshJsonParameters()
                                         expandedLogs = false
                                     })  .fillMaxSize().padding(10.dp))
-                                    Text("DEBUG",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                    Text("FULL",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                         LOG_LEVEL = LogLevel.DEBUG
                                         refreshJsonParameters()
                                         expandedLogs = false

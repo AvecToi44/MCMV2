@@ -52,9 +52,9 @@ data class NewPointerLine(
 fun addHeaderForChartFile() {
     val file = chartFileAfterExperiment.value
     val fileIsEmpty = file.length() <= 0
-
+    println("RECORD! isRecordingExperiment ")
     BufferedWriter(FileWriter(file, true)).use { bw ->
-        println("RECORD! isRecordingExperiment ")
+
 
         if (fileIsEmpty) {
             bw.append("${buildStandardHeaderLine(chartFileStandard.value?.name)}\n")
@@ -98,7 +98,7 @@ suspend fun addNewLineForChart(newLine: NewPointerLine, isRecordingExperiment: B
     }
     try {
         BufferedWriter(FileWriter(file, true)).use { bw ->
-            println("RECORD! isRecordingExperiment $isRecordingExperiment ${newLine.toString()}")
+            //println("RECORD! isRecordingExperiment $isRecordingExperiment ${newLine.toString()}")
 
             val time = newLine.incrementTime
             var newStroke = "$time;${newLine.ch1.to5Decimals()}|$time;${newLine.ch2.to5Decimals()}|$time;${newLine.ch3.to5Decimals()}|$time;${newLine.ch4.to5Decimals()}|" +

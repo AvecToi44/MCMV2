@@ -81,6 +81,7 @@ Current app behavior for pause flow:
 - Pause trigger is derived from Excel column `R` (`commands for operator`): non-empty text => `pauseFlag=1` in `0x72[11]`.
 - Parser handles framed type `0x12` as pause event from controller.
 - On pause event, app shows operator dialog with step text and `OK` button.
+- While pause is active, app does not record experiment points to chart `.txt` and does not advance auto step timing.
 - On `OK`, app sends resume command `0x22 00 00 00 00 00 00 00 00 00 00 00 00 00`.
 
 ## 4) Typical Protocol Use Case (ordered)

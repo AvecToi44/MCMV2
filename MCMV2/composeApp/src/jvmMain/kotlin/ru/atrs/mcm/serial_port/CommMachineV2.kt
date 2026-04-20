@@ -27,10 +27,10 @@ import ru.atrs.mcm.utils.arrayOfComPorts
 import ru.atrs.mcm.utils.checkIntervalScenarios
 import ru.atrs.mcm.utils.getComPorts_Array
 import ru.atrs.mcm.utils.indexOfScenario
-import ru.atrs.mcm.utils.logAct
 import ru.atrs.mcm.utils.logError
 import ru.atrs.mcm.utils.logGarbage
 import ru.atrs.mcm.utils.logInfo
+import ru.atrs.mcm.utils.logSerialTx
 import ru.atrs.mcm.utils.pwm10SeekBar
 import ru.atrs.mcm.utils.pwm11SeekBar
 import ru.atrs.mcm.utils.pwm12SeekBar
@@ -113,7 +113,7 @@ object CommMachineV2: COMProtocol {
         }
         repeat(1) {
 
-            logAct("Run Send bytes to COM Port (${serialPort.systemPortName}, open:${serialPort.isOpen}): ${sendBytes.toHexString()}   size of bytes: ${sendBytes.size}")
+            logSerialTx(sendBytes, serialPort.systemPortName, serialPort.isOpen)
             serialPort.writeBytes(sendBytes, sendBytes.size.toLong())
             if (withFlush) {
                 serialPort.flushIOBuffers()
