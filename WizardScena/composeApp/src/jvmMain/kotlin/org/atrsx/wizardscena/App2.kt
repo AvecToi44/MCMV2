@@ -26,9 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color.Companion.Magenta
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -277,6 +282,31 @@ private fun EditorScreen(
 
     var standardName by remember { mutableStateOf(MAIN_CONFIG.value.standardPath) }
 
+    var highlightPulse by remember { mutableStateOf(0) }
+    var isFirstComposition by remember { mutableStateOf(true) }
+    val highlightColor by animateColorAsState(
+        targetValue = when (highlightPulse) {
+            1 -> Color(0xFF725DAA)
+            else -> Color.Unspecified
+        },
+        animationSpec = tween(durationMillis = if (highlightPulse > 0) 150 else 400),
+        label = "tabHighlight"
+    )
+
+    LaunchedEffect(solenoids.map { it.isVisible }) {
+        if (isFirstComposition) {
+            isFirstComposition = false
+            return@LaunchedEffect
+        }
+        highlightPulse = 1
+        delay(120)
+        highlightPulse = 0
+        delay(80)
+        highlightPulse = 1
+        delay(120)
+        highlightPulse = 0
+    }
+
     val tabs = listOf(
         tr("tab_main"),
         tr("tab_pressures"),
@@ -381,7 +411,12 @@ private fun EditorScreen(
 
         TabRow(selectedTabIndex = tab) {
             tabs.forEachIndexed { i, title ->
-                Tab(selected = tab == i, onClick = { tab = i }, text = { Text(title) })
+                Tab(
+                    selected = tab == i,
+                    onClick = { tab = i },
+                    text = { Text(title) },
+                    modifier = if (i == 0) Modifier.background(highlightColor) else Modifier
+                )
             }
         }
         when (tab) {

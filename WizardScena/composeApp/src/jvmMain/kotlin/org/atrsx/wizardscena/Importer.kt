@@ -9,6 +9,7 @@ import org.atrsx.wizardscena.ExcelExporter.C_ANALOG2
 import org.atrsx.wizardscena.ExcelExporter.C_CH_FIRST
 import org.atrsx.wizardscena.ExcelExporter.C_GRADIENT
 import org.atrsx.wizardscena.ExcelExporter.C_LABEL
+import org.atrsx.wizardscena.ExcelExporter.C_OPERATOR_CMD
 import org.atrsx.wizardscena.ExcelExporter.C_S_MainFreq_V
 import org.atrsx.wizardscena.ExcelExporter.C_TEXT
 import org.atrsx.wizardscena.ExcelExporter.R_PATH
@@ -205,7 +206,8 @@ object ExcelImporter {
                     getIntOrNull(sh, r, C_ANALOG1) == null &&
                     getIntOrNull(sh, r, C_ANALOG2) == null &&
                     getIntOrNull(sh, r, C_GRADIENT) == null &&
-                    text.isNullOrBlank()
+                    text.isNullOrBlank() &&
+                    getString(sh, r, C_OPERATOR_CMD).isNullOrBlank()
 
             if (allEmpty) {
                 // To be robust: break only after at least one row parsed
@@ -219,7 +221,8 @@ object ExcelImporter {
                 analog1 = getIntOrNull(sh, r, C_ANALOG1) ?: 0,
                 analog2 = getIntOrNull(sh, r, C_ANALOG2) ?: 0,
                 gradientTimeMs = getIntOrNull(sh, r, C_GRADIENT) ?: 0,
-                text = text.orEmpty()
+                text = text.orEmpty(),
+                operatorCommand = getString(sh, r, C_OPERATOR_CMD).orEmpty()
             )
             r++
         }

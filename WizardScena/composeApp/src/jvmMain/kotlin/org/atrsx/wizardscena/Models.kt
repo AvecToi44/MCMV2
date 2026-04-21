@@ -100,6 +100,7 @@ data class ScenarioStep(
     var analog2: Int? = null,
     var gradientTimeMs: Int? = null,
     var text: String? = null,
+    var operatorCommand: String? = null,
     var isSelected: Boolean = false
 )
 
@@ -110,7 +111,8 @@ data class ScenarioStepDto(
     var analog1: Int = 0,
     var analog2: Int = 0,
     var gradientTimeMs: Int = 0,           // "время перехода"
-    var text: String? = null
+    var text: String? = null,
+    var operatorCommand: String? = null
 )
 
 data class ScenarioBlockDto(
@@ -144,7 +146,8 @@ fun UiScenarioRow.toScenarioStep(nChannels: Int) =
         analog1 = analog1,
         analog2 = analog2,
         gradientTimeMs = gradientTimeMs,
-        text = messageText
+        text = messageText,
+        operatorCommand = null
     )
 
 fun ScenarioStepDto.toUiScenarioRow(number: Int) =
@@ -171,7 +174,8 @@ fun ScenarioStep.toDto(channelCount: Int = DEFAULT_CHANNELS): ScenarioStepDto {
         analog1 = (analog1 ?: 0).coerceAtLeast(0),
         analog2 = (analog2 ?: 0).coerceAtLeast(0),
         gradientTimeMs = (gradientTimeMs ?: 0).coerceAtLeast(0),
-        text = text?.takeIf { it.isNotBlank() }   // keep null if blank
+        text = text?.takeIf { it.isNotBlank() },
+        operatorCommand = operatorCommand?.takeIf { it.isNotBlank() }
     )
 }
 
@@ -195,6 +199,7 @@ object ExcelExporter {
     const val C_ANALOG2 = 14      // O
     const val C_GRADIENT = 15     // P
     const val C_TEXT = 16         // Q
+    const val C_OPERATOR_CMD = 17 // R
 
     // Row anchors (0-based)
     const val R_PATH = 0
@@ -310,6 +315,7 @@ object ExcelExporter {
         cell(R_SCEN_COLS, C_ANALOG2).setCellValue("Analog2")
         cell(R_SCEN_COLS, C_GRADIENT).setCellValue("время перехода")
         cell(R_SCEN_COLS, C_TEXT).setCellValue("text")
+        cell(R_SCEN_COLS, C_OPERATOR_CMD).setCellValue("Команда для оператора")
 
         config.scenario.steps.forEachIndexed { idx, step ->
             println("scenario ${idx}>>> ${step}")
@@ -323,10 +329,11 @@ object ExcelExporter {
             cell(r, C_ANALOG2).setCellValue(step.analog2.toDouble())
             cell(r, C_GRADIENT).setCellValue(step.gradientTimeMs.toDouble())
             cell(r, C_TEXT).setCellValue(step.text.orEmpty())
+            cell(r, C_OPERATOR_CMD).setCellValue(step.operatorCommand.orEmpty())
         }
 
         // Autosize (safe try)
-        for (c in 0..C_TEXT) runCatching { sh.autoSizeColumn(c) }
+        for (c in 0..C_OPERATOR_CMD) runCatching { sh.autoSizeColumn(c) }
 
         FileOutputStream(ensureXls(outFile)).use { wb.write(it) }
         wb.close()

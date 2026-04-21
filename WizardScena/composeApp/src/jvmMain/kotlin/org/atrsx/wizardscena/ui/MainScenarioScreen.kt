@@ -45,7 +45,8 @@ private const val COL_CH_START  = 3
 private const val COL_CH_END    = 14 // 12 channels => 3..14
 private const val COL_ANALOG1   = 15
 private const val COL_ANALOG2   = 16
-private const val COL_COUNT     = 17
+private const val COL_OPERATOR_CMD = 17
+private const val COL_COUNT     = 18
 
 private data class CellId(val row: Int, val col: Int)
 
@@ -135,7 +136,8 @@ fun MainScenarioScreen() {
                             stepTimeMs = 1000,
                             channelValues = MutableList(12) { 0 },
                             analog1 = 0, analog2 = 0,
-                            gradientTimeMs = 0, text = AppI18n.text("main_new_step_name")
+                            gradientTimeMs = 0, text = AppI18n.text("main_new_step_name"),
+                            operatorCommand = ""
                         )
                     )
                     val newRow = items.lastIndex
@@ -208,6 +210,35 @@ fun MainScenarioScreen() {
                 enabled = anySelected,
                 modifier = Modifier.fillMaxWidth()
             ) { Text(tr("main_deselect")) }
+
+            Spacer(Modifier.height(12.dp))
+
+            val selectedCount by derivedStateOf { items.count { it.isSelected } }
+            val singleSelectedIndex = if (selectedCount == 1) items.indexOfFirst { it.isSelected } else -1
+
+            Button(
+                onClick = {
+                    if (singleSelectedIndex > 0) {
+                        val item = items.removeAt(singleSelectedIndex)
+                        items.add(singleSelectedIndex - 1, item)
+                        scope.launch { listState.animateScrollToItem(singleSelectedIndex - 1) }
+                    }
+                },
+                enabled = singleSelectedIndex > 0,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(tr("main_move_up")) }
+
+            Button(
+                onClick = {
+                    if (singleSelectedIndex in 0 until items.lastIndex) {
+                        val item = items.removeAt(singleSelectedIndex)
+                        items.add(singleSelectedIndex + 1, item)
+                        scope.launch { listState.animateScrollToItem(singleSelectedIndex + 1) }
+                    }
+                },
+                enabled = singleSelectedIndex >= 0 && singleSelectedIndex < items.lastIndex,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(tr("main_move_down")) }
         }
     }
 }
@@ -312,6 +343,7 @@ private fun ScenarioStepRow(
             repeat(12) { ch ->
                 var chTF by remember(item.id to ch) { mutableStateOf(TextFieldValue(item.channelValues[ch].toString())) }
                 val col = COL_CH_START + ch
+                val isChVisible = solenoids.getOrNull(ch)?.isVisible ?: true
                 GridCell(
                     id = CellId(rowIndex, col),
                     focusGrid = focusGrid,
@@ -335,7 +367,8 @@ private fun ScenarioStepRow(
                     },
                     extraModifier = Modifier.onFocusChanged {
                         if (it.isFocused) scope.launch { scrollState.animateScrollTo(ch * itemWidthPx) }
-                    }
+                    },
+                    visible = isChVisible
                 )
             }
 
@@ -378,6 +411,25 @@ private fun ScenarioStepRow(
                     it.text.toIntOrNull()?.let { num -> onItemChange(item.copy(analog2 = num)) }
                 }
             )
+
+            // operator command (col 17)
+            var opCmdTF by remember(item.id) { mutableStateOf(TextFieldValue(item.operatorCommand ?: "")) }
+            GridCell(
+                id = CellId(rowIndex, COL_OPERATOR_CMD),
+                focusGrid = focusGrid,
+                pendingFocus = pendingFocus,
+                setPendingFocus = setPendingFocus,
+                totalRows = totalRows,
+                value = opCmdTF,
+                width = 120.dp,
+                label = tr("main_label_operator_cmd"),
+                listScrollTo = listScrollTo,
+                numberOnly = false,
+                onValueChange = {
+                    opCmdTF = it
+                    onItemChange(item.copy(operatorCommand = it.text))
+                }
+            )
         }
     }
 }
@@ -399,8 +451,11 @@ private fun GridCell(
     numberOnly: Boolean,
     range: IntRange? = null,           // use 0..255 for channels
     onValueChange: (TextFieldValue) -> Unit,
-    extraModifier: Modifier = Modifier
+    extraModifier: Modifier = Modifier,
+    visible: Boolean = true
 ) {
+    if (!visible) return@GridCell
+
     val req = remember { focusGrid.requester(id) }
 
     // If this cell is the target, request focus *after* it's composed
