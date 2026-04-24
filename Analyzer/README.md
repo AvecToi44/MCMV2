@@ -50,6 +50,10 @@ Use the launcher script (cross-platform, recommended):
 ```bash
 cd /Users/arsenx/Dev/MCMV2/Analyzer
 python run.py
+
+ИЛИ ДЛЯ ВИНДЫ
+
+py -3 run.py
 ```
 
 What `run.py` does:
