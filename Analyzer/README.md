@@ -45,18 +45,35 @@ Not implemented:
 
 ## How to run
 
-Use a static local server (recommended for browser file/module behavior):
+Use the launcher script (cross-platform, recommended):
 
 ```bash
 cd /Users/arsenx/Dev/MCMV2/Analyzer
-python3 -m http.server 8080
+python run.py
 ```
 
-Open:
+What `run.py` does:
 
-- [http://localhost:8080/index.html](http://localhost:8080/index.html)
+- binds server to local-only `127.0.0.1`
+- tries port `8080`, then next free port up to `8180`
+- prints selected URL and opens browser automatically
 
 Stop server with `Ctrl + C`.
+
+Windows note:
+
+- Use `python run.py` (not `python3 ...`).
+
+Advanced manual fallback:
+
+```bash
+cd /Users/arsenx/Dev/MCMV2/Analyzer
+python -m http.server 8080 --bind 127.0.0.1
+```
+
+Then open:
+
+- [http://127.0.0.1:8080/index.html](http://127.0.0.1:8080/index.html)
 
 ## Typical workflow
 
@@ -225,6 +242,15 @@ If strict 1:1 scientific parity with Python/SciPy is required, this should be tr
 
 - Ensure legacy required arrays are present: `time`, `upper_limit`, `lower_limit`
 
+### `python` command not found on Windows
+
+- Install Python 3 from python.org and enable the "Add Python to PATH" option.
+- Reopen terminal and run `python --version` to verify installation.
+
+### Browser did not open automatically
+
+- Copy the printed `Open URL` from terminal and open it manually.
+
 ## Development notes
 
 - No build pipeline is required; plain static files
@@ -239,4 +265,3 @@ You can start with:
 - test: `dp0-E2.rslz`
 
 Then save preset as JSON and run full analysis.
-
