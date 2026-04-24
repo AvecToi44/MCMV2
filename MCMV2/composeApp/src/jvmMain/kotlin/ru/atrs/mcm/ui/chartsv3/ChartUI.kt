@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -123,7 +124,7 @@ private fun CompactFileSlot(
                     val on = slot.visibility.getOrNull(idx) == true
                     val c = colors[idx % colors.size]
                     CompactChip(
-                        label = "Ch${idx + 1}",
+                        label = cd.channelNames.getOrElse(idx) { "Ch${idx + 1}" },
                         color = c,
                         active = on
                     ) { slot.onToggleIdx(idx) }
@@ -165,9 +166,10 @@ private fun CompactChip(
             .background(bg, RoundedCornerShape(5.dp))
             .clickable { onClick() }
             .border(1.dp, border, RoundedCornerShape(5.dp))
+            .sizeIn(maxWidth = 78.dp)
             .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
-        Text(label, fontSize = 10.sp, color = Color.White)
+        Text(label, fontSize = 10.sp, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

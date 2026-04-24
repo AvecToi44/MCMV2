@@ -22,6 +22,7 @@ data class PdfExportConfig(
     val datasets: List<ChartData>,
     val visibilityStates: List<List<Boolean>>,
     val seriesColors: List<Color>,
+    val overlapHalves: Boolean = false,
     val chartWidth: Int = 800,
     val chartHeight: Int = 600,
     val renderScale: Int = 3,
@@ -39,12 +40,75 @@ object PdfExporter {
     private const val A4_HEIGHT = 595f  // Landscape height
     private const val MARGIN = 25f
     private const val HEADER_HEIGHT = 20f
-    private const val CHANNEL_CHIP_WIDTH = 30f
+    private const val CHANNEL_CHIP_WIDTH = 39f
     private const val CHANNEL_CHIP_HEIGHT = 10f
     private const val CHIP_SPACING = 2f
     private const val ROW_SPACING = 14f
 
     private val AWtColor = java.awt.Color::class.java
+
+    private fun pdfChannelLabel(dataset: ChartData, channelIdx: Int): String {
+        val raw = dataset.channelNames.getOrElse(channelIdx) { "Ch${channelIdx + 1}" }
+        return if (raw.length > 6) raw.take(5) + "~" else raw
+    }
+
+    private fun isDarkColor(color: java.awt.Color): Boolean {
+        val luminance = 0.299 * color.red + 0.587 * color.green + 0.114 * color.blue
+        return luminance < 130.0
+    }
+
+    private fun drawChannelChipsInline(
+        contentStream: PDPageContentStream,
+        regularFont: PDFont,
+        yCursor: Float,
+        dataset: ChartData,
+        vis: List<Boolean>,
+        config: PdfExportConfig
+    ) {
+        val chipCount = vis.size
+        if (chipCount == 0) return
+
+        val totalWidth = chipCount * CHANNEL_CHIP_WIDTH + (chipCount - 1).coerceAtLeast(0) * CHIP_SPACING
+        var xCursor = (A4_WIDTH - MARGIN - totalWidth).coerceAtLeast(MARGIN + 250f)
+
+        for ((channelIdx, isVisible) in vis.withIndex()) {
+            val chipWidth = CHANNEL_CHIP_WIDTH
+            if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
+
+            val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
+            val awtColor = java.awt.Color(
+                (color.red * 255).toInt(),
+                (color.green * 255).toInt(),
+                (color.blue * 255).toInt()
+            )
+            val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
+            val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
+
+            contentStream.setNonStrokingColor(fillColor)
+            contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+            contentStream.fill()
+
+            contentStream.setStrokingColor(borderColor)
+            contentStream.setLineWidth(0.5f)
+            contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
+            contentStream.stroke()
+
+            val textColor = when {
+                !isVisible -> java.awt.Color.GRAY
+                isDarkColor(fillColor) -> java.awt.Color.WHITE
+                else -> java.awt.Color.BLACK
+            }
+
+            contentStream.setNonStrokingColor(textColor)
+            contentStream.beginText()
+            contentStream.setFont(regularFont, 5.5f)
+            contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
+            contentStream.showText(pdfChannelLabel(dataset, channelIdx))
+            contentStream.endText()
+
+            xCursor += chipWidth + CHIP_SPACING
+        }
+    }
 
     private fun detectYAxisPrecision(allPoints: List<Point<Float, Float>>): Int {
         var maxDecimals = 0
@@ -192,6 +256,12 @@ object PdfExporter {
         val scaledHeight = height * renderScale
         val bufferedImage = BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB)
         val g2d = bufferedImage.createGraphics()
+        val preparedChart = prepareChartRender(
+            datasets = config.datasets,
+            visibilityStates = config.visibilityStates,
+            overlapHalves = config.overlapHalves
+        )
+        val allPoints = preparedChart.series.flatMap { it.points }
 
         g2d.scale(renderScale.toDouble(), renderScale.toDouble())
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -206,15 +276,6 @@ object PdfExporter {
         val chartWidth = width - padding * 2
         val chartHeight = height - padding * 2
 
-        val allPoints = mutableListOf<Point<Float, Float>>()
-        config.datasets.forEachIndexed { di, cd ->
-            cd.series.forEachIndexed { si, series ->
-                if (config.visibilityStates.getOrNull(di)?.getOrNull(si) == true) {
-                    allPoints.addAll(series)
-                }
-            }
-        }
-
         if (allPoints.isEmpty()) {
             g2d.color = java.awt.Color.GRAY
             g2d.font = java.awt.Font("Arial", java.awt.Font.PLAIN, 14)
@@ -223,13 +284,13 @@ object PdfExporter {
             return bufferedImage
         }
 
-        val xMin = allPoints.minOf { it.x }
-        val xMax = allPoints.maxOf { it.x }
-        val yMin = allPoints.minOf { it.y }
-        val yMax = allPoints.maxOf { it.y }
+        val xMin = preparedChart.xRange.start
+        val xMax = preparedChart.xRange.endInclusive
+        val yMin = preparedChart.yRange.start
+        val yMax = preparedChart.yRange.endInclusive
 
-        val xRange = xMax - xMin
-        val yRange = yMax - yMin
+        val xRange = (xMax - xMin).takeIf { it != 0f } ?: 1f
+        val yRange = (yMax - yMin).takeIf { it != 0f } ?: 1f
 
         val precision = detectYAxisPrecision(allPoints)
         val formatString = "%.${precision}f"
@@ -263,30 +324,26 @@ object PdfExporter {
         g2d.stroke = BasicStroke(2f)
         g2d.drawRect(padding, padding, chartWidth, chartHeight)
 
-        config.datasets.forEachIndexed { di, cd ->
-            cd.series.forEachIndexed { si, series ->
-                if (config.visibilityStates.getOrNull(di)?.getOrNull(si) != true) return@forEachIndexed
-                if (series.isEmpty()) return@forEachIndexed
-
-                val baseColor = config.seriesColors.getOrElse(si % config.seriesColors.size) { Color.Black }
+        preparedChart.series.forEach { preparedSeries ->
+                val baseColor = config.seriesColors.getOrElse(preparedSeries.seriesIndex % config.seriesColors.size) { Color.Black }
                 val red = (baseColor.red * 255).toInt().coerceIn(0, 255)
                 val green = (baseColor.green * 255).toInt().coerceIn(0, 255)
                 val blue = (baseColor.blue * 255).toInt().coerceIn(0, 255)
-                val color = java.awt.Color(red, green, blue)
-                val alpha = if (di == 2) 128 else 255
+                val alpha = if (preparedSeries.isSecondHalf) (255 * 0.65f).toInt() else 255
                 val strokeColor = java.awt.Color(red, green, blue, alpha)
 
                 g2d.color = strokeColor
                 g2d.stroke = when {
-                    di == 1 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
-                    di == 2 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
+                    preparedSeries.isSecondHalf -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(4f, 6f), 0f)
+                    preparedSeries.datasetIndex == 1 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(10f, 6f), 0f)
+                    preparedSeries.datasetIndex == 2 -> BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, floatArrayOf(3f, 4f), 0f)
                     else -> BasicStroke(2f)
                 }
 
                 val path = java.awt.geom.Path2D.Float()
                 var isFirst = true
 
-                for (point in series) {
+                for (point in preparedSeries.points) {
                     val px = padding + ((point.x - xMin) / xRange * chartWidth).toFloat()
                     val py = padding + chartHeight - ((point.y - yMin) / yRange * chartHeight).toFloat()
 
@@ -299,7 +356,6 @@ object PdfExporter {
                 }
 
                 g2d.draw(path)
-            }
         }
 
         g2d.font = java.awt.Font("Arial", java.awt.Font.BOLD, 12)
@@ -422,41 +478,14 @@ object PdfExporter {
             contentStream.stroke()
             contentStream.setLineDashPattern(floatArrayOf(), 0f)
 
-            // Draw channel chips inline
-            var xCursor = MARGIN + 510f
-            contentStream.setFont(regularFont, 6f)
-
-            for ((channelIdx, isVisible) in vis.withIndex()) {
-                val chipWidth = CHANNEL_CHIP_WIDTH
-                if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
-
-                val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
-                val awtColor = java.awt.Color(
-                    (color.red * 255).toInt(),
-                    (color.green * 255).toInt(),
-                    (color.blue * 255).toInt()
-                )
-                val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
-                val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
-
-                contentStream.setNonStrokingColor(fillColor)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.fill()
-
-                contentStream.setStrokingColor(borderColor)
-                contentStream.setLineWidth(0.5f)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.stroke()
-
-                contentStream.setNonStrokingColor(if (isVisible) java.awt.Color.BLACK else java.awt.Color.GRAY)
-                contentStream.beginText()
-                contentStream.setFont(regularFont, 5.5f)
-                contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
-                contentStream.showText("Ch${channelIdx + 1}")
-                contentStream.endText()
-
-                xCursor += chipWidth + CHIP_SPACING
-            }
+            drawChannelChipsInline(
+                contentStream = contentStream,
+                regularFont = regularFont,
+                yCursor = yCursor,
+                dataset = dataset,
+                vis = vis,
+                config = config
+            )
 
             yCursor -= ROW_SPACING
         }
@@ -537,41 +566,14 @@ object PdfExporter {
             contentStream.stroke()
             contentStream.setLineDashPattern(floatArrayOf(), 0f)
 
-            // Draw channel chips inline
-            var xCursor = MARGIN + 510f
-            contentStream.setFont(regularFont, 6f)
-
-            for ((channelIdx, isVisible) in vis.withIndex()) {
-                val chipWidth = CHANNEL_CHIP_WIDTH
-                if (xCursor + chipWidth > A4_WIDTH - MARGIN) break
-
-                val color = config.seriesColors.getOrElse(channelIdx) { androidx.compose.ui.graphics.Color.Black }
-                val awtColor = java.awt.Color(
-                    (color.red * 255).toInt(),
-                    (color.green * 255).toInt(),
-                    (color.blue * 255).toInt()
-                )
-                val fillColor = if (isVisible) awtColor else java.awt.Color(180, 180, 180)
-                val borderColor = if (isVisible) java.awt.Color.DARK_GRAY else java.awt.Color(150, 150, 150)
-
-                contentStream.setNonStrokingColor(fillColor)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.fill()
-
-                contentStream.setStrokingColor(borderColor)
-                contentStream.setLineWidth(0.5f)
-                contentStream.addRect(xCursor, yCursor - CHANNEL_CHIP_HEIGHT, chipWidth, CHANNEL_CHIP_HEIGHT)
-                contentStream.stroke()
-
-                contentStream.setNonStrokingColor(if (isVisible) java.awt.Color.BLACK else java.awt.Color.GRAY)
-                contentStream.beginText()
-                contentStream.setFont(regularFont, 5.5f)
-                contentStream.newLineAtOffset(xCursor + 2f, yCursor - CHANNEL_CHIP_HEIGHT + 4f)
-                contentStream.showText("Ch${channelIdx + 1}")
-                contentStream.endText()
-
-                xCursor += chipWidth + CHIP_SPACING
-            }
+            drawChannelChipsInline(
+                contentStream = contentStream,
+                regularFont = regularFont,
+                yCursor = yCursor,
+                dataset = dataset,
+                vis = vis,
+                config = config
+            )
 
             yCursor -= ROW_SPACING
         }

@@ -6,6 +6,7 @@ data class ChartReportStep(
 )
 
 private const val STEPS_PREFIX = "#steps#"
+private const val CHANNELS_PREFIX = "#channels#"
 private const val STANDARD_PREFIX = "#standard#"
 private const val VISIBILITY_PREFIX = "#visibility#"
 
@@ -15,6 +16,39 @@ fun buildStandardHeaderLine(standardName: String?): String =
 fun buildVisibilityHeaderLine(flags: List<Boolean>): String {
     val encoded = flags.joinToString("#") { if (it) "1" else "0" }
     return "$VISIBILITY_PREFIX$encoded"
+}
+
+fun sanitizeChannelName(raw: String, fallbackIndex: Int? = null): String {
+    val sanitized = raw
+        .replace('#', ' ')
+        .replace("\r", " ")
+        .replace("\n", " ")
+        .trim()
+    return if (sanitized.isBlank()) {
+        fallbackIndex?.let { "Ch${it + 1}" } ?: "Channel"
+    } else {
+        sanitized
+    }
+}
+
+fun buildChannelsHeaderLine(names: List<String>): String {
+    if (names.isEmpty()) return CHANNELS_PREFIX
+    val payload = names.mapIndexed { index, name -> sanitizeChannelName(name, index) }.joinToString("#")
+    return "$CHANNELS_PREFIX$payload"
+}
+
+fun parseChannelsHeaderLine(line: String): List<String> {
+    val trimmed = line.trim()
+    if (!trimmed.startsWith(CHANNELS_PREFIX)) return emptyList()
+
+    val payload = trimmed.removePrefix(CHANNELS_PREFIX)
+    if (payload.isBlank()) return emptyList()
+
+    return payload.split('#').mapIndexedNotNull { index, token ->
+        val part = token.trim()
+        if (part.isBlank()) return@mapIndexedNotNull null
+        sanitizeChannelName(part, index)
+    }
 }
 
 fun sanitizeStepComment(raw: String): String {

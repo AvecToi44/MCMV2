@@ -64,7 +64,14 @@ fun addHeaderForChartFile() {
                     addAll((8..11).map { pressures[it].isVisible })
                 }
             }
+            val channelNames = buildList {
+                addAll((0..7).map { pressures[it].displayName })
+                if (TWELVE_CHANNELS_MODE) {
+                    addAll((8..11).map { pressures[it].displayName })
+                }
+            }
             bw.append("${buildVisibilityHeaderLine(visibilityFlags)}\n")
+            bw.append("${buildChannelsHeaderLine(channelNames)}\n")
             val steps = scenario.map {
                 ChartReportStep(
                     durationMs = it.time,
