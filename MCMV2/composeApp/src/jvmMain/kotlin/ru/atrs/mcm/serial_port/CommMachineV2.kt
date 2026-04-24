@@ -104,6 +104,7 @@ object CommMachineV2: COMProtocol {
         serialPort.setDTR()
         delay(10)
         serialPort.clearDTR()
+        serialPort.clearBreak()
     }
 
     override suspend fun writeToSerialPort(sendBytes: ByteArray, withFlush: Boolean, delay: Long) {

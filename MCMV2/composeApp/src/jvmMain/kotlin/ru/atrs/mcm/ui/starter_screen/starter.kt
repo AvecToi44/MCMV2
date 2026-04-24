@@ -128,7 +128,7 @@ fun StarterScreen() {
                 )
 
                 Box {
-                    Text(text = "Comment",
+                    Text("Комментарий / № Комплектации или прочее",
                         modifier = Modifier.fillMaxSize().clickable {
                             expandedOperator = true
                         }, fontSize = 20.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
@@ -152,7 +152,7 @@ fun StarterScreen() {
                         openNewScenario()
 
                     }) {
-                    Text("Open Scenario",
+                    Text("Открыть сценарий",
                         modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
                 }
 
@@ -160,7 +160,7 @@ fun StarterScreen() {
                     .clickable {
                         openLastScenario()
                     }) {
-                    Text("Open last scenario",
+                    Text("Открыть последний сценарий",
                         modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
                 }
             }
@@ -171,7 +171,7 @@ fun StarterScreen() {
 //                   openChartViewer()
                     doOpen_Second_ChartWindow.value = true
                 }) {
-                Text("Open Chart",
+                Text("Открыть график",
                     modifier = Modifier.padding(4.dp).align(Alignment.Center), fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
 
@@ -189,7 +189,7 @@ fun StarterScreen() {
                     )
                 }
                 ) {
-                Text("Settings",
+                Text("Настройки",
                     modifier = Modifier.padding(4.dp).align(Alignment.Center)
                     , fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
             }
@@ -233,13 +233,13 @@ fun StarterScreen() {
                     content = {
                     item {
                         Row(modifier = Modifier.width(500.dp)) {
-                            Text("COM Port:",
+                            Text("COM порт:",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
                             Box(modifier = Modifier.width(150.dp)) {
                                 Text(
-                                    if (arrayOfComPorts.isEmpty()) "‼️NO COM PORTS‼️" else COM_PORT,
+                                    if (arrayOfComPorts.isEmpty()) "❌НЕТ COM ПОРТОВ❌" else COM_PORT,
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                         expandedCom = !expandedCom
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.Blue, textAlign = TextAlign.Center)
@@ -264,7 +264,7 @@ fun StarterScreen() {
 
                     item {
                         Row {
-                            Text("Baud-rate:",
+                            Text("Скорость (Baud-rate):",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
@@ -322,7 +322,7 @@ fun StarterScreen() {
 
                     item {
                         Row {
-                            Text("Sound type",
+                            Text("Тип звука",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
@@ -357,7 +357,7 @@ fun StarterScreen() {
 
                     item {
                         Row {
-                            Text("Enable Logger",
+                            Text("Журналирование",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
@@ -390,7 +390,7 @@ fun StarterScreen() {
 
                     item {
                         Row {
-                            Text("Enable Fullscreen",
+                            Text("Полноэкранный режим",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
                             val checkedState = remember { mutableStateOf(SHOW_FULLSCREEN) }
@@ -411,7 +411,7 @@ fun StarterScreen() {
                     }
                     item {
                         Row {
-                            Text("Show bottom panel",
+                            Text("Показать нижнюю панель",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                 }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
                             val checkedState = remember { mutableStateOf(SHOW_BOTTOM_PANEL) }
@@ -478,7 +478,7 @@ fun StarterScreen() {
 //                    }
                         item {
                             Row {
-                                Text("Chart File Ending",
+                                Text("Окончание имени файла",
                                     modifier = Modifier.width(200.dp).padding(4.dp).clickable {
                                     }, fontSize = 24.sp, fontFamily = FontFamily.Monospace, color = Color.White, textAlign = TextAlign.Center)
 
@@ -493,17 +493,17 @@ fun StarterScreen() {
                                         expanded = expandedChartFileEnding,
                                         onDismissRequest = { expandedChartFileEnding = false },
                                     ) {
-                                        Text("Timestamp and Comment",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        Text("Время и комментарий",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                             CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT_AND_TIMESTAMP
                                             refreshJsonParameters()
                                             expandedChartFileEnding = false
                                         })  .fillMaxSize().padding(10.dp))
-                                        Text("Timestamp",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        Text("Только время",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                             CHART_FILE_NAME_ENDING = ChartFileNameEnding.TIMESTAMP
                                             refreshJsonParameters()
                                             expandedChartFileEnding = false
                                         })  .fillMaxSize().padding(10.dp))
-                                        Text("Comment",   fontSize=18.sp, modifier = Modifier.clickable(onClick= {
+                                        Text("Только комментарий", fontSize=18.sp, modifier = Modifier.clickable(onClick= {
                                             CHART_FILE_NAME_ENDING = ChartFileNameEnding.COMMENT
                                             refreshJsonParameters()
                                             expandedChartFileEnding = false
@@ -516,7 +516,7 @@ fun StarterScreen() {
                     item {
                         Row {
                             Text(
-                                "MAX Gauges in Row",
+                                "Макс. датчиков в ряду",
                                 modifier = Modifier.width(200.dp).padding(4.dp).clickable { expandedGaugesInRow = true },
                                 fontSize = 24.sp,
                                 fontFamily = FontFamily.Monospace,
@@ -538,7 +538,7 @@ fun StarterScreen() {
                                             refreshJsonParameters()
                                             expandedGaugesInRow = false
                                         }) {
-                                            Text("$gaugesNumber Channels")
+                                            Text("$gaugesNumber Каналов")
                                         }
                                     }
                                 }

@@ -5,13 +5,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.fazecast.jSerialComm.SerialPort
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeftCircle
@@ -788,30 +792,64 @@ fun CenterPiece(
         }
 
         operatorPauseDialogText?.let { pauseMessage ->
-            AlertDialog(
+            Dialog(
                 onDismissRequest = {},
-                title = {
-                    Text("Commands for operator")
-                },
-                text = {
-                    Text(pauseMessage)
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            uiScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    RouterCommunication.resumeAfterPause()
-                                }
-                                isOperatorPauseActive.value = false
-                                operatorPauseDialogText = null
-                            }
-                        }
+                properties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false,
+                    usePlatformDefaultWidth = false,
+                )
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .fillMaxHeight(0.75f),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color(0xFFF5F7FA),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
-                        Text("OK")
+                        Text(
+                            text = "Commands for operator",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827),
+                        )
+
+                        Text(
+                            text = pauseMessage,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            fontSize = 60.sp,
+                            lineHeight = 68.sp,
+                            color = Color(0xFF111827),
+                        )
+
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(86.dp),
+                            onClick = {
+                                uiScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        RouterCommunication.resumeAfterPause()
+                                    }
+                                    isOperatorPauseActive.value = false
+                                    operatorPauseDialogText = null
+                                }
+                            }
+                        ) {
+                            Text("OK", fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
-            )
+            }
         }
     }
 }
