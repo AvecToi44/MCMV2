@@ -21,6 +21,16 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
 
 
+class NoCacheRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """Serve static files with no-cache headers to always show fresh UI updates."""
+
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
+
 def find_free_port(host: str, start_port: int, scan_count: int) -> int | None:
     for port in range(start_port, start_port + scan_count):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -43,7 +53,7 @@ def main() -> int:
         )
         return 1
 
-    handler = partial(http.server.SimpleHTTPRequestHandler, directory=str(project_dir))
+    handler = partial(NoCacheRequestHandler, directory=str(project_dir))
     server = ThreadingHTTPServer((HOST, port), handler)
     url = f"http://{HOST}:{port}/index.html"
 

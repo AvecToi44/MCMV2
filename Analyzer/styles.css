@@ -312,6 +312,9 @@ button.secondary {
 
 .cp-table-scroll {
   max-height: 390px;
+  position: relative;
+  overflow-x: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
 table {
@@ -342,6 +345,30 @@ tr.cp-selected {
   width: 92px;
   padding: 5px 6px;
   font-size: 0.82rem;
+}
+
+#sectionTable {
+  min-width: 980px;
+}
+
+#sectionTable .cp-cell-input {
+  width: 74px;
+}
+
+.section-scroll-hint {
+  margin: -2px 0 8px;
+}
+
+.cp-table-scroll::after {
+  content: "";
+  position: sticky;
+  right: 0;
+  top: 0;
+  float: right;
+  width: 22px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(13, 22, 35, 0), rgba(13, 22, 35, 0.85));
 }
 
 .cp-tol-cell {

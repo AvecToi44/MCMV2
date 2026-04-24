@@ -88,6 +88,8 @@
     sectionEnableSelected: byId("sectionEnableSelected"),
     sectionBulkTolUp: byId("sectionBulkTolUp"),
     sectionBulkTolDown: byId("sectionBulkTolDown"),
+    sectionBulkTolXPlus: byId("sectionBulkTolXPlus"),
+    sectionBulkTolXMinus: byId("sectionBulkTolXMinus"),
     sectionBulkImportance: byId("sectionBulkImportance"),
     sectionApplyBulk: byId("sectionApplyBulk"),
     sectionTableBody: byId("sectionTable").querySelector("tbody"),
@@ -153,6 +155,7 @@
       lower: [],
       loadedPreset: null,
       idCounter: 1,
+      scrollHintShown: false,
     },
     analysis: {
       testParsed: null,
@@ -1314,6 +1317,8 @@
         end_time: end,
         tol_up: baseTol,
         tol_down: baseTol,
+        tol_x_plus: 0,
+        tol_x_minus: 0,
         importance: 1,
         active: true,
       });
@@ -1361,6 +1366,8 @@
         end_time: end,
         tol_up: Math.max(0, Number.isFinite(safeFloat(item.tol_up)) ? safeFloat(item.tol_up) : defaultTol),
         tol_down: Math.max(0, Number.isFinite(safeFloat(item.tol_down)) ? safeFloat(item.tol_down) : defaultTol),
+        tol_x_plus: Math.max(0, Math.round(Number.isFinite(safeFloat(item.tol_x_plus)) ? safeFloat(item.tol_x_plus) : 0)),
+        tol_x_minus: Math.max(0, Math.round(Number.isFinite(safeFloat(item.tol_x_minus)) ? safeFloat(item.tol_x_minus) : 0)),
         importance: clamp(Number.isFinite(safeFloat(item.importance)) ? safeFloat(item.importance) : 1, 0.1, 10),
         active: item.active !== false,
       });
@@ -1401,6 +1408,7 @@
     if (!signal) {
       return;
     }
+    const interpHint = { idx: 0 };
     const upper = [];
     const lower = [];
     for (let i = 0; i < signal.time.length; i += 1) {
@@ -1411,8 +1419,16 @@
         upper.push(ref);
         lower.push(ref);
       } else {
-        upper.push(ref + sec.tol_up);
-        lower.push(ref - sec.tol_down);
+        const refBand = getShiftedReferenceBand(
+          t,
+          signal.time,
+          signal.value,
+          Math.max(0, Math.round(sec.tol_x_minus || 0)),
+          Math.max(0, Math.round(sec.tol_x_plus || 0)),
+          interpHint
+        );
+        upper.push(refBand.max + sec.tol_up);
+        lower.push(refBand.min - sec.tol_down);
       }
     }
     state.sectionPreset.upper = upper;
@@ -1515,7 +1531,7 @@
     const sections = state.sectionPreset.sections;
     if (!sections.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="8">Секции не сформированы.</td>';
+      tr.innerHTML = '<td colspan="10">Секции не сформированы.</td>';
       tbody.appendChild(tr);
       return;
     }
@@ -1533,11 +1549,30 @@
         <td>${fmtNum(sec.end_time, 0)}</td>
         <td><input class="cp-cell-input" type="number" min="0" step="0.01" data-id="${sec.id}" data-field="tol_up" value="${fmtNum(sec.tol_up, 4)}" /></td>
         <td><input class="cp-cell-input" type="number" min="0" step="0.01" data-id="${sec.id}" data-field="tol_down" value="${fmtNum(sec.tol_down, 4)}" /></td>
+        <td><input class="cp-cell-input" type="number" min="0" step="1" data-id="${sec.id}" data-field="tol_x_plus" value="${fmtNum(sec.tol_x_plus, 0)}" /></td>
+        <td><input class="cp-cell-input" type="number" min="0" step="1" data-id="${sec.id}" data-field="tol_x_minus" value="${fmtNum(sec.tol_x_minus, 0)}" /></td>
         <td><input class="cp-cell-input" type="number" min="0.1" step="0.1" data-id="${sec.id}" data-field="importance" value="${fmtNum(sec.importance, 2)}" /></td>
         <td><input type="checkbox" data-id="${sec.id}" data-field="active" ${sec.active ? "checked" : ""} /></td>
       `;
       tbody.appendChild(tr);
     });
+    maybeShowSectionScrollHint();
+  }
+
+  function maybeShowSectionScrollHint() {
+    if (state.sectionPreset.scrollHintShown) {
+      return;
+    }
+    const container = el.sectionTableBody.closest(".cp-table-scroll");
+    if (!container) {
+      return;
+    }
+    const hasHorizontalOverflow = container.scrollWidth > container.clientWidth + 2;
+    if (!hasHorizontalOverflow) {
+      return;
+    }
+    state.sectionPreset.scrollHintShown = true;
+    showAlert("Подсказка: прокрутите таблицу вправо, чтобы увидеть Tol X.", "warn", 2600);
   }
 
   function onSectionTableClick(event) {
@@ -1598,6 +1633,10 @@
       section.tol_up = Math.max(0, value);
     } else if (field === "tol_down") {
       section.tol_down = Math.max(0, value);
+    } else if (field === "tol_x_plus") {
+      section.tol_x_plus = Math.max(0, Math.round(value));
+    } else if (field === "tol_x_minus") {
+      section.tol_x_minus = Math.max(0, Math.round(value));
     } else if (field === "importance") {
       section.importance = clamp(value, 0.1, 10);
     }
@@ -1673,6 +1712,8 @@
       end_time: mid,
       tol_up: source.tol_up,
       tol_down: source.tol_down,
+      tol_x_plus: source.tol_x_plus,
+      tol_x_minus: source.tol_x_minus,
       importance: source.importance,
       active: source.active,
     };
@@ -1682,6 +1723,8 @@
       end_time: end,
       tol_up: source.tol_up,
       tol_down: source.tol_down,
+      tol_x_plus: source.tol_x_plus,
+      tol_x_minus: source.tol_x_minus,
       importance: source.importance,
       active: source.active,
     };
@@ -1706,11 +1749,15 @@
   function applyBulkToSelectedSections() {
     const tolUp = safeFloat(el.sectionBulkTolUp.value);
     const tolDown = safeFloat(el.sectionBulkTolDown.value);
+    const tolXPlus = safeFloat(el.sectionBulkTolXPlus.value);
+    const tolXMinus = safeFloat(el.sectionBulkTolXMinus.value);
     const importance = safeFloat(el.sectionBulkImportance.value);
     const hasTolUp = Number.isFinite(tolUp);
     const hasTolDown = Number.isFinite(tolDown);
+    const hasTolXPlus = Number.isFinite(tolXPlus);
+    const hasTolXMinus = Number.isFinite(tolXMinus);
     const hasImportance = Number.isFinite(importance);
-    if (!hasTolUp && !hasTolDown && !hasImportance) {
+    if (!hasTolUp && !hasTolDown && !hasTolXPlus && !hasTolXMinus && !hasImportance) {
       showAlert("Укажите хотя бы один bulk-параметр.", "warn", 1400);
       return;
     }
@@ -1725,6 +1772,12 @@
       }
       if (hasTolDown) {
         sec.tol_down = Math.max(0, tolDown);
+      }
+      if (hasTolXPlus) {
+        sec.tol_x_plus = Math.max(0, Math.round(tolXPlus));
+      }
+      if (hasTolXMinus) {
+        sec.tol_x_minus = Math.max(0, Math.round(tolXMinus));
       }
       if (hasImportance) {
         sec.importance = clamp(importance, 0.1, 10);
@@ -1808,6 +1861,8 @@
         end_time: Math.round(sec.end_time),
         tol_up: roundNum(sec.tol_up, 8),
         tol_down: roundNum(sec.tol_down, 8),
+        tol_x_plus: Math.max(0, Math.round(sec.tol_x_plus || 0)),
+        tol_x_minus: Math.max(0, Math.round(sec.tol_x_minus || 0)),
         importance: roundNum(sec.importance, 4),
         active: sec.active !== false,
       }));
@@ -1847,6 +1902,9 @@
     const avgTol = avgArray(
       sections.map((sec) => 0.5 * (Math.max(0, sec.tol_up) + Math.max(0, sec.tol_down)))
     );
+    const avgTolX = avgArray(
+      sections.map((sec) => 0.5 * (Math.max(0, sec.tol_x_plus || 0) + Math.max(0, sec.tol_x_minus || 0)))
+    );
     el.sectionSummary.textContent = [
       `Source: ${state.sectionPreset.refFileName || "(manual/preset)"}`,
       `Channel: ${state.sectionPreset.channelType}:${state.sectionPreset.channelIndex ?? "-"}`,
@@ -1854,6 +1912,7 @@
       `Sections: ${sections.length} (active ${activeCount})`,
       `Selected: ${selected}`,
       `Average Tol: ${fmtNum(avgTol, 4)}`,
+      `Average Tol X: ${fmtNum(avgTolX, 0)} ms`,
     ].join("\n");
   }
 
@@ -2150,6 +2209,7 @@
 
     const upper = [];
     const lower = [];
+    const interpHint = { idx: 0 };
     const pointPenalties = new Array(testTime.length).fill(0);
     const alertX = [];
     const alertY = [];
@@ -2175,8 +2235,16 @@
         lower.push(ref);
         continue;
       }
-      const up = ref + sec.tol_up;
-      const low = ref - sec.tol_down;
+      const refBand = getShiftedReferenceBand(
+        t,
+        refTime,
+        refValue,
+        Math.max(0, Math.round(sec.tol_x_minus || 0)),
+        Math.max(0, Math.round(sec.tol_x_plus || 0)),
+        interpHint
+      );
+      const up = refBand.max + sec.tol_up;
+      const low = refBand.min - sec.tol_down;
       upper.push(up);
       lower.push(low);
       const penalty = pointPenalty(testValue[i], low, up);
@@ -3784,47 +3852,127 @@
     }
   }
 
+  function findSegmentIndexBinary(xSrc, x) {
+    if (x <= xSrc[0]) {
+      return 0;
+    }
+    const last = xSrc.length - 1;
+    if (x >= xSrc[last]) {
+      return Math.max(0, last - 1);
+    }
+
+    let lo = 0;
+    let hi = last;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (xSrc[mid] <= x) {
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return clamp(hi, 0, Math.max(0, last - 1));
+  }
+
+  function interpolateAtFast(xSrc, ySrc, x, hint) {
+    if (!xSrc.length || !ySrc.length || xSrc.length !== ySrc.length) {
+      return NaN;
+    }
+
+    const n = xSrc.length;
+    if (n === 1) {
+      return ySrc[0];
+    }
+
+    if (x <= xSrc[0]) {
+      if (hint) {
+        hint.idx = 0;
+      }
+      return ySrc[0];
+    }
+    if (x >= xSrc[n - 1]) {
+      if (hint) {
+        hint.idx = Math.max(0, n - 2);
+      }
+      return ySrc[n - 1];
+    }
+
+    let j = 0;
+    if (hint && Number.isInteger(hint.idx)) {
+      j = clamp(hint.idx, 0, n - 2);
+      if (x > xSrc[j + 1]) {
+        while (j < n - 2 && x > xSrc[j + 1]) {
+          j += 1;
+        }
+      } else if (x < xSrc[j]) {
+        while (j > 0 && x < xSrc[j]) {
+          j -= 1;
+        }
+      }
+      if (!(x >= xSrc[j] && x <= xSrc[j + 1])) {
+        j = findSegmentIndexBinary(xSrc, x);
+      }
+    } else {
+      j = findSegmentIndexBinary(xSrc, x);
+    }
+
+    if (hint) {
+      hint.idx = j;
+    }
+
+    const x0 = xSrc[j];
+    const x1 = xSrc[j + 1];
+    const y0 = ySrc[j];
+    const y1 = ySrc[j + 1];
+
+    if (Math.abs(x1 - x0) < 1e-12) {
+      return y0;
+    }
+
+    const k = (x - x0) / (x1 - x0);
+    return y0 + (y1 - y0) * k;
+  }
+
   function interpolateLinear(xSrc, ySrc, xTgt) {
     if (!xSrc.length || !ySrc.length || xSrc.length !== ySrc.length) {
       return xTgt.map(() => NaN);
     }
 
     const out = new Array(xTgt.length);
-    let j = 0;
-
-    for (let i = 0; i < xTgt.length; i += 1) {
-      const x = xTgt[i];
-      if (x <= xSrc[0]) {
-        out[i] = ySrc[0];
-        continue;
-      }
-      if (x >= xSrc[xSrc.length - 1]) {
-        out[i] = ySrc[ySrc.length - 1];
-        continue;
-      }
-
-      while (j < xSrc.length - 2 && xSrc[j + 1] < x) {
-        j += 1;
-      }
-
-      const x0 = xSrc[j];
-      const x1 = xSrc[j + 1];
-      const y0 = ySrc[j];
-      const y1 = ySrc[j + 1];
-
-      if (Math.abs(x1 - x0) < 1e-12) {
-        out[i] = y0;
-      } else {
-        const k = (x - x0) / (x1 - x0);
-        out[i] = y0 + (y1 - y0) * k;
+    let monotonic = true;
+    for (let i = 1; i < xTgt.length; i += 1) {
+      if (xTgt[i] < xTgt[i - 1]) {
+        monotonic = false;
+        break;
       }
     }
-
+    const hint = monotonic ? { idx: 0 } : null;
+    for (let i = 0; i < xTgt.length; i += 1) {
+      out[i] = interpolateAtFast(xSrc, ySrc, xTgt[i], hint);
+    }
     return out;
   }
 
   function interpolateAt(xSrc, ySrc, x) {
-    return interpolateLinear(xSrc, ySrc, [x])[0];
+    return interpolateAtFast(xSrc, ySrc, x, null);
+  }
+
+  function getShiftedReferenceBand(t, refTime, refValue, tolXMinus, tolXPlus, hint) {
+    if (!refTime.length || refTime.length !== refValue.length) {
+      return { min: NaN, max: NaN };
+    }
+    const tMin = refTime[0];
+    const tMax = refTime[refTime.length - 1];
+    const left = clamp(t - Math.max(0, tolXMinus), tMin, tMax);
+    const right = clamp(t + Math.max(0, tolXPlus), tMin, tMax);
+    const center = clamp(t, tMin, tMax);
+    const mid = 0.5 * (left + right);
+    const sampleTimes = [left, center, mid, right].sort((a, b) => a - b);
+    const candidates = sampleTimes.map((x) => interpolateAtFast(refTime, refValue, x, hint || null));
+    return {
+      min: arrMin(candidates),
+      max: arrMax(candidates),
+    };
   }
 
   function midpointArray(a, b) {

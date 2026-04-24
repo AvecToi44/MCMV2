@@ -61,6 +61,7 @@ What `run.py` does:
 - binds server to local-only `127.0.0.1`
 - tries port `8080`, then next free port up to `8180`
 - prints selected URL and opens browser automatically
+- serves static files with no-cache headers, so UI updates should appear right after refresh/restart
 
 Stop server with `Ctrl + C`.
 
@@ -254,6 +255,11 @@ If strict 1:1 scientific parity with Python/SciPy is required, this should be tr
 ### Browser did not open automatically
 
 - Copy the printed `Open URL` from terminal and open it manually.
+
+### Page looks stale after code changes
+
+- `run.py` already sends no-cache headers; first try a normal refresh after restart.
+- If stale content still appears, open the printed URL in a new tab or an incognito/private window.
 
 ## Development notes
 
